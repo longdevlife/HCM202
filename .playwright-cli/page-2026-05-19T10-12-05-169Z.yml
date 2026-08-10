@@ -1,0 +1,35 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - link "Tư Tưởng Hồ Chí Minh" [ref=e5] [cursor=pointer]:
+      - /url: "#hero"
+      - img [ref=e7]
+      - generic [ref=e9]: Tư Tưởng Hồ Chí Minh
+    - list [ref=e10]:
+      - listitem [ref=e11]:
+        - link "Tổng Quan" [ref=e12] [cursor=pointer]:
+          - /url: "#hero"
+      - listitem [ref=e13]:
+        - link "Tạp chí" [ref=e14] [cursor=pointer]:
+          - /url: "#book"
+      - listitem [ref=e15]:
+        - link "Triển Lãm 3D" [ref=e16] [cursor=pointer]:
+          - /url: "#exhibition"
+      - listitem [ref=e17]:
+        - link "AI Usage" [ref=e18] [cursor=pointer]:
+          - /url: "#ai"
+  - main [ref=e20]:
+    - generic [ref=e21]:
+      - generic [ref=e25]:
+        - generic: Nhà nước thượng tôn pháp luật
+      - generic [ref=e27]:
+        - generic: Nhà nước hợp hiến, hợp pháp
+      - generic [ref=e29]:
+        - generic: Pháp quyền nhân nghĩa
+    - generic:
+      - generic: Sảnh trung tâm
+      - heading "Triển lãm Nhà nước pháp quyền" [level=1]
+      - paragraph: Bước vào một phòng và hướng camera về từng bức tường nội dung.
+    - generic:
+      - generic: W/A/S/D di chuyển
+      - generic: Mũi tên xoay
+      - generic: Click tranh

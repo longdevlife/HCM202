@@ -1,0 +1,499 @@
+/* Pixel-art 8-bit Design System cho khu MINI GAME. Import SAU minigame.css để override. */
+@import url("https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=VT323&display=swap");
+
+/* 1. TYPOGRAPHY: Thay đổi toàn bộ font CSS của hệ thống sang Pixel font Unicode */
+.minigame-container {
+  --font-heading: "Silkscreen", monospace !important;
+  --font-body: "VT323", monospace !important;
+  --font-quote: "VT323", monospace !important;
+}
+
+.minigame-container,
+.minigame-panel,
+.minigame-panel *,
+.host-dashboard-grid,
+.host-dashboard-grid *,
+.lobby-waiting,
+.lobby-waiting *,
+.narrative-widget,
+.narrative-widget *,
+.role-selection,
+.role-selection *,
+.player-grid,
+.player-grid * {
+  font-family: "VT323", monospace !important;
+  font-size: 1.18rem !important; /* Đã thu nhỏ gọn gàng để tránh phình to chữ gây cuộn đứng */
+  letter-spacing: 0.5px;
+}
+
+/* Tiêu đề chính 8-bit gọn gàng dùng font Silkscreen viết hoa */
+.minigame-title {
+  font-family: "Silkscreen", monospace !important;
+  font-size: 1.8rem !important; /* Thu nhỏ tiêu đề tránh chiếm nhiều chỗ đứng */
+  color: #fff !important;
+  text-shadow: 3px 3px 0 #000 !important;
+  letter-spacing: 1.5px !important;
+  text-transform: uppercase !important;
+  margin-bottom: 6px !important;
+  font-weight: 700 !important;
+}
+
+.minigame-subtitle {
+  font-family: "VT323", monospace !important;
+  font-size: 1.25rem !important; /* Thu gọn subtitle */
+  color: #ff4b9f !important; /* Hồng neon */
+  text-shadow: 1.5px 1.5px 0 #000 !important;
+  margin-bottom: 15px !important; /* Giảm margin đứng */
+}
+
+/* Các nhãn chữ in hoa Silkscreen */
+.leaderboard-title,
+.kpi-label,
+.mission-label,
+.role-name,
+.player-rank {
+  font-family: "Silkscreen", monospace !important;
+  font-size: 0.78rem !important; /* Thu gọn */
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+/* Các chữ số Latinh hoặc bảng xếp hạng dùng font pixel */
+.pix-num,
+.podium-number,
+.podium-score,
+.kpi-val,
+.player-score-txt {
+  font-family: "VT323", monospace !important;
+  font-size: 1.4rem !important; /* Thu gọn hợp lý */
+  font-weight: bold !important;
+}
+
+/* 2. BACKGROUND: Bầu trời đêm sao Pixel lấp lánh ảo diệu */
+.minigame-container {
+  background-color: #0c0510 !important; /* Tím sẫm */
+  background-image: 
+    radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+    radial-gradient(rgba(255,255,255,0.9), rgba(255,255,255,.15) 1.5px, transparent 30px),
+    radial-gradient(rgba(255, 75, 159, 0.35), rgba(255, 75, 159, 0.05) 3px, transparent 50px);
+  background-size: 400px 400px, 280px 280px, 500px 500px !important;
+  background-position: 0 0, 50px 70px, 120px 220px !important;
+  image-rendering: pixelated !important;
+  padding-top: 85px !important; /* Đẩy xuống dưới Navbar để không bị che khuất HUD */
+}
+
+/* 3. ARCADE CABINET PANEL: Khung máy game thùng viền kép neon nhỏ gọn */
+.minigame-panel {
+  background: #17101a !important; /* Tím charcoal mun */
+  border-radius: 0px !important;
+  border: 5px solid #000 !important; /* Giảm nhẹ viền */
+  box-shadow: 
+    0 0 0 3px #ff4b9f, 
+    0 0 0 8px #000, 
+    8px 8px 0 0 rgba(0, 0, 0, 0.85) !important; /* Giảm bóng đổ đứng */
+  padding: 20px !important; /* Đã thu nhỏ padding đáng kể giúp tránh cuộn đứng */
+  box-sizing: border-box;
+  image-rendering: pixelated;
+  position: relative !important;
+}
+
+/* Hiệu ứng bóng quét CRT Scanlines mờ ảo chìm chéo bên trong panel */
+.minigame-panel::after {
+  content: " " !important;
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04)) !important;
+  background-size: 100% 4px, 6px 100% !important;
+  z-index: 2 !important;
+  pointer-events: none !important;
+  opacity: 0.35 !important;
+}
+
+.minigame-panel::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 4px !important;
+  background: #ff4b9f !important;
+  z-index: 3 !important;
+}
+
+/* 4. CUỘN GIẤY DA CỔ PIXEL-ART (Roadmap Scroll Style như Ảnh 1) - Tối ưu gọn */
+.mission-card,
+.lobby-waiting ol {
+  background: #ebd6a5 !important; /* Màu giấy da cổ */
+  border: 3px solid #000 !important;
+  border-radius: 0px !important;
+  padding: 12px 16px !important; /* Đã thu nhỏ padding */
+  color: #2c1a0e !important;
+  box-shadow: 4px 4px 0 0 #000 !important; /* Giảm nhẹ bóng đổ */
+  position: relative !important;
+  margin-bottom: 12px !important; /* Thu gọn margin */
+  box-sizing: border-box !important;
+  z-index: 3 !important;
+}
+
+/* Hiệu ứng viền gấp khúc răng cưa 8-bit ở hai đầu cuộn giấy */
+.mission-card::before, .mission-card::after,
+.lobby-waiting ol::before, .lobby-waiting ol::after {
+  content: '' !important;
+  position: absolute !important;
+  top: -3px !important;
+  bottom: -3px !important;
+  width: 6px !important;
+  background-image: linear-gradient(to bottom, #000 3px, transparent 3px) !important;
+  background-size: 100% 6px !important;
+}
+.mission-card::before, .lobby-waiting ol::before { left: -6px !important; }
+.mission-card::after, .lobby-waiting ol::after { right: -6px !important; }
+
+/* Text bên trong cuộn giấy */
+.mission-label {
+  color: #ff3b30 !important;
+  margin-bottom: 4px !important;
+  font-size: 0.85rem !important;
+}
+.mission-text {
+  font-size: 1.22rem !important; /* Thu nhỏ hợp lý */
+  font-weight: 800 !important;
+  line-height: 1.35 !important;
+  color: #2c1a0e !important;
+}
+.mission-progress {
+  margin-top: 6px !important;
+  color: #1565c0 !important;
+  font-weight: bold !important;
+  font-size: 1.22rem !important;
+}
+.mission-meaning {
+  margin-top: 8px !important;
+  color: #5c544a !important;
+  font-size: 1.05rem !important;
+  line-height: 1.35 !important;
+  border-top: 2px dashed #000 !important; /* Đường đứt nét pixel */
+  padding-top: 6px !important;
+}
+
+/* 5. NÚT BẤM PIXEL 8-BIT LÚN CƠ HỌC (Tối ưu gọn) */
+.btn-cyber,
+.btn-cyber-blue,
+.btn-market-flat,
+.option-button {
+  font-family: "VT323", monospace !important;
+  font-size: 1.35rem !important; /* Thu nhỏ size chữ nút bấm */
+  font-weight: bold !important;
+  color: #fff !important;
+  border: 3px solid #000 !important;
+  border-radius: 0px !important;
+  background: #ff4b9f !important; /* Hồng neon */
+  box-shadow: 3px 3px 0 0 #000 !important;
+  transition: none !important;
+  cursor: pointer !important;
+  text-transform: uppercase !important;
+  padding: 8px 16px !important; /* Thu nhỏ padding */
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 3 !important;
+}
+
+/* Đổi màu theo loại nút */
+.btn-cyber-blue,
+.btn-market-flat {
+  background: #0095ff !important;
+}
+
+/* Nút Option A / B màu sắc tươi sáng */
+.option-button:nth-child(1) { background: #0095ff !important; }
+.option-button:nth-child(2) { background: #2e7d32 !important; }
+
+/* Hiệu ứng Hover nhô lên */
+.btn-cyber:hover,
+.btn-cyber-blue:hover,
+.btn-market-flat:hover,
+.option-button:hover {
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 4px 4px 0 0 #000 !important;
+  filter: brightness(1.15) !important;
+}
+
+/* Hiệu ứng Bấm lún cơ học sâu */
+.btn-cyber:active,
+.btn-cyber-blue:active,
+.btn-market-flat:active,
+.option-button:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 1px 1px 0 0 #000 !important;
+}
+
+/* 6. LOBBY WAITING & CHỌN NHÂN VẬT - Tối ưu gọn */
+.lobby-waiting img {
+  border: 3px solid #000 !important;
+  box-shadow: 4px 4px 0 0 #000 !important;
+  image-rendering: pixelated;
+}
+
+/* Khung bọc mã QR */
+.lobby-waiting div[style*="background: rgb(255, 255, 255)"] {
+  border: 4px solid #000 !important;
+  border-radius: 0px !important;
+  box-shadow: 5px 5px 0 0 #000 !important;
+  padding: 10px !important; /* Thu nhỏ padding */
+  background: #fff !important;
+  z-index: 3 !important;
+}
+
+/* Khung chọn nhân vật Pixel */
+.character-option {
+  border: 3px solid #000 !important;
+  border-radius: 0px !important;
+  background: #251b2a !important;
+  box-shadow: 3px 3px 0 0 #000 !important;
+  transition: none !important;
+  padding: 8px !important;
+}
+.character-option:hover {
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 4px 4px 0 0 #000 !important;
+  background: #322539 !important;
+}
+.character-option.selected {
+  border-color: #ffb500 !important;
+  background: #392842 !important;
+  box-shadow: 
+    0 0 0 2px #000,
+    0 0 0 4px #ffb500,
+    4px 4px 0 0 #000 !important;
+}
+.character-name {
+  color: #ffb500 !important;
+  font-size: 0.85rem !important; /* Gọn gàng */
+}
+.character-desc {
+  font-size: 0.95rem !important; /* Thu gọn đáng kể */
+  color: #8b8680 !important;
+}
+
+/* Game input */
+.game-input {
+  border: 3px solid #000 !important;
+  border-radius: 0px !important;
+  background: #100a12 !important;
+  color: #fff !important;
+  font-family: "VT323", monospace !important;
+  font-size: 1.25rem !important;
+  padding: 6px 10px !important;
+  box-shadow: inset 2px 2px 0 #000 !important;
+}
+.game-input:focus {
+  border-color: #ff4b9f !important;
+  outline: none !important;
+}
+
+/* 7. WIDGETS DÀNH CHO HOST DASHBOARD */
+.kpi-card-flat {
+  border: 3px solid #000 !important;
+  border-radius: 0px !important;
+  background: #201725 !important;
+  box-shadow: 3px 3px 0 0 #000 !important;
+  padding: 8px 12px !important;
+}
+.kpi-label {
+  color: var(--neon-gold) !important;
+}
+.kpi-val {
+  font-size: 1.6rem !important; /* Gọn hơn */
+  color: #fff !important;
+}
+
+.leaderboard-item-flat {
+  border: 2px solid #000 !important;
+  border-radius: 0px !important;
+  background: #17101a !important;
+  box-shadow: 2px 2px 0 0 #000 !important;
+  transition: none !important;
+}
+.leaderboard-item-flat:hover {
+  background: #201725 !important;
+}
+
+/* Thanh đo vốn thô ráp 8-bit */
+.leaderboard-item-flat div[style*="width: 100%"] {
+  background: #000 !important;
+  border: 2px solid #000 !important;
+  border-radius: 0px !important;
+  height: 6px !important;
+  overflow: hidden;
+}
+.leaderboard-item-flat div[style*="transition"] {
+  border-radius: 0px !important;
+}
+
+/* Lời dẫn MC */
+.narrative-widget {
+  border: 2px dashed #ffb500 !important;
+  border-radius: 0px !important;
+  background: rgba(255, 181, 0, 0.05) !important;
+  padding: 10px 12px !important;
+}
+
+/* 8. CÁC PHẦN KHÁC (Spectator, D-pad, Iframe) */
+.dpad-container {
+  border: 3px solid #000 !important;
+  border-radius: 0px !important;
+  box-shadow: 4px 4px 0 0 #000 !important;
+  background: #251b2a !important;
+}
+.dpad-btn {
+  border: 3px solid #000 !important;
+  border-radius: 0px !important;
+  background: #100a12 !important;
+  color: #fff !important;
+  box-shadow: 2px 2px 0 0 #000 !important;
+}
+.dpad-btn:active {
+  transform: translate(1px, 1px) !important;
+  box-shadow: 0px 0px 0 0 #000 !important;
+}
+
+/* Chống nhòe nét game khi zoom/scale iframe */
+iframe {
+  image-rendering: -moz-crisp-edges !important;
+  image-rendering: -webkit-crisp-edges !important;
+  image-rendering: pixelated !important;
+  image-rendering: crisp-edges !important;
+  border: 4px solid #000 !important;
+  box-shadow: 5px 5px 0 0 #000 !important;
+  z-index: 3 !important;
+}
+
+.player-pill {
+  border: 2px solid #000 !important;
+  border-radius: 0px !important;
+  background: #251b2a !important;
+  box-shadow: 2px 2px 0 0 #000 !important;
+}
+
+/* 9. RESPONSIVE PANEL WIDTH FOR PC & MOBILE */
+/* Mặc định trên Mobile (màn hình dọc): Panel rộng hết cỡ, max-width vừa phải */
+.minigame-panel {
+  width: 95% !important;
+  max-width: 480px !important;
+  margin: 10px auto !important; /* Giảm margin đứng trên di động */
+}
+
+/* Các trường hợp đặc biệt cho player */
+.minigame-panel.player-panel-sm {
+  max-width: 480px !important;
+}
+.minigame-panel.player-panel-md {
+  max-width: 580px !important;
+}
+.minigame-panel.player-panel-lg {
+  max-width: 96% !important;
+}
+
+/* Đối với Host: Luôn rộng rãi trên PC để hiển thị bảng điều khiển MC */
+.minigame-panel.host-panel {
+  width: 96% !important;
+  max-width: 1450px !important;
+  margin: 15px auto !important;
+}
+
+/* Game console bọc iframe Phaser */
+.game-console-wrapper {
+  max-width: 1400px !important;
+  width: 98% !important;
+  margin: 15px auto !important;
+  border-radius: 0px !important; /* Khử bo tròn */
+  border: 5px solid #000 !important;
+  box-shadow: 
+    0 0 0 3px #0095ff, 
+    0 0 0 8px #000, 
+    10px 10px 0 0 rgba(0, 0, 0, 0.85) !important;
+  background: #17101a !important;
+}
+
+/* Khi màn hình PC rộng (từ 768px trở lên) */
+@media (min-width: 768px) {
+  .minigame-panel {
+    max-width: 920px !important;
+    padding: 26px !important; /* Tối ưu padding trung bình trên PC */
+  }
+  
+  .minigame-title {
+    font-size: 2.2rem !important; /* Tiêu đề to hơn một chút trên PC */
+  }
+  
+  .minigame-panel.player-panel-sm {
+    max-width: 520px !important;
+  }
+  
+  .minigame-panel.player-panel-md {
+    max-width: 920px !important;
+  }
+  
+  /* Lưới chọn nhân vật trải hàng ngang trên PC */
+  .minigame-panel.player-panel-md .character-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important; /* Thu nhỏ gap */
+  }
+  
+  /* Màn hình chọn vai trò */
+  .minigame-panel.role-selection {
+    max-width: 920px !important;
+  }
+}
+
+/* Cấu hình tối ưu hiển thị cho di động (max-width 767px) */
+@media (max-width: 767px) {
+  .minigame-container {
+    padding-top: 75px !important;
+    padding-bottom: 20px !important;
+  }
+  .minigame-panel {
+    padding: 12px 10px !important; /* Thu hẹp tối đa padding panel để game Phaser to nhất có thể */
+    width: 98% !important;
+    margin: 5px auto !important;
+    box-shadow: 
+      0 0 0 3px #ff4b9f, 
+      0 0 0 7px #000, 
+      5px 5px 0 0 rgba(0, 0, 0, 0.85) !important;
+  }
+  .game-console-wrapper {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 4px !important;
+    border-radius: 0px !important;
+    border: 3px solid #000 !important;
+    box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.85) !important;
+  }
+  iframe {
+    border: 3px solid #000 !important;
+    box-shadow: 4px 4px 0 0 #000 !important;
+  }
+  .mission-card,
+  .lobby-waiting ol {
+    padding: 10px 12px !important;
+    margin-bottom: 8px !important;
+  }
+  .mission-text {
+    font-size: 1.15rem !important;
+  }
+  .minigame-title {
+    font-size: 1.45rem !important;
+  }
+  .minigame-subtitle {
+    font-size: 1.1rem !important;
+    margin-bottom: 8px !important;
+  }
+}

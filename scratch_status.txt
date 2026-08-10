@@ -1,0 +1,26 @@
+﻿On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   src/App.jsx
+	modified:   src/book/IntroScreen.jsx
+	modified:   src/components/UI.jsx
+	deleted:    src/game/TheoryPage.jsx
+	deleted:    src/game/sections/CoSoLyThuyet.jsx
+	deleted:    src/game/sections/DatVanDe.jsx
+	deleted:    src/game/sections/GiaiPhap.jsx
+	modified:   src/game/sections/Hero.jsx
+	deleted:    src/game/sections/LeninPresenter.jsx
+	modified:   src/game/sections/Navbar.jsx
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	gitlog.txt
+	scratch_status.txt
+	src/game/IntroPage.jsx
+	src/game/sections/Summary.jsx
+	src/museum/MuseumCarousel.jsx
+
+no changes added to commit (use "git add" and/or "git commit -a")

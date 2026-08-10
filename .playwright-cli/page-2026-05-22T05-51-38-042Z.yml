@@ -1,0 +1,70 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - link "Tư Tưởng Hồ Chí Minh" [ref=e5] [cursor=pointer]:
+      - /url: "#hero"
+      - img [ref=e7]
+      - generic [ref=e9]: Tư Tưởng Hồ Chí Minh
+    - list [ref=e10]:
+      - listitem [ref=e11]:
+        - link "Tổng Quan" [ref=e12] [cursor=pointer]:
+          - /url: "#hero"
+      - listitem [ref=e13]:
+        - link "Tạp chí" [ref=e14] [cursor=pointer]:
+          - /url: "#book"
+      - listitem [ref=e15]:
+        - link "Bảo tàng" [ref=e16] [cursor=pointer]:
+          - /url: "#museum"
+      - listitem [ref=e17]:
+        - link "AI Usage" [ref=e18] [cursor=pointer]:
+          - /url: "#ai"
+  - generic [ref=e19]:
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - generic [ref=e23]: Kỳ 1
+          - generic [ref=e24]: ●
+          - generic [ref=e25]: Tháng 5/2026
+        - heading "TẠP CHÍ" [level=1] [ref=e26]
+        - heading "PHÁP QUYỀN" [level=2] [ref=e27]
+        - generic [ref=e30]: ✦
+        - paragraph [ref=e32]: Tư tưởng Hồ Chí Minh về Nhà nước pháp quyền
+        - paragraph [ref=e33]: Hợp hiến, hợp pháp — Thượng tôn pháp luật — Pháp quyền nhân nghĩa
+        - button "Bắt đầu khám phá" [ref=e34] [cursor=pointer]:
+          - generic [ref=e35]:
+            - text: Bắt đầu khám phá
+            - img [ref=e36]
+      - paragraph [ref=e40]: Sử dụng tai nghe & chuột để có trải nghiệm tốt nhất
+    - generic:
+      - main:
+        - generic: Tạp Chí Pháp Quyền ● 2026
+        - generic: Nhà Nước Pháp Quyền
+        - generic:
+          - generic: KỲ 05
+        - generic:
+          - generic: Tiêu Điểm
+          - generic: Tư tưởng Hồ Chí Minh
+        - generic:
+          - generic: "00"
+          - generic:
+            - generic: Bìa
+        - generic [ref=e41]:
+          - button:
+            - img
+          - button [ref=e42] [cursor=pointer]:
+            - img [ref=e43]
+        - generic [ref=e47]:
+          - button "Bìa" [ref=e48] [cursor=pointer]
+          - button "Trang 2" [ref=e49] [cursor=pointer]
+          - button "Trang 4" [ref=e50] [cursor=pointer]
+          - button "Trang 6" [ref=e51] [cursor=pointer]
+          - button "Trang 8" [ref=e52] [cursor=pointer]
+          - button "Trang 10" [ref=e53] [cursor=pointer]
+          - button "Trang 12" [ref=e54] [cursor=pointer]
+          - button "Trang 14" [ref=e55] [cursor=pointer]
+          - button "Trang 16" [ref=e56] [cursor=pointer]
+          - button "Trang 18" [ref=e57] [cursor=pointer]
+          - button "Trang 20" [ref=e58] [cursor=pointer]
+          - button "Bìa sau" [ref=e59] [cursor=pointer]
+      - button "Đọc tạp chí":
+        - img
+        - generic: Đọc tạp chí

@@ -1,0 +1,140 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - link "Tư Tưởng Hồ Chí Minh" [ref=e5] [cursor=pointer]:
+      - /url: "#hero"
+      - img [ref=e7]
+      - generic [ref=e9]: Tư Tưởng Hồ Chí Minh
+    - list [ref=e10]:
+      - listitem [ref=e11]:
+        - link "Tổng Quan" [ref=e12] [cursor=pointer]:
+          - /url: "#hero"
+      - listitem [ref=e13]:
+        - link "Tạp chí" [ref=e14] [cursor=pointer]:
+          - /url: "#book"
+      - listitem [ref=e15]:
+        - link "Bảo tàng" [ref=e16] [cursor=pointer]:
+          - /url: "#museum"
+      - listitem [ref=e17]:
+        - link "AI Usage" [ref=e18] [cursor=pointer]:
+          - /url: "#ai"
+  - generic [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]: Phụ Lục Đặc Biệt
+      - heading "Báo Cáo Ứng Dụng AI" [level=1] [ref=e24]
+      - paragraph [ref=e26]: Sự minh bạch làm nên giá trị học thuật, tính liêm chính định hình trách nhiệm. Phụ lục này là lời cam kết nghiêm túc của chúng em, vạch rõ ranh giới giữa năng lực hỗ trợ của Trí tuệ Nhân tạo và dấu ấn tri thức sáng tạo độc lập của con người trong suốt hành trình kiến tạo dự án.
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - img [ref=e31]
+          - heading "1. Cam Kết Liêm Chính & Trách Nhiệm" [level=2] [ref=e33]
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - heading "Cam kết cốt lõi" [level=3] [ref=e36]
+            - paragraph [ref=e37]:
+              - text: Chúng em khẳng định AI chỉ đóng vai trò là trợ lý hỗ trợ xử lý dữ liệu thô.
+              - strong [ref=e38]: Không để AI làm thay hoàn toàn.
+              - text: Nhóm chúng em trực tiếp xây dựng logic, thiết kế kiến trúc và quyết định nội dung của sản phẩm cuối cùng.
+          - generic [ref=e40]:
+            - heading "Kiểm chứng thông tin" [level=3] [ref=e41]
+            - paragraph [ref=e42]:
+              - text: Mọi nội dung do AI sinh ra (đặc biệt là phần tóm tắt và phân tích môn Tư tưởng Hồ Chí Minh) đều được đối chiếu trực tiếp với
+              - strong [ref=e43]: Giáo trình Tư tưởng Hồ Chí Minh chính thống
+              - text: . Chúng em hoàn toàn chịu trách nhiệm 100% về tính chính xác của thông tin.
+          - generic [ref=e45]:
+            - heading "Phân định rõ ràng" [level=3] [ref=e46]
+            - paragraph [ref=e47]: AI hỗ trợ gợi ý tài nguyên thô (dàn ý văn bản, gợi ý code, ảnh nền). Chúng em chịu trách nhiệm nghiên cứu sâu, biên tập nội dung khoa học, tối ưu mã nguồn và thiết kế giao diện để tích hợp vào website.
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - img [ref=e51]
+          - heading "2. Ứng Dụng Sáng Tạo" [level=2] [ref=e53]
+        - generic [ref=e54]:
+          - generic [ref=e55]:
+            - heading "Nghiên cứu & Kịch bản" [level=3] [ref=e56]
+            - paragraph [ref=e57]:
+              - text: Sử dụng NotebookLM và ChatGPT để hỗ trợ tóm tắt slide giáo trình và gợi ý cấu trúc phân tích. Chúng em dựa vào đó để
+              - strong [ref=e58]: đối chiếu giáo trình chính gốc
+              - text: ", tự viết kịch bản chi tiết và xây dựng bộ câu hỏi quiz trắc nghiệm."
+          - generic [ref=e59]:
+            - heading "Mỹ thuật & Texture" [level=3] [ref=e60]
+            - paragraph [ref=e61]: Dùng Gemini hỗ trợ phác thảo texture thô (vân gỗ, bề mặt kim loại). Chúng em tự tay cắt ghép nền bằng Photoshop, tinh chỉnh màu sắc để đảm bảo tính mỹ thuật cổ điển, đồng bộ hoàn hảo với UI tổng thể.
+          - generic [ref=e62]:
+            - heading "Lập trình & Kiến trúc" [level=3] [ref=e63]
+            - paragraph [ref=e64]: Sử dụng Antigravity để tối ưu hóa thời gian viết code lặp lại (boilerplate). Chúng em hoàn toàn làm chủ thiết kế kiến trúc 3D, kiểm soát luồng dữ liệu React-Jotai và trực tiếp lập trình sửa các lỗi tương tác phức tạp.
+      - generic [ref=e65]:
+        - heading "3. Bảng Phân Định Công Cụ AI" [level=2] [ref=e67]
+        - generic [ref=e68]:
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - img [ref=e73]
+              - heading "NotebookLM" [level=3] [ref=e76]
+            - generic [ref=e77]:
+              - generic [ref=e78]:
+                - generic [ref=e79]: Vai trò của AI (Input thô)
+                - paragraph [ref=e80]: Tóm tắt slide giáo trình của trường thành các từ khóa, ý chính.
+              - generic [ref=e81]:
+                - generic [ref=e82]:
+                  - img [ref=e83]
+                  - text: Chúng em xử lý (Hoàn thiện)
+                - paragraph [ref=e86]: Đối chiếu với giáo trình gốc. Biên tập lại thành câu thoại ngắn gọn. Tự biên soạn lại câu hỏi quiz để đảm bảo độ khó.
+          - generic [ref=e88]:
+            - generic [ref=e89]:
+              - img [ref=e91]
+              - heading "Antigravity" [level=3] [ref=e94]
+            - generic [ref=e95]:
+              - generic [ref=e96]:
+                - generic [ref=e97]: Vai trò của AI (Input thô)
+                - paragraph [ref=e98]: Gợi ý cú pháp, viết nhanh boilerplate code trong lúc lập trình.
+              - generic [ref=e99]:
+                - generic [ref=e100]:
+                  - img [ref=e101]
+                  - text: Chúng em xử lý (Hoàn thiện)
+                - paragraph [ref=e104]: Review toàn bộ logic. Cấu hình các thông số Three.js, xử lý các lỗi tương tác (click, hover, state).
+          - generic [ref=e106]:
+            - generic [ref=e107]:
+              - img [ref=e109]
+              - heading "ChatGPT" [level=3] [ref=e111]
+            - generic [ref=e112]:
+              - generic [ref=e113]:
+                - generic [ref=e114]: Vai trò của AI (Input thô)
+                - paragraph [ref=e115]: Hỗ trợ phác thảo nội dung kịch bản, gợi ý dàn ý phân tích lý thuyết và lên ý tưởng cho các phòng triển lãm.
+              - generic [ref=e116]:
+                - generic [ref=e117]:
+                  - img [ref=e118]
+                  - text: Chúng em xử lý (Hoàn thiện)
+                - paragraph [ref=e121]: Đối chiếu thông tin trực tiếp với Giáo trình Tư tưởng Hồ Chí Minh chính thống, biên tập lại toàn bộ lập luận theo văn phong học thuật và trực tiếp xây dựng kịch bản chi tiết.
+          - generic [ref=e123]:
+            - generic [ref=e124]:
+              - img [ref=e126]
+              - heading "Gemini" [level=3] [ref=e128]
+            - generic [ref=e129]:
+              - generic [ref=e130]:
+                - generic [ref=e131]: Vai trò của AI (Input thô)
+                - paragraph [ref=e132]: "Tạo hình ảnh 2D, texture bề mặt (VD: vân gỗ, kim loại)."
+              - generic [ref=e133]:
+                - generic [ref=e134]:
+                  - img [ref=e135]
+                  - text: Chúng em xử lý (Hoàn thiện)
+                - paragraph [ref=e138]: Dùng Photoshop cắt nền, chỉnh màu đồng bộ với thiết kế UI tổng thể của dự án.
+      - generic [ref=e139]:
+        - generic [ref=e140]:
+          - img [ref=e142]
+          - heading "4. Minh Chứng Sử Dụng Prompt" [level=2] [ref=e144]
+        - generic [ref=e145]:
+          - generic [ref=e146]:
+            - heading "I. Cơ sở lý thuyết" [level=3] [ref=e147]
+            - generic [ref=e148]:
+              - generic [ref=e149]: "Prompt:"
+              - paragraph [ref=e150]: "\"Hãy từ giáo trình Tư tưởng Hồ Chí Minh 2021 đưa ra nội dung phân tích cho phần Cơ sở lý thuyết của Nhà nước pháp quyền trong tư tưởng Hồ Chí Minh, làm rõ quan điểm về Nhà nước hợp hiến, hợp pháp; Nhà nước thượng tôn pháp luật; và pháp quyền nhân nghĩa trong quản lý xã hội.\""
+            - img "Đoạn chat cơ sở lý thuyết" [ref=e152]
+          - generic [ref=e154]:
+            - heading "II. Liên hệ thực tiễn" [level=3] [ref=e155]
+            - generic [ref=e156]:
+              - generic [ref=e157]: "Prompt:"
+              - paragraph [ref=e158]: "\"Hãy từ giáo trình Tư tưởng Hồ Chí Minh 2021 đưa ra nội dung phân tích cho phần liên hệ thực tiễn của Nhà nước pháp quyền, làm rõ việc vận dụng tư tưởng Hồ Chí Minh về Nhà nước hợp hiến, hợp pháp; Nhà nước thượng tôn pháp luật; và pháp quyền nhân nghĩa trong hoạt động quản lý nhà nước và đời sống xã hội Việt Nam hiện nay.\""
+            - img "Đoạn chat liên hệ thực tiễn" [ref=e160]
+          - generic [ref=e162]:
+            - heading "III. Giá trị vận dụng ngày nay" [level=3] [ref=e163]
+            - generic [ref=e164]:
+              - generic [ref=e165]: "Prompt:"
+              - paragraph [ref=e166]: "\"Hãy từ giáo trình Tư tưởng Hồ Chí Minh 2021 đưa ra nội dung phân tích cho phần giá trị vận dụng hiện nay của Nhà nước pháp quyền, làm rõ ý nghĩa của Nhà nước hợp hiến, hợp pháp; Nhà nước thượng tôn pháp luật; và pháp quyền nhân nghĩa trong xây dựng Nhà nước pháp quyền xã hội chủ nghĩa Việt Nam hiện nay.\""
+            - img "Đoạn chat giá trị vận dụng ngày nay" [ref=e168]

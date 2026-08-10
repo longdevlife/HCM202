@@ -1,0 +1,59 @@
+﻿commit 9da84a81db5e221ede16cf2d44b098f4d60e83c1
+Author: longdevlife <hoangtira@gmail.com>
+Date:   Fri May 15 15:40:03 2026 +0700
+
+    feat: add MuseumPage component with 3D scene placeholder and navigation instructions
+
+commit 084ba33b9f8d10a2b8feb3b54e2c3e9f92a08c54
+Author: longdevlife <hoangtira@gmail.com>
+Date:   Fri May 15 15:38:54 2026 +0700
+
+    feat: implement R3F 3D museum gallery scaffold with interactive artwork frames and navigation room
+
+commit 091e2b0195c33cc275d5d4b66646b605df1bc25e
+Author: longdevlife <hoangtira@gmail.com>
+Date:   Fri May 15 12:14:53 2026 +0700
+
+    docs: clarify museum ownership
+
+commit 2a30ffa38428ad5339380039dffcb5ddca90ea56
+Author: longdevlife <hoangtira@gmail.com>
+Date:   Fri May 15 11:58:52 2026 +0700
+
+    docs: add museum gallery handoff spec
+
+commit 18d83cdd7a0f9a40e0c987248b856deedc8d98d1
+Author: longdevlife <hoangtira@gmail.com>
+Date:   Fri May 15 11:11:18 2026 +0700
+
+    cleaning code
+
+commit 335e44bb3250879c939ed63cd1534c673d0c4706
+Author: longdevlife <hoangtira@gmail.com>
+Date:   Wed Apr 22 21:32:17 2026 +0700
+
+    backup for lenin
+
+commit 8a52273d1b6440d4f458957fe2d22145c510ea28
+Author: longdevlife <hoangtira@gmail.com>
+Date:   Wed Apr 22 19:58:15 2026 +0700
+
+    update AI usage
+
+commit f7707b26fdf7a8c5f199c5d95d6ef0420981bb45
+Author: longdevlife <hoangtira@gmail.com>
+Date:   Wed Apr 22 16:45:51 2026 +0700
+
+    update book
+
+commit 0fd64e336ec20bfb232d45efef22ec8f92a35cc6
+Author: longdevlife <hoangtira@gmail.com>
+Date:   Wed Apr 22 14:16:55 2026 +0700
+
+    update title
+
+commit 3e3cb2e40ac104c60d5bfe245e6121c1494ba007
+Author: longdevlife <hoangtira@gmail.com>
+Date:   Wed Apr 22 14:05:08 2026 +0700
+
+    feat: implement game theory UI sections and Lenin presenter component
