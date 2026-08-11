@@ -118,7 +118,7 @@ export function isRpgMessage(value) {
   switch (value.type) {
     case "PLAYER_MOVE":
       return messageHasFiniteCoordinates(value)
-        && (value.direction === undefined || ["up", "down", "left", "right"].includes(value.direction));
+        && ["up", "down", "left", "right"].includes(value.direction);
     case "GAME_SNAPSHOT":
       return typeof value.phase === "string";
     case "RPG_READY":

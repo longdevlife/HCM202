@@ -162,11 +162,11 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
       if (e.data.type === "PLAYER_MOVE") {
         const move = normalizePlayerMove(e.data);
         const now = Date.now();
-        if (!move || now - lastPlayerMoveAtRef.current < 100) return;
+        if (!move || !["up", "down", "left", "right"].includes(move.direction) || now - lastPlayerMoveAtRef.current < 100) return;
         lastPlayerMoveAtRef.current = now;
         await update(ref(db, `players/${playerId}`), {
           position: { x: move.x, y: move.y },
-          direction: move.direction || "down",
+          direction: move.direction,
         });
         return;
       }

@@ -42,8 +42,9 @@ test("buildRpgSnapshot exposes persisted player positions to the canvas", () => 
   assert.equal(snapshot.players.p1.y, 20);
 });
 
-test("movement messages require finite coordinates", () => {
-  assert.equal(isRpgMessage({ type: "PLAYER_MOVE", x: 12, y: 18 }), true);
+test("movement messages require finite coordinates and a cardinal direction", () => {
+  assert.equal(isRpgMessage({ type: "PLAYER_MOVE", x: 12, y: 18, direction: "up" }), true);
+  assert.equal(isRpgMessage({ type: "PLAYER_MOVE", x: 12, y: 18, direction: undefined }), false);
   assert.equal(isRpgMessage({ type: "PLAYER_MOVE", x: "12", y: 18 }), false);
   assert.equal(isRpgMessage({ type: "PLAYER_MOVE", x: 12, y: 18, direction: "diagonal" }), false);
   assert.deepEqual(normalizePlayerMove({ x: -50, y: 900, direction: "left" }), { x: 12, y: 528, direction: "left" });
