@@ -107,7 +107,7 @@ const sfx = {
 };
 
 // ----------------------------------------------------
-// 6 GRAND CITY BUILDINGS & INTERACTIVE WORKSTATIONS
+// 6 GRAND CITY BUILDINGS & SOLID WALL BOUNDARIES
 // ----------------------------------------------------
 const BUILDINGS = [
   {
@@ -121,7 +121,7 @@ const BUILDINGS = [
     w: 500,
     h: 260,
     stationX: 370,
-    stationY: 310,
+    stationY: 315,
     radius: 70,
     themeColor: "#0284c7",
     accentColor: "#38bdf8",
@@ -137,7 +137,7 @@ const BUILDINGS = [
     w: 520,
     h: 270,
     stationX: 1200,
-    stationY: 300,
+    stationY: 305,
     radius: 70,
     themeColor: "#059669",
     accentColor: "#34d399",
@@ -153,7 +153,7 @@ const BUILDINGS = [
     w: 500,
     h: 260,
     stationX: 2030,
-    stationY: 310,
+    stationY: 315,
     radius: 70,
     themeColor: "#b91c1c",
     accentColor: "#f87171",
@@ -209,6 +209,36 @@ const BUILDINGS = [
 ];
 
 const BUILDINGS_BY_ID = Object.fromEntries(BUILDINGS.map((b) => [b.id, b]));
+
+// SOLID BUILDING COLLISION RESOLUTION (Player cannot pass through buildings)
+function resolveSolidBuildingCollisions(x, y, radius = 14) {
+  let resolvedX = x;
+  let resolvedY = y;
+
+  for (const bldg of BUILDINGS) {
+    const bx = bldg.x - bldg.w / 2;
+    const by = bldg.y - bldg.h / 2;
+    const bw = bldg.w;
+    // Solid top & walls: leave bottom entrance pad area accessible
+    const bh = bldg.h - 50;
+
+    const nearestX = Math.max(bx, Math.min(resolvedX, bx + bw));
+    const nearestY = Math.max(by, Math.min(resolvedY, by + bh));
+
+    const dx = resolvedX - nearestX;
+    const dy = resolvedY - nearestY;
+    const distSq = dx * dx + dy * dy;
+
+    if (distSq < radius * radius) {
+      const dist = Math.sqrt(distSq) || 0.001;
+      const overlap = radius - dist;
+      resolvedX += (dx / dist) * overlap;
+      resolvedY += (dy / dist) * overlap;
+    }
+  }
+
+  return { x: resolvedX, y: resolvedY };
+}
 
 // ----------------------------------------------------
 // DYNAMIC MULTI-STEP DOSSIER QUEST DEFINITIONS
@@ -352,6 +382,95 @@ function spawnFloatingText(x, y, text, color = "#ffdf6e") {
   });
 }
 
+// ----------------------------------------------------
+// DYNAMIC MOVING HAZARDS / PATROLLING OBSTACLES SYSTEM
+// ----------------------------------------------------
+const movingHazardsState = new Map(); // id -> { x, y, vx, vy, speed, radius, trailTimer }
+
+function getOrCreateMovingHazard(entity, id) {
+  if (movingHazardsState.has(id)) {
+    return movingHazardsState.get(id);
+  }
+
+  // Hash id to generate deterministic dynamic movement vectors
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash << 5) - hash + id.charCodeAt(i);
+    hash |= 0;
+  }
+  const absHash = Math.abs(hash);
+  const angle = ((absHash % 360) * Math.PI) / 180;
+  const speed = 75 + (absHash % 45); // 75 - 120 px/sec
+
+  const hazard = {
+    id,
+    x: toWorldX(entity.x),
+    y: toWorldY(entity.y),
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    speed,
+    radius: 18,
+    trailTimer: 0,
+  };
+
+  movingHazardsState.set(id, hazard);
+  return hazard;
+}
+
+function updateMovingHazards(deltaSeconds) {
+  for (const [id, hazard] of movingHazardsState.entries()) {
+    if (state.collectedIds.has(id) || state.resolvedCollisionIds.has(id)) {
+      movingHazardsState.delete(id);
+      continue;
+    }
+
+    hazard.x += hazard.vx * deltaSeconds;
+    hazard.y += hazard.vy * deltaSeconds;
+
+    // Bounce on map boundaries
+    if (hazard.x < 60) { hazard.x = 60; hazard.vx = Math.abs(hazard.vx); }
+    if (hazard.x > MAP_WIDTH - 60) { hazard.x = MAP_WIDTH - 60; hazard.vx = -Math.abs(hazard.vx); }
+    if (hazard.y < 60) { hazard.y = 60; hazard.vy = Math.abs(hazard.vy); }
+    if (hazard.y > MAP_HEIGHT - 60) { hazard.y = MAP_HEIGHT - 60; hazard.vy = -Math.abs(hazard.vy); }
+
+    // Bounce on solid building walls
+    for (const bldg of BUILDINGS) {
+      const bx = bldg.x - bldg.w / 2;
+      const by = bldg.y - bldg.h / 2;
+      const bw = bldg.w;
+      const bh = bldg.h - 50;
+
+      if (
+        hazard.x + hazard.radius > bx &&
+        hazard.x - hazard.radius < bx + bw &&
+        hazard.y + hazard.radius > by &&
+        hazard.y - hazard.radius < by + bh
+      ) {
+        // Reverse velocity component
+        if (hazard.x < bx + 20 || hazard.x > bx + bw - 20) hazard.vx = -hazard.vx;
+        if (hazard.y < by + 20 || hazard.y > by + bh - 20) hazard.vy = -hazard.vy;
+      }
+    }
+
+    // Trailing Danger Particle Spark
+    hazard.trailTimer += deltaSeconds;
+    if (hazard.trailTimer >= 0.08) {
+      hazard.trailTimer = 0;
+      particles.push({
+        x: hazard.x + (Math.random() - 0.5) * 6,
+        y: hazard.y + (Math.random() - 0.5) * 6,
+        vx: -hazard.vx * 0.2,
+        vy: -hazard.vy * 0.2,
+        color: "#ef4444",
+        shape: "rect",
+        size: Math.random() * 3 + 1.5,
+        life: 0,
+        maxLife: 0.35,
+      });
+    }
+  }
+}
+
 // Game State
 const state = {
   frozen: false,
@@ -367,7 +486,7 @@ const state = {
     direction: "down",
     walking: false,
   },
-  activeQuest: null, // Dynamic multi-step quest state for currently carried dossier
+  activeQuest: null,
   collectedIds: new Set(),
   resolvedCollisionIds: new Set(),
   lastMovePostedAt: 0,
@@ -441,14 +560,12 @@ function executePlayerAction() {
     const currentStep = quest.steps[quest.currentStepIndex];
     const targetBldg = BUILDINGS_BY_ID[currentStep.bldgId];
 
-    // Check if player is standing in the correct target building
     const isAtTarget = state.nearbyBuilding && state.nearbyBuilding.id === currentStep.bldgId;
 
     if (isAtTarget) {
       const isFinalStep = quest.currentStepIndex >= quest.totalSteps - 1;
 
       if (!isFinalStep) {
-        // Intermediate Step Completed!
         quest.currentStepIndex += 1;
         const nextStep = quest.steps[quest.currentStepIndex];
         const nextBldg = BUILDINGS_BY_ID[nextStep.bldgId];
@@ -462,7 +579,6 @@ function executePlayerAction() {
           "#38bdf8"
         );
       } else {
-        // Final Step Completed! Dossier is officially filed & approved!
         sfx.stamp();
         spawnParticles(state.player.x, state.player.y, "#f59e0b", 24, 120, "star");
         spawnFloatingText(
@@ -472,13 +588,11 @@ function executePlayerAction() {
           "#4ade80"
         );
 
-        // Emit canonical completion event to Firebase
         postToParent({ type: "NHAT_SACH", bookId: quest.entityId });
         state.activeQuest = null;
       }
       return;
     } else {
-      // Not at the target building -> give helpful navigation reminder
       spawnFloatingText(
         state.player.x,
         state.player.y,
@@ -575,13 +689,15 @@ function handleEntityInteraction(entity, now) {
     return;
   }
 
-  // B. HAZARD / BẪY: Va chạm -> nổ tung và BIẾN MẤT VĨNH VIỄN để tránh spam!
+  // B. DYNAMIC MOVING HAZARD: Va chạm -> phát nổ và BIẾN MẤT VĨNH VIỄN để tránh spam!
   if (entity.kind === "hazard") {
     state.resolvedCollisionIds.add(entity.id);
     state.collectedIds.add(entity.id);
+    movingHazardsState.delete(entity.id);
+
     sfx.hazard();
-    triggerScreenShake(8, 0.3);
-    spawnParticles(entity.x, entity.y, "#c5272d", 18, 100, "ember");
+    triggerScreenShake(9, 0.35);
+    spawnParticles(entity.x, entity.y, "#ef4444", 22, 110, "ember");
     spawnFloatingText(entity.x, entity.y, entity.message || "Bị phạt rủi ro công vụ!", "#ff5252");
     postToParent(event);
     return;
@@ -609,10 +725,11 @@ function handleEntityInteraction(entity, now) {
 }
 
 function checkCollisions(now) {
+  // 1. Static Entities (Items, NPCs, Gates)
   for (const [kind, entities] of Object.entries(state.snapshot)) {
     if (!Array.isArray(entities) && entities && typeof entities === "object") {
       for (const [id, entity] of Object.entries(entities)) {
-        if (kind === "players" || !entity) continue;
+        if (kind === "players" || kind === "hazards" || kind === "traps" || !entity) continue;
         const worldEntity = {
           ...entity,
           id: entity.id || id,
@@ -624,6 +741,23 @@ function checkCollisions(now) {
       }
     }
   }
+
+  // 2. Dynamic Moving Hazards Collision Check
+  for (const [id, mHazard] of movingHazardsState.entries()) {
+    if (state.collectedIds.has(id) || state.resolvedCollisionIds.has(id)) continue;
+    const snapHazard = state.snapshot.hazards?.[id] || state.snapshot.traps?.[id];
+    if (!snapHazard) continue;
+
+    const dynamicEntity = {
+      ...snapHazard,
+      id,
+      kind: "hazard",
+      x: mHazard.x,
+      y: mHazard.y,
+      radius: mHazard.radius,
+    };
+    handleEntityInteraction(dynamicEntity, now);
+  }
 }
 
 // ----------------------------------------------------
@@ -631,15 +765,13 @@ function checkCollisions(now) {
 // ----------------------------------------------------
 
 function drawCityGround() {
-  // Asphalt Ground Base
   context.fillStyle = "#1e293b";
   context.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
 
-  // Roads System
   const roadColor = "#0f172a";
   const laneColor = "#facc15";
 
-  // Main Horizontal Center Avenue
+  // Main Horizontal Avenue
   context.fillStyle = roadColor;
   context.fillRect(0, 600, MAP_WIDTH, 180);
   context.strokeStyle = laneColor;
@@ -670,7 +802,7 @@ function drawCityGround() {
   drawCrosswalk(1480, 600, 40, 180, true);
   drawCrosswalk(1680, 600, 40, 180, true);
 
-  // Sidewalks & Plazas
+  // Sidewalks
   drawSidewalk(80, 80, 580, 500);
   drawSidewalk(910, 80, 580, 500);
   drawSidewalk(1710, 80, 580, 500);
@@ -734,7 +866,7 @@ function drawCentralPlazaFountain(cx, cy, time) {
   context.fillText("★", cx, cy + 5);
 }
 
-// Draw Grand Pixel Buildings with Dynamic Waypoint Beacon Beam for Active Quest Targets
+// Draw Grand Pixel Buildings with Solid Wall Borders & Waypoints
 function drawCityBuildings(time) {
   const activeTargetBldgId = state.activeQuest
     ? state.activeQuest.steps[state.activeQuest.currentStepIndex]?.bldgId
@@ -745,7 +877,7 @@ function drawCityBuildings(time) {
     const by = bldg.y - bldg.h / 2;
     const isTarget = activeTargetBldgId === bldg.id;
 
-    // 0. Active Target Waypoint Beacon Light Column (Shooting into the sky!)
+    // 0. Active Target Waypoint Beacon Light Column
     if (isTarget) {
       const gradBeam = context.createLinearGradient(0, by - 120, 0, by + bldg.h);
       gradBeam.addColorStop(0, "rgba(250, 204, 21, 0.45)");
@@ -754,7 +886,6 @@ function drawCityBuildings(time) {
       context.fillStyle = gradBeam;
       context.fillRect(bldg.stationX - 35, by - 120, 70, bldg.h + 120);
 
-      // Floating Waypoint Pin Icon
       const pinY = by - 30 + Math.sin(time * 6) * 6;
       context.fillStyle = "#facc15";
       context.font = "bold 20px sans-serif";
@@ -767,15 +898,19 @@ function drawCityBuildings(time) {
     }
 
     // 1. Building Drop Shadow
-    context.fillStyle = "rgba(0, 0, 0, 0.5)";
+    context.fillStyle = "rgba(0, 0, 0, 0.55)";
     context.fillRect(bx + 15, by + 18, bldg.w, bldg.h);
 
-    // 2. Main Wall Facade
+    // 2. Solid Wall Facade
     context.fillStyle = "#0f172a";
-    context.fillRect(bx, by, bldg.w, bldg.h);
+    context.fillRect(bx, by, bldg.w, bldg.h - 35);
     context.strokeStyle = isTarget ? "#facc15" : bldg.themeColor;
     context.lineWidth = isTarget ? 4 : 3;
-    context.strokeRect(bx, by, bldg.w, bldg.h);
+    context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+    // Solid Wall "No Entry" warning lines on top of buildings
+    context.fillStyle = "rgba(239, 68, 68, 0.15)";
+    context.fillRect(bx, by, bldg.w, 14);
 
     // 3. Roof Cornice
     context.fillStyle = bldg.themeColor;
@@ -812,7 +947,7 @@ function drawCityBuildings(time) {
       }
     }
 
-    // 5. Entrance & Station Pad
+    // 5. Entrance & Station Pad (Walkable in front)
     const entranceW = 120;
     const entranceH = 50;
     const ex = bldg.stationX - entranceW / 2;
@@ -964,7 +1099,7 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
     ctx.strokeRect(x - 10, carryY - 8, 20, 15);
   }
 
-  // Waypoint Directional Navigation Compass Arrow (Pointing towards Target Building)
+  // Waypoint Compass Arrow
   if (isLocal && state.activeQuest) {
     const currentStep = state.activeQuest.steps[state.activeQuest.currentStepIndex];
     const targetBldg = BUILDINGS_BY_ID[currentStep.bldgId];
@@ -1063,19 +1198,27 @@ function drawItemEntity(ctx, entity, time) {
   ctx.fillText(label.slice(0, 11), x, floatY + 25);
 }
 
-// Draw Hazard Entity
+// Draw Dynamic Moving Hazard Entity with Hazard Trail & Pulsing Siren
 function drawHazardEntity(ctx, entity, time) {
   const x = entity.x;
   const y = entity.y;
-  const pulse = Math.sin(time * 5 + entity.x) * 3;
+  const pulse = Math.sin(time * 7 + entity.x) * 4;
   const type = entity.type || "envelope";
-  const label = entity.label || "Cạm bẫy";
+  const label = entity.label || "Cạm bẫy di chuyển";
 
-  ctx.strokeStyle = `rgba(239, 68, 68, ${0.4 + Math.sin(time * 6) * 0.3})`;
-  ctx.lineWidth = 2;
+  // Dynamic Hazard Alert Circle (Pulsing Danger Aura)
+  ctx.strokeStyle = `rgba(239, 68, 68, ${0.5 + Math.sin(time * 8) * 0.4})`;
+  ctx.lineWidth = 2.5;
   ctx.beginPath();
-  ctx.arc(x, y, 20 + pulse, 0, Math.PI * 2);
+  ctx.arc(x, y, 22 + pulse, 0, Math.PI * 2);
   ctx.stroke();
+
+  // Siren Exclamation Sign floating above moving hazard
+  const sirenY = y - 24 + Math.sin(time * 8) * 3;
+  ctx.fillStyle = "#ef4444";
+  ctx.font = "bold 13px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("⚠️", x, sirenY);
 
   if (type === "envelope") {
     ctx.fillStyle = "#b91c1c";
@@ -1096,11 +1239,11 @@ function drawHazardEntity(ctx, entity, time) {
   }
 
   ctx.fillStyle = "#7f1d1d";
-  ctx.fillRect(x - 32, y + 16, 64, 13);
+  ctx.fillRect(x - 34, y + 16, 68, 13);
   ctx.fillStyle = "#fca5a5";
   ctx.font = "bold 8px 'Silkscreen', 'VT323', monospace, sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText(label.slice(0, 12), x, y + 25);
+  ctx.fillText(label.slice(0, 13), x, y + 25);
 }
 
 // Draw NPC Entity
@@ -1160,7 +1303,6 @@ function drawMiniMapRadar() {
   context.fillRect(mapToMmX(720), mmY, (160 / MAP_WIDTH) * mmW, mmH);
   context.fillRect(mapToMmX(1520), mmY, (160 / MAP_WIDTH) * mmW, mmH);
 
-  // Active Target Building in Radar
   const activeTargetBldgId = state.activeQuest
     ? state.activeQuest.steps[state.activeQuest.currentStepIndex]?.bldgId
     : null;
@@ -1180,7 +1322,7 @@ function drawMiniMapRadar() {
     context.strokeRect(mx, my, mw, mh);
   }
 
-  // Active Collectibles & Traps
+  // Active Collectibles & Moving Hazards on Radar
   for (const [kind, entities] of Object.entries(state.snapshot)) {
     if (kind === "players" || !entities || typeof entities !== "object") continue;
     for (const [id, entity] of Object.entries(entities)) {
@@ -1189,8 +1331,18 @@ function drawMiniMapRadar() {
       if (state.collectedIds.has(fullId) || state.resolvedCollisionIds.has(fullId)) continue;
       if (options.role === "player" && isEntityResolvedForPlayer(entity, options.playerId)) continue;
 
-      const px = mapToMmX(toWorldX(entity.x));
-      const py = mapToMmY(toWorldY(entity.y));
+      let worldX = toWorldX(entity.x);
+      let worldY = toWorldY(entity.y);
+
+      // If moving hazard, use dynamic coordinates
+      if (movingHazardsState.has(fullId)) {
+        const mh = movingHazardsState.get(fullId);
+        worldX = mh.x;
+        worldY = mh.y;
+      }
+
+      const px = mapToMmX(worldX);
+      const py = mapToMmY(worldY);
 
       context.fillStyle = kind === "items" || kind === "books" ? "#facc15" : kind === "hazards" || kind === "traps" ? "#ef4444" : "#38bdf8";
       context.fillRect(px - 1.5, py - 1.5, 3, 3);
@@ -1245,7 +1397,7 @@ function drawScene() {
   // 2. Draw Ground & Roads
   drawCityGround();
 
-  // 3. Draw 6 Grand Buildings
+  // 3. Draw 6 Grand Buildings (Solid Obstacles)
   drawCityBuildings(time);
 
   // 4. Interactive World Entities
@@ -1253,23 +1405,19 @@ function drawScene() {
     if (kind === "players" || !entities || typeof entities !== "object") continue;
     for (const [id, entity] of Object.entries(entities)) {
       if (!entity) continue;
-      const fullEntity = {
-        ...entity,
-        id: entity.id || id,
-        kind: entity.kind || kind.slice(0, -1),
-        x: toWorldX(entity.x),
-        y: toWorldY(entity.y),
-      };
+      const fullId = entity.id || id;
 
-      if (state.collectedIds.has(fullEntity.id) || state.resolvedCollisionIds.has(fullEntity.id)) continue;
-      if (options.role === "player" && isEntityResolvedForPlayer(fullEntity, options.playerId)) continue;
+      if (state.collectedIds.has(fullId) || state.resolvedCollisionIds.has(fullId)) continue;
+      if (options.role === "player" && isEntityResolvedForPlayer(entity, options.playerId)) continue;
 
-      if (fullEntity.kind === "item") {
-        drawItemEntity(context, fullEntity, time);
-      } else if (fullEntity.kind === "hazard") {
-        drawHazardEntity(context, fullEntity, time);
-      } else if (fullEntity.kind === "npc") {
-        drawNpcEntity(context, fullEntity, time);
+      if (kind === "items" || kind === "books") {
+        drawItemEntity(context, { ...entity, id: fullId, kind: "item", x: toWorldX(entity.x), y: toWorldY(entity.y) }, time);
+      } else if (kind === "hazards" || kind === "traps") {
+        // Render at dynamic moving hazard coordinates
+        const mHazard = getOrCreateMovingHazard(entity, fullId);
+        drawHazardEntity(context, { ...entity, id: fullId, kind: "hazard", x: mHazard.x, y: mHazard.y }, time);
+      } else if (kind === "npcs") {
+        drawNpcEntity(context, { ...entity, id: fullId, kind: "npc", x: toWorldX(entity.x), y: toWorldY(entity.y) }, time);
       }
     }
   }
@@ -1366,13 +1514,11 @@ function drawScene() {
     context.lineWidth = 2;
     context.strokeRect(bx, by, bannerW, bannerH);
 
-    // Quest Title & Progress Step
     context.fillStyle = "#facc15";
     context.font = "bold 10px 'Silkscreen', 'VT323', monospace, sans-serif";
     context.textAlign = "left";
     context.fillText(`📋 ${quest.title} (BƯỚC ${quest.currentStepIndex + 1}/${quest.totalSteps})`, bx + 10, by + 16);
 
-    // Step Instruction
     context.fillStyle = "#ffffff";
     context.font = "11px 'VT323', monospace, sans-serif";
     context.fillText(`➔ ${currentStep.instruction}`, bx + 10, by + 34);
@@ -1440,8 +1586,20 @@ function frame(now) {
     state.screenShakeTimer -= deltaSeconds;
   }
 
+  // Update dynamic moving hazards across city streets
+  updateMovingHazards(deltaSeconds);
+
+  // Move player with SOLID BUILDING COLLISION BLOCKING
   if (!state.frozen && options.role === "player" && activeInput()) {
-    state.player = movePlayer(state.player, input, deltaSeconds, { width: MAP_WIDTH, height: MAP_HEIGHT });
+    const rawMoved = movePlayer(state.player, input, deltaSeconds, { width: MAP_WIDTH, height: MAP_HEIGHT });
+    // Apply solid wall collision blocking
+    const blockedPos = resolveSolidBuildingCollisions(rawMoved.x, rawMoved.y, state.player.radius);
+    state.player = {
+      ...rawMoved,
+      x: blockedPos.x,
+      y: blockedPos.y,
+    };
+
     if (now - state.lastMovePostedAt >= 100) {
       state.lastMovePostedAt = now;
       postToParent({
