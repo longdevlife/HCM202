@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ref, set, onValue, remove, update, get } from "firebase/database";
 import { db } from "./firebaseConfig";
 import { situations, PHASE_CONFIGS } from "./situations";
 import { applyPhaseOneGate, applyPhaseTwoGate, applyVoteOutcome, calculateFinalScore } from "./gameStateUtils";
+import { buildRpgSnapshot, createPhaseWorld } from "./rpgBridge";
 import {
   IconPhone,
   IconDesktop,
@@ -35,10 +36,15 @@ const getTrustResult = (publicTrust = 70) => {
   return "KHỦNG HOẢNG NIỀM TIN";
 };
 
+const EMPTY_RPG_WORLD = { books: {}, traps: {}, npcs: {}, gates: {} };
+
 const HostView = ({ gameState, dbConnected, onResetRole }) => {
+  const iframeRef = useRef(null);
+  const iframeReadyRef = useRef(false);
   const [players, setPlayers] = useState({});
   const [votes, setVotes] = useState({});
   const [qrUrl, setQrUrl] = useState("");
+  const [rpgWorld, setRpgWorld] = useState(EMPTY_RPG_WORLD);
 
   useEffect(() => {
     const url = window.location.origin + window.location.pathname + "#minigame";
@@ -48,6 +54,17 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
   useEffect(() => {
     const unsubPlayers = onValue(ref(db, "players"), (s) => setPlayers(s.val() || {}));
     return () => unsubPlayers();
+  }, []);
+
+  useEffect(() => {
+    const collections = ["books", "traps", "npcs", "gates"];
+    const unsubscribes = collections.map((collection) => onValue(ref(db, collection), (snapshot) => {
+      setRpgWorld((currentWorld) => ({
+        ...currentWorld,
+        [collection]: snapshot.val() || {},
+      }));
+    }));
+    return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
   }, []);
 
   useEffect(() => {
@@ -98,6 +115,22 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
   };
 
   const sortedPlayers = [...playerList].sort((a, b) => calculateFinalScore(b) - calculateFinalScore(a));
+  const rpgCollections = useMemo(() => ({ players, ...rpgWorld }), [players, rpgWorld]);
+
+  const postRpgSnapshot = useCallback((force = false) => {
+    const iframeWindow = iframeRef.current?.contentWindow;
+    if (!iframeWindow || (!iframeReadyRef.current && !force)) return;
+    iframeWindow.postMessage(buildRpgSnapshot(gameState, rpgCollections), "*");
+  }, [gameState, rpgCollections]);
+
+  const handleIframeLoad = useCallback(() => {
+    iframeReadyRef.current = true;
+    postRpgSnapshot(true);
+  }, [postRpgSnapshot]);
+
+  useEffect(() => {
+    postRpgSnapshot();
+  }, [postRpgSnapshot]);
 
   const handleStartPhase = async (phaseKey, publicTrustOverride = publicTrust) => {
     const config = PHASE_CONFIGS[phaseKey];
@@ -125,6 +158,14 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
       await remove(ref(db, "npcs"));
       await remove(ref(db, "gates"));
     }
+
+    const world = createPhaseWorld(phaseKey, config, Date.now());
+    await update(ref(db), {
+      books: world.books,
+      traps: world.traps,
+      npcs: world.npcs,
+      gates: world.gates,
+    });
 
     const gameStateData = {
       status: phaseKey,
@@ -339,7 +380,7 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
               </div>
             )}
             <div style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", overflow: "hidden", background: "#000", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
-              <iframe src="/rpg/index.html?role=host" style={{ width: "100%", aspectRatio: "16/9", border: "none", display: "block" }} title="RPG Spectator" />
+              <iframe ref={iframeRef} src="/rpg/index.html?role=host" onLoad={handleIframeLoad} style={{ width: "100%", aspectRatio: "16/9", border: "none", display: "block" }} title="RPG Spectator" />
             </div>
             <div style={{ color: "#8b8680", fontSize: "0.78rem", display: "flex", alignItems: "center", gap: "4px" }}>
               <IconBulb className="w-3.5 h-3.5 text-yellow-500" /> Kéo chuột hoặc phím mũi tên để quan sát bản đồ

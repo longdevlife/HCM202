@@ -18,6 +18,12 @@ test("createPhaseWorld creates deterministic bounded items and hazards", () => {
   assert.ok(Object.values(first.books).every(({ x, y }) => x >= 40 && x <= 920 && y >= 40 && y <= 500));
 });
 
+test("generated items preserve phase reward metadata", () => {
+  const world = createPhaseWorld("phase_2", config, 9);
+  assert.ok(Object.values(world.books).every((item) => item.type === "transparency"));
+  assert.ok(Object.values(world.traps).every((hazard) => hazard.kind === "hazard" && hazard.integrity === -10));
+});
+
 test("phase three world includes the public accountability gate", () => {
   const world = createPhaseWorld("phase_3", config, 7);
   assert.equal(Object.keys(world.gates).length, 1);
