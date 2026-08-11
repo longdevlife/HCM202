@@ -72,10 +72,16 @@ const sfx = {
     playTone(523.25, "square", 0.06, 0.15); // C5
     setTimeout(() => playTone(659.25, "square", 0.08, 0.18), 50); // E5
   },
+  stepComplete: () => {
+    playTone(659.25, "triangle", 0.08, 0.2); // E5
+    setTimeout(() => playTone(783.99, "triangle", 0.1, 0.22), 60); // G5
+    setTimeout(() => playTone(1046.5, "triangle", 0.14, 0.25), 120); // C6
+  },
   stamp: () => {
     playTone(140, "triangle", 0.14, 0.35); // Low thump
     setTimeout(() => playTone(880, "square", 0.08, 0.18), 40); // Click
     setTimeout(() => playTone(1046.5, "triangle", 0.16, 0.22), 90); // Chime C6
+    setTimeout(() => playTone(1318.5, "triangle", 0.2, 0.2), 160); // Fanfare E6
   },
   server: () => {
     playTone(440, "sine", 0.05, 0.1);
@@ -202,6 +208,116 @@ const BUILDINGS = [
   },
 ];
 
+const BUILDINGS_BY_ID = Object.fromEntries(BUILDINGS.map((b) => [b.id, b]));
+
+// ----------------------------------------------------
+// DYNAMIC MULTI-STEP DOSSIER QUEST DEFINITIONS
+// ----------------------------------------------------
+const DOSSIER_QUEST_CONFIGS = {
+  case_file: {
+    title: "Hồ Sơ Cấp Phép Hành Chính",
+    icon: "📄",
+    color: "#38bdf8",
+    steps: [
+      {
+        bldgId: "bldg_inspection",
+        instruction: "Mang hồ sơ qua Viện Thanh Tra để thẩm tra thực địa & chống tiêu cực",
+        actionText: "Thẩm tra hồ sơ",
+      },
+      {
+        bldgId: "bldg_stamp",
+        instruction: "Đưa tới Tòa Tháp Đóng Dấu để niêm phong & phê duyệt chính thức",
+        actionText: "Đóng dấu phê duyệt",
+      },
+    ],
+  },
+  integrity_item: {
+    title: "Hồ Sơ Kê Khai & Liêm Chính",
+    icon: "🛡️",
+    color: "#10b981",
+    steps: [
+      {
+        bldgId: "bldg_inspection",
+        instruction: "Thực hiện giải trình công tâm tại Viện Thanh Tra & Giám Sát",
+        actionText: "Kê khai & Giải trình",
+      },
+      {
+        bldgId: "bldg_server",
+        instruction: "Đồng bộ dữ liệu số hóa lên Cổng Thông Tin Dữ Liệu Quốc Gia",
+        actionText: "Số hóa & Xác thực",
+      },
+    ],
+  },
+  transparency: {
+    title: "Hồ Sơ Đấu Thầu & Minh Bạch Ngân Sách",
+    icon: "💻",
+    color: "#06b6d4",
+    steps: [
+      {
+        bldgId: "bldg_server",
+        instruction: "Niêm yết thông tin công khai tại Trung Tâm Dữ Liệu Số Hóa",
+        actionText: "Niêm yết mạng",
+      },
+      {
+        bldgId: "bldg_stamp",
+        instruction: "Ký duyệt chứng thư số tại Tòa Tháp Đóng Dấu Công Vụ",
+        actionText: "Ký chứng thư số",
+      },
+    ],
+  },
+  positive_feedback: {
+    title: "Phản Ánh Dân Sinh & Đánh Giá 5 Sao",
+    icon: "⭐",
+    color: "#f59e0b",
+    steps: [
+      {
+        bldgId: "bldg_feedback",
+        instruction: "Lắng nghe nguyện vọng của công dân tại Nhà Văn Hóa Tiếp Dân",
+        actionText: "Lắng nghe ý kiến",
+      },
+      {
+        bldgId: "bldg_reception",
+        instruction: "Chuyển trả kết quả xử lý tại Tòa Nhà Tiếp Nhận Một Cửa",
+        actionText: "Trả kết quả",
+      },
+    ],
+  },
+  accountability: {
+    title: "Hồ Sơ Trách Nhiệm Giải Trình",
+    icon: "⚖️",
+    color: "#f59e0b",
+    steps: [
+      {
+        bldgId: "bldg_inspection",
+        instruction: "Kiểm tra trách nhiệm giải trình tại Viện Thanh Tra",
+        actionText: "Kiểm tra độc lập",
+      },
+      {
+        bldgId: "bldg_portal",
+        instruction: "Báo cáo công khai tại Đại Sảnh Quảng Trường Công Khai",
+        actionText: "Công khai kết quả",
+      },
+    ],
+  },
+  serve_people: {
+    title: "Hồ Sơ Trợ Cấp An Sinh Xã Hội",
+    icon: "❤️",
+    color: "#ec4899",
+    steps: [
+      {
+        bldgId: "bldg_feedback",
+        instruction: "Khảo sát hoàn cảnh người yếu thế tại Nhà Văn Hóa Tiếp Dân",
+        actionText: "Khảo sát an sinh",
+      },
+      {
+        bldgId: "bldg_stamp",
+        instruction: "Phê duyệt chi trả trợ cấp tại Tòa Tháp Đóng Dấu",
+        actionText: "Phê duyệt trợ cấp",
+      },
+    ],
+  },
+};
+
 // Particles & Floating Text System
 const particles = [];
 const floatingTexts = [];
@@ -231,7 +347,7 @@ function spawnFloatingText(x, y, text, color = "#ffdf6e") {
     text,
     color,
     life: 0,
-    maxLife: 1.4,
+    maxLife: 1.5,
     vy: -35,
   });
 }
@@ -251,7 +367,7 @@ const state = {
     direction: "down",
     walking: false,
   },
-  carriedItem: null,
+  activeQuest: null, // Dynamic multi-step quest state for currently carried dossier
   collectedIds: new Set(),
   resolvedCollisionIds: new Set(),
   lastMovePostedAt: 0,
@@ -304,7 +420,7 @@ function updateNearbyBuilding() {
   let minDist = Infinity;
   for (const bldg of BUILDINGS) {
     const dist = Math.hypot(state.player.x - bldg.stationX, state.player.y - bldg.stationY);
-    if (dist <= bldg.radius + 20 && dist < minDist) {
+    if (dist <= bldg.radius + 25 && dist < minDist) {
       minDist = dist;
       closest = bldg;
     }
@@ -313,30 +429,67 @@ function updateNearbyBuilding() {
 }
 
 // ----------------------------------------------------
-// INTERACTIVE ACTION EXECUTION
+// DYNAMIC MULTI-STEP QUEST WORKFLOW EXECUTION
 // ----------------------------------------------------
 function executePlayerAction() {
   if (options.role !== "player" || state.frozen) return;
   getAudioContext();
 
-  // 1. If holding a carried case file -> stamp & submit at Stamp Tower or Tech Server!
-  if (state.carriedItem) {
-    const item = state.carriedItem;
-    sfx.stamp();
-    spawnParticles(state.player.x, state.player.y, "#f59e0b", 20, 110, "star");
-    spawnFloatingText(
-      state.player.x,
-      state.player.y,
-      `✓ ĐÃ ĐÓNG DẤU & NỘP THÀNH CÔNG: ${item.label || "Hồ sơ"}! (+30 Điểm)`,
-      "#4ade80"
-    );
+  // A. IF CURRENTLY ENGAGED IN A MULTI-STEP DOSSIER QUEST:
+  if (state.activeQuest) {
+    const quest = state.activeQuest;
+    const currentStep = quest.steps[quest.currentStepIndex];
+    const targetBldg = BUILDINGS_BY_ID[currentStep.bldgId];
 
-    postToParent({ type: "NHAT_SACH", bookId: item.id });
-    state.carriedItem = null;
-    return;
+    // Check if player is standing in the correct target building
+    const isAtTarget = state.nearbyBuilding && state.nearbyBuilding.id === currentStep.bldgId;
+
+    if (isAtTarget) {
+      const isFinalStep = quest.currentStepIndex >= quest.totalSteps - 1;
+
+      if (!isFinalStep) {
+        // Intermediate Step Completed!
+        quest.currentStepIndex += 1;
+        const nextStep = quest.steps[quest.currentStepIndex];
+        const nextBldg = BUILDINGS_BY_ID[nextStep.bldgId];
+
+        sfx.stepComplete();
+        spawnParticles(state.player.x, state.player.y, quest.color || "#38bdf8", 16, 90, "star");
+        spawnFloatingText(
+          state.player.x,
+          state.player.y,
+          `✓ Xong bước ${quest.currentStepIndex}/${quest.totalSteps}! Tiếp tục đến ${nextBldg.name}!`,
+          "#38bdf8"
+        );
+      } else {
+        // Final Step Completed! Dossier is officially filed & approved!
+        sfx.stamp();
+        spawnParticles(state.player.x, state.player.y, "#f59e0b", 24, 120, "star");
+        spawnFloatingText(
+          state.player.x,
+          state.player.y,
+          `★ HOÀN THÀNH TOÀN DIỆN: ${quest.title}! (+30 Điểm Công Vụ)`,
+          "#4ade80"
+        );
+
+        // Emit canonical completion event to Firebase
+        postToParent({ type: "NHAT_SACH", bookId: quest.entityId });
+        state.activeQuest = null;
+      }
+      return;
+    } else {
+      // Not at the target building -> give helpful navigation reminder
+      spawnFloatingText(
+        state.player.x,
+        state.player.y,
+        `Cần đến: ${targetBldg.name}! (Theo dõi mũi tên vàng)`,
+        "#fbbf24"
+      );
+      return;
+    }
   }
 
-  // 2. If standing near a Building Workstation:
+  // B. IF NEAR A BUILDING (Free Interactive Actions):
   if (state.nearbyBuilding) {
     const bldg = state.nearbyBuilding;
 
@@ -359,7 +512,7 @@ function executePlayerAction() {
     }
   }
 
-  // 3. Scan nearby collectible items or NPCs to pick up
+  // C. SCAN NEARBY COLLECTIBLES ON THE STREET TO INITIATE QUEST:
   for (const [kind, entities] of Object.entries(state.snapshot)) {
     if (kind === "players" || !entities || typeof entities !== "object") continue;
     for (const [id, entity] of Object.entries(entities)) {
@@ -391,33 +544,38 @@ function handleEntityInteraction(entity, now) {
   const event = collisionMessage(entity);
   if (!event) return;
 
-  // A. ITEM (Hồ sơ, Liêm chính, Minh bạch): Nhặt hồ sơ để mang đến tòa nhà đóng dấu
+  // A. ITEM (Hồ sơ): Nhặt hồ sơ và khởi tạo chuỗi nhiệm vụ tương tác qua các tòa nhà!
   if (entity.kind === "item") {
     state.collectedIds.add(entity.id);
     state.resolvedCollisionIds.add(entity.id);
     sfx.pickup();
     spawnParticles(entity.x, entity.y, entity.color || "#ffdf6e", 12, 70, "star");
 
-    state.carriedItem = {
-      id: entity.id,
-      type: entity.type || "case_file",
-      label: entity.label || entity.name || "Hồ sơ",
-      color: entity.color || "#38bdf8",
-      message: entity.message,
+    const questConfig = DOSSIER_QUEST_CONFIGS[entity.type] || DOSSIER_QUEST_CONFIGS.case_file;
+    state.activeQuest = {
+      entityId: entity.id,
+      typeKey: entity.type || "case_file",
+      title: questConfig.title,
+      icon: questConfig.icon,
+      color: questConfig.color,
+      currentStepIndex: 0,
+      totalSteps: questConfig.steps.length,
+      steps: questConfig.steps,
     };
+
+    const firstStep = state.activeQuest.steps[0];
+    const targetBldg = BUILDINGS_BY_ID[firstStep.bldgId];
 
     spawnFloatingText(
       state.player.x,
       state.player.y,
-      `ĐÃ NHẬN: ${state.carriedItem.label}! Đến Tòa Đóng Dấu [E]`,
+      `NHẬN NHIỆM VỤ: ${questConfig.title}! Đến ${targetBldg.name}`,
       "#38bdf8"
     );
-
-    postToParent(event);
     return;
   }
 
-  // B. HAZARD / BẪY: Va chạm -> phát nổ và BIẾN MẤT VĨNH VIỄN để tránh spam!
+  // B. HAZARD / BẪY: Va chạm -> nổ tung và BIẾN MẤT VĨNH VIỄN để tránh spam!
   if (entity.kind === "hazard") {
     state.resolvedCollisionIds.add(entity.id);
     state.collectedIds.add(entity.id);
@@ -473,25 +631,22 @@ function checkCollisions(now) {
 // ----------------------------------------------------
 
 function drawCityGround() {
-  // 1. Asphalt Ground Base
+  // Asphalt Ground Base
   context.fillStyle = "#1e293b";
   context.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
 
-  // 2. City Road System (Multi-Lane Boulevards & Cross Streets)
+  // Roads System
   const roadColor = "#0f172a";
   const laneColor = "#facc15";
-  const zebraColor = "#f8fafc";
 
-  // Main Horizontal Center Avenue (Highway)
+  // Main Horizontal Center Avenue
   context.fillStyle = roadColor;
   context.fillRect(0, 600, MAP_WIDTH, 180);
-  // Dashed Yellow Center Lines
   context.strokeStyle = laneColor;
   context.lineWidth = 4;
   context.setLineDash([28, 20]);
   context.beginPath();
-  context.moveTo(0, 690);
-  context.lineTo(MAP_WIDTH, 690);
+  context.moveTo(0, 690); context.lineTo(MAP_WIDTH, 690);
   context.stroke();
   context.setLineDash([]);
 
@@ -500,7 +655,6 @@ function drawCityGround() {
   context.fillRect(720, 0, 160, MAP_HEIGHT);
   context.fillRect(1520, 0, 160, MAP_HEIGHT);
 
-  // Vertical Dashed Center Lines
   context.strokeStyle = laneColor;
   context.lineWidth = 4;
   context.setLineDash([28, 20]);
@@ -510,13 +664,13 @@ function drawCityGround() {
   context.stroke();
   context.setLineDash([]);
 
-  // Pedestrian Crosswalks (Zebra Stripes)
+  // Crosswalks
   drawCrosswalk(680, 600, 40, 180, true);
   drawCrosswalk(880, 600, 40, 180, true);
   drawCrosswalk(1480, 600, 40, 180, true);
   drawCrosswalk(1680, 600, 40, 180, true);
 
-  // 3. Cobblestone Sidewalks & Plazas
+  // Sidewalks & Plazas
   drawSidewalk(80, 80, 580, 500);
   drawSidewalk(910, 80, 580, 500);
   drawSidewalk(1710, 80, 580, 500);
@@ -525,20 +679,16 @@ function drawCityGround() {
   drawSidewalk(910, 800, 580, 520);
   drawSidewalk(1710, 800, 580, 520);
 
-  // 4. Central Peace Plaza & Grand Water Fountain
+  // Central Fountain
   drawCentralPlazaFountain(1200, 690, state.gameTime);
 }
 
 function drawCrosswalk(x, y, w, h, isVertical) {
   context.fillStyle = "#ffffff";
   if (isVertical) {
-    for (let i = y + 10; i < y + h - 10; i += 22) {
-      context.fillRect(x, i, w, 12);
-    }
+    for (let i = y + 10; i < y + h - 10; i += 22) context.fillRect(x, i, w, 12);
   } else {
-    for (let i = x + 10; i < x + w - 10; i += 22) {
-      context.fillRect(i, y, 12, h);
-    }
+    for (let i = x + 10; i < x + w - 10; i += 22) context.fillRect(i, y, 12, h);
   }
 }
 
@@ -549,30 +699,24 @@ function drawSidewalk(x, y, w, h) {
   context.lineWidth = 3;
   context.strokeRect(x, y, w, h);
 
-  // Cobblestone Grid texture
   context.fillStyle = "rgba(255, 255, 255, 0.025)";
   for (let py = y + 8; py < y + h - 8; py += 32) {
-    for (let px = x + 8; px < x + w - 8; px += 32) {
-      context.fillRect(px, py, 28, 28);
-    }
+    for (let px = x + 8; px < x + w - 8; px += 32) context.fillRect(px, py, 28, 28);
   }
 }
 
 function drawCentralPlazaFountain(cx, cy, time) {
-  // Circular Plaza Base
   context.fillStyle = "#1e293b";
   context.beginPath(); context.arc(cx, cy, 70, 0, Math.PI * 2); context.fill();
   context.strokeStyle = "#facc15";
   context.lineWidth = 3;
   context.stroke();
 
-  // Water Pool
   context.fillStyle = "#0284c7";
   context.beginPath(); context.arc(cx, cy, 54, 0, Math.PI * 2); context.fill();
   context.fillStyle = "#38bdf8";
   context.beginPath(); context.arc(cx, cy, 48, 0, Math.PI * 2); context.fill();
 
-  // Water Jet Particles
   for (let i = 0; i < 8; i++) {
     const angle = (i * Math.PI) / 4 + time * 2;
     const dist = 18 + Math.sin(time * 4 + i) * 16;
@@ -582,7 +726,6 @@ function drawCentralPlazaFountain(cx, cy, time) {
     context.fill();
   }
 
-  // Fountain Monument Spire
   context.fillStyle = "#e2e8f0";
   context.beginPath(); context.arc(cx, cy, 14, 0, Math.PI * 2); context.fill();
   context.fillStyle = "#facc15";
@@ -591,11 +734,37 @@ function drawCentralPlazaFountain(cx, cy, time) {
   context.fillText("★", cx, cy + 5);
 }
 
-// Draw Grand Pixel Buildings with Facades, Roofs, Doors, Windows, and Neon Signs
+// Draw Grand Pixel Buildings with Dynamic Waypoint Beacon Beam for Active Quest Targets
 function drawCityBuildings(time) {
+  const activeTargetBldgId = state.activeQuest
+    ? state.activeQuest.steps[state.activeQuest.currentStepIndex]?.bldgId
+    : null;
+
   for (const bldg of BUILDINGS) {
     const bx = bldg.x - bldg.w / 2;
     const by = bldg.y - bldg.h / 2;
+    const isTarget = activeTargetBldgId === bldg.id;
+
+    // 0. Active Target Waypoint Beacon Light Column (Shooting into the sky!)
+    if (isTarget) {
+      const gradBeam = context.createLinearGradient(0, by - 120, 0, by + bldg.h);
+      gradBeam.addColorStop(0, "rgba(250, 204, 21, 0.45)");
+      gradBeam.addColorStop(0.6, "rgba(56, 189, 248, 0.2)");
+      gradBeam.addColorStop(1, "rgba(56, 189, 248, 0)");
+      context.fillStyle = gradBeam;
+      context.fillRect(bldg.stationX - 35, by - 120, 70, bldg.h + 120);
+
+      // Floating Waypoint Pin Icon
+      const pinY = by - 30 + Math.sin(time * 6) * 6;
+      context.fillStyle = "#facc15";
+      context.font = "bold 20px sans-serif";
+      context.textAlign = "center";
+      context.fillText("📍", bldg.stationX, pinY);
+
+      context.fillStyle = "#fef08a";
+      context.font = "bold 10px 'Silkscreen', 'VT323', monospace, sans-serif";
+      context.fillText("MỤC TIÊU TIẾP THEO", bldg.stationX, pinY - 14);
+    }
 
     // 1. Building Drop Shadow
     context.fillStyle = "rgba(0, 0, 0, 0.5)";
@@ -604,17 +773,17 @@ function drawCityBuildings(time) {
     // 2. Main Wall Facade
     context.fillStyle = "#0f172a";
     context.fillRect(bx, by, bldg.w, bldg.h);
-    context.strokeStyle = bldg.themeColor;
-    context.lineWidth = 3;
+    context.strokeStyle = isTarget ? "#facc15" : bldg.themeColor;
+    context.lineWidth = isTarget ? 4 : 3;
     context.strokeRect(bx, by, bldg.w, bldg.h);
 
-    // 3. Roof Cornice & Architectural Molding
+    // 3. Roof Cornice
     context.fillStyle = bldg.themeColor;
     context.fillRect(bx - 6, by - 12, bldg.w + 12, 24);
-    context.fillStyle = bldg.accentColor;
+    context.fillStyle = isTarget ? "#facc15" : bldg.accentColor;
     context.fillRect(bx - 2, by + 10, bldg.w + 4, 4);
 
-    // 4. Rows of Glowing Windows
+    // 4. Windows
     const cols = 8;
     const rows = 4;
     const winW = 34;
@@ -626,7 +795,7 @@ function drawCityBuildings(time) {
       for (let c = 0; c < cols; c++) {
         const wx = startX + c * 54;
         const wy = startY + r * 38;
-        const isLit = (Math.sin(time * 2 + r * 3 + c * 5) > -0.2);
+        const isLit = Math.sin(time * 2 + r * 3 + c * 5) > -0.2;
 
         context.fillStyle = isLit ? "rgba(254, 240, 138, 0.85)" : "#1e293b";
         context.fillRect(wx, wy, winW, winH);
@@ -634,7 +803,6 @@ function drawCityBuildings(time) {
         context.lineWidth = 1.5;
         context.strokeRect(wx, wy, winW, winH);
 
-        // Window pane dividers
         context.strokeStyle = "#0f172a";
         context.lineWidth = 1;
         context.beginPath();
@@ -644,7 +812,7 @@ function drawCityBuildings(time) {
       }
     }
 
-    // 5. Grand Entrance Portal & Interactive Station Pad
+    // 5. Entrance & Station Pad
     const entranceW = 120;
     const entranceH = 50;
     const ex = bldg.stationX - entranceW / 2;
@@ -652,28 +820,27 @@ function drawCityBuildings(time) {
 
     context.fillStyle = "#1e293b";
     context.fillRect(ex, ey, entranceW, entranceH);
-    context.strokeStyle = bldg.accentColor;
+    context.strokeStyle = isTarget ? "#facc15" : bldg.accentColor;
     context.lineWidth = 2;
     context.strokeRect(ex, ey, entranceW, entranceH);
 
-    // Glass Entrance Doors
     context.fillStyle = "rgba(56, 189, 248, 0.4)";
     context.fillRect(ex + 15, ey + 8, entranceW - 30, entranceH - 8);
 
-    // Interactive Station Pad (Glowing circular area)
-    const pulse = Math.sin(time * 4) * 4;
-    context.strokeStyle = bldg.accentColor;
-    context.lineWidth = 2;
+    // Glowing Station Pad Ring
+    const pulse = Math.sin(time * (isTarget ? 7 : 4)) * (isTarget ? 6 : 4);
+    context.strokeStyle = isTarget ? "#facc15" : bldg.accentColor;
+    context.lineWidth = isTarget ? 3 : 2;
     context.beginPath();
     context.arc(bldg.stationX, bldg.stationY, bldg.radius + pulse, 0, Math.PI * 2);
     context.stroke();
 
-    context.fillStyle = `${bldg.themeColor}33`;
+    context.fillStyle = isTarget ? "rgba(250, 204, 21, 0.25)" : `${bldg.themeColor}33`;
     context.beginPath();
     context.arc(bldg.stationX, bldg.stationY, bldg.radius - 8, 0, Math.PI * 2);
     context.fill();
 
-    // 6. Grand Neon Header Signboard
+    // 6. Signboard
     const signW = bldg.w - 60;
     const signH = 34;
     const sx = bldg.x - signW / 2;
@@ -681,20 +848,20 @@ function drawCityBuildings(time) {
 
     context.fillStyle = "rgba(15, 23, 42, 0.95)";
     context.fillRect(sx, sy, signW, signH);
-    context.strokeStyle = "#facc15";
+    context.strokeStyle = isTarget ? "#facc15" : bldg.accentColor;
     context.lineWidth = 2;
     context.strokeRect(sx, sy, signW, signH);
 
-    context.fillStyle = "#facc15";
+    context.fillStyle = isTarget ? "#facc15" : "#ffffff";
     context.font = "bold 13px 'Silkscreen', 'VT323', monospace, sans-serif";
     context.textAlign = "center";
     context.fillText(bldg.name, bldg.x, sy + 16);
 
-    context.fillStyle = "#ffffff";
+    context.fillStyle = isTarget ? "#fef08a" : "#94a3b8";
     context.font = "11px 'VT323', monospace, sans-serif";
     context.fillText(bldg.sub, bldg.x, sy + 28);
 
-    // 7. Streetlamps & Decorative Trees outside building
+    // Decor
     drawStreetLamp(bx + 15, by + bldg.h + 20, time);
     drawStreetLamp(bx + bldg.w - 15, by + bldg.h + 20, time);
     drawCityTree(bx - 25, by + bldg.h / 2);
@@ -703,14 +870,11 @@ function drawCityBuildings(time) {
 }
 
 function drawStreetLamp(x, y, time) {
-  // Lamp Post
   context.fillStyle = "#475569";
   context.fillRect(x - 2, y - 36, 4, 36);
-  // Lamp Head
   context.fillStyle = "#facc15";
   context.beginPath(); context.arc(x, y - 38, 7, 0, Math.PI * 2); context.fill();
 
-  // Warm Light Glow Cone
   const grad = context.createRadialGradient(x, y - 38, 4, x, y, 40);
   grad.addColorStop(0, "rgba(250, 204, 21, 0.2)");
   grad.addColorStop(1, "rgba(250, 204, 21, 0)");
@@ -719,10 +883,8 @@ function drawStreetLamp(x, y, time) {
 }
 
 function drawCityTree(x, y) {
-  // Trunk
   context.fillStyle = "#78350f";
   context.fillRect(x - 5, y - 10, 10, 24);
-  // Foliage
   context.fillStyle = "#15803d";
   context.beginPath(); context.arc(x, y - 24, 22, 0, Math.PI * 2); context.fill();
   context.fillStyle = "#22c55e";
@@ -732,7 +894,7 @@ function drawCityTree(x, y) {
 }
 
 // ----------------------------------------------------
-// PIXEL SPRITE RENDERERS
+// PIXEL SPRITE RENDERERS & WAYPOINT NAVIGATION ARROW
 // ----------------------------------------------------
 
 function drawPixelCharacter(ctx, x, y, options = {}) {
@@ -746,18 +908,18 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
   const footOffset = isMoving ? Math.sin(time * 14) * 4 : 0;
   const bobY = y + Math.abs(walkCycle) * 2;
 
-  // Drop Shadow
+  // Shadow
   ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
   ctx.beginPath();
   ctx.ellipse(x, y + 14, 13, 6, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Feet / Shoes
+  // Shoes
   ctx.fillStyle = "#0f172a";
   ctx.fillRect(x - 7, bobY + 10 + footOffset, 5, 4);
   ctx.fillRect(x + 2, bobY + 10 - footOffset, 5, 4);
 
-  // Trousers
+  // Pants
   ctx.fillStyle = "#1e293b";
   ctx.fillRect(x - 7, bobY + 4, 14, 7);
 
@@ -789,9 +951,9 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
   ctx.fillRect(x + 2, bobY - 12, 2, 3);
 
   // Carried Dossier Icon floating above player head
-  if (isLocal && state.carriedItem) {
+  if (isLocal && state.activeQuest) {
     const carryY = bobY - 44 + Math.sin(time * 6) * 3;
-    ctx.fillStyle = "#0284c7";
+    ctx.fillStyle = state.activeQuest.color || "#0284c7";
     ctx.fillRect(x - 10, carryY - 8, 20, 15);
     ctx.fillStyle = "#fef08a";
     ctx.fillRect(x - 7, carryY - 10, 14, 4);
@@ -802,9 +964,36 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
     ctx.strokeRect(x - 10, carryY - 8, 20, 15);
   }
 
+  // Waypoint Directional Navigation Compass Arrow (Pointing towards Target Building)
+  if (isLocal && state.activeQuest) {
+    const currentStep = state.activeQuest.steps[state.activeQuest.currentStepIndex];
+    const targetBldg = BUILDINGS_BY_ID[currentStep.bldgId];
+    if (targetBldg) {
+      const angle = Math.atan2(targetBldg.stationY - y, targetBldg.stationX - x);
+      const orbitR = 36;
+      const arrowTipX = x + Math.cos(angle) * orbitR;
+      const arrowTipY = y + Math.sin(angle) * orbitR;
+
+      ctx.save();
+      ctx.translate(arrowTipX, arrowTipY);
+      ctx.rotate(angle);
+      ctx.fillStyle = "#facc15";
+      ctx.beginPath();
+      ctx.moveTo(8, 0);
+      ctx.lineTo(-6, -6);
+      ctx.lineTo(-6, 6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
   // Local Player Arrow
   if (isLocal) {
-    const arrowY = bobY - (state.carriedItem ? 56 : 30) + Math.sin(time * 6) * 3;
+    const arrowY = bobY - (state.activeQuest ? 56 : 30) + Math.sin(time * 6) * 3;
     ctx.fillStyle = "#facc15";
     ctx.beginPath();
     ctx.moveTo(x, arrowY + 6);
@@ -817,15 +1006,15 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
   // Name Tag
   ctx.fillStyle = isLocal ? "rgba(15, 23, 42, 0.95)" : "rgba(30, 41, 59, 0.85)";
   const tagW = Math.max(54, name.length * 7 + 10);
-  ctx.fillRect(x - tagW / 2, bobY - (state.carriedItem ? 34 : 30), tagW, 14);
+  ctx.fillRect(x - tagW / 2, bobY - (state.activeQuest ? 34 : 30), tagW, 14);
   ctx.strokeStyle = isLocal ? "#38bdf8" : "#64748b";
   ctx.lineWidth = 1;
-  ctx.strokeRect(x - tagW / 2, bobY - (state.carriedItem ? 34 : 30), tagW, 14);
+  ctx.strokeRect(x - tagW / 2, bobY - (state.activeQuest ? 34 : 30), tagW, 14);
 
   ctx.fillStyle = isLocal ? "#38bdf8" : "#f1f5f9";
   ctx.font = "bold 9px 'Silkscreen', 'VT323', monospace, sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText(name, x, bobY - (state.carriedItem ? 23 : 20));
+  ctx.fillText(name, x, bobY - (state.activeQuest ? 23 : 20));
 }
 
 // Draw Item Entity
@@ -930,7 +1119,6 @@ function drawNpcEntity(ctx, entity, time) {
   ctx.fillStyle = "#94a3b8";
   ctx.fillRect(x - 7, y - 18, 14, 5);
 
-  // Animated Thought Bubble
   const bubbleY = y - 28 + Math.sin(time * 4) * 2;
   ctx.fillStyle = "#ffffff";
   ctx.beginPath(); ctx.arc(x, bubbleY, 10, 0, Math.PI * 2); ctx.fill();
@@ -957,21 +1145,25 @@ function drawMiniMapRadar() {
   const mmX = VIEW_WIDTH - mmW - 14;
   const mmY = 14;
 
-  // Radar Box
   context.fillStyle = "rgba(15, 23, 42, 0.9)";
   context.fillRect(mmX, mmY, mmW, mmH);
   context.strokeStyle = "#38bdf8";
   context.lineWidth = 2;
   context.strokeRect(mmX, mmY, mmW, mmH);
 
-  // Mini Roads
   const mapToMmX = (wx) => mmX + (wx / MAP_WIDTH) * mmW;
   const mapToMmY = (wy) => mmY + (wy / MAP_HEIGHT) * mmH;
 
+  // Mini Roads
   context.fillStyle = "rgba(51, 65, 85, 0.6)";
   context.fillRect(mmX, mapToMmY(600), mmW, (180 / MAP_HEIGHT) * mmH);
   context.fillRect(mapToMmX(720), mmY, (160 / MAP_WIDTH) * mmW, mmH);
   context.fillRect(mapToMmX(1520), mmY, (160 / MAP_WIDTH) * mmW, mmH);
+
+  // Active Target Building in Radar
+  const activeTargetBldgId = state.activeQuest
+    ? state.activeQuest.steps[state.activeQuest.currentStepIndex]?.bldgId
+    : null;
 
   // Mini Buildings
   for (const bldg of BUILDINGS) {
@@ -979,15 +1171,16 @@ function drawMiniMapRadar() {
     const my = mapToMmY(bldg.y - bldg.h / 2);
     const mw = (bldg.w / MAP_WIDTH) * mmW;
     const mh = (bldg.h / MAP_HEIGHT) * mmH;
+    const isTarget = activeTargetBldgId === bldg.id;
 
-    context.fillStyle = bldg.themeColor;
+    context.fillStyle = isTarget ? "#facc15" : bldg.themeColor;
     context.fillRect(mx, my, mw, mh);
-    context.strokeStyle = bldg.accentColor;
-    context.lineWidth = 1;
+    context.strokeStyle = isTarget ? "#ffffff" : bldg.accentColor;
+    context.lineWidth = isTarget ? 2 : 1;
     context.strokeRect(mx, my, mw, mh);
   }
 
-  // Active Collectible Items & Traps
+  // Active Collectibles & Traps
   for (const [kind, entities] of Object.entries(state.snapshot)) {
     if (kind === "players" || !entities || typeof entities !== "object") continue;
     for (const [id, entity] of Object.entries(entities)) {
@@ -1004,7 +1197,7 @@ function drawMiniMapRadar() {
     }
   }
 
-  // Camera Viewport Frustum Box
+  // Frustum Box
   const camBoxX = mapToMmX(camera.x);
   const camBoxY = mapToMmY(camera.y);
   const camBoxW = (VIEW_WIDTH / MAP_WIDTH) * mmW;
@@ -1020,11 +1213,10 @@ function drawMiniMapRadar() {
   context.fillStyle = "#22c55e";
   context.beginPath(); context.arc(lpx, lpy, 3.5, 0, Math.PI * 2); context.fill();
 
-  // Radar Title Tag
   context.fillStyle = "#38bdf8";
   context.font = "bold 7px monospace";
   context.textAlign = "left";
-  context.fillText("RADAR BẢN ĐỒ THÀNH PHỐ", mmX + 5, mmY + 9);
+  context.fillText("RADAR THÀNH PHỐ", mmX + 5, mmY + 9);
 }
 
 // ----------------------------------------------------
@@ -1041,7 +1233,6 @@ function drawScene() {
 
   context.save();
 
-  // Screen shake
   if (state.screenShakeTimer > 0) {
     const shakeX = (Math.random() - 0.5) * state.screenShakeIntensity * 2;
     const shakeY = (Math.random() - 0.5) * state.screenShakeIntensity * 2;
@@ -1051,10 +1242,10 @@ function drawScene() {
   // 1. CAMERA TRANSLATION INTO WORLD SPACE
   context.translate(-camera.x, -camera.y);
 
-  // 2. Draw Pixel City Ground & Roads
+  // 2. Draw Ground & Roads
   drawCityGround();
 
-  // 3. Draw 6 Grand Pixel Buildings
+  // 3. Draw 6 Grand Buildings
   drawCityBuildings(time);
 
   // 4. Interactive World Entities
@@ -1105,7 +1296,7 @@ function drawScene() {
     });
   }
 
-  // 7. Particles Update & Render (in world space)
+  // 7. Particles
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
     p.life += 0.016;
@@ -1127,7 +1318,7 @@ function drawScene() {
     context.globalAlpha = 1.0;
   }
 
-  // 8. Floating Combat Text (in world space)
+  // 8. Floating Combat Text
   for (let i = floatingTexts.length - 1; i >= 0; i--) {
     const ft = floatingTexts[i];
     ft.life += 0.016;
@@ -1152,33 +1343,73 @@ function drawScene() {
   context.restore(); // RESTORE TO SCREEN SPACE
 
   // ----------------------------------------------------
-  // SCREEN SPACE OVERLAYS (HUD, RADAR, ACTION PROMPTS)
+  // SCREEN SPACE OVERLAYS (QUEST TRACKER, RADAR, ACTION PROMPTS)
   // ----------------------------------------------------
 
   // 9. Mini-Map Radar HUD
   drawMiniMapRadar();
 
-  // 10. Interactive Action HUD & Prompt
-  if (options.role === "player" && (state.nearbyBuilding || state.carriedItem)) {
-    const bldg = state.nearbyBuilding;
-    const promptText = state.carriedItem
-      ? `⚡ BẤM [E / SPACE / XỬ LÝ] ĐỂ ĐÓNG DẤU & NỘP: ${state.carriedItem.label.toUpperCase()}`
-      : `⚡ BẤM [E / SPACE] ${bldg ? bldg.actionLabel.toUpperCase() : "TƯƠNG TÁC"}`;
+  // 10. Dynamic Quest Tracker Banner (Top-Left HUD)
+  if (options.role === "player" && state.activeQuest) {
+    const quest = state.activeQuest;
+    const currentStep = quest.steps[quest.currentStepIndex];
+    const targetBldg = BUILDINGS_BY_ID[currentStep.bldgId];
 
-    const promptY = VIEW_HEIGHT - 24;
+    const bannerW = 460;
+    const bannerH = 46;
+    const bx = 16;
+    const by = 14;
+
     context.fillStyle = "rgba(15, 23, 42, 0.95)";
-    context.fillRect(VIEW_WIDTH / 2 - 240, promptY - 14, 480, 26);
-    context.strokeStyle = "#facc15";
+    context.fillRect(bx, by, bannerW, bannerH);
+    context.strokeStyle = quest.color || "#38bdf8";
     context.lineWidth = 2;
-    context.strokeRect(VIEW_WIDTH / 2 - 240, promptY - 14, 480, 26);
+    context.strokeRect(bx, by, bannerW, bannerH);
 
-    context.fillStyle = "#fef08a";
-    context.font = "bold 11px 'Silkscreen', 'VT323', monospace, sans-serif";
-    context.textAlign = "center";
-    context.fillText(promptText, VIEW_WIDTH / 2, promptY + 3);
+    // Quest Title & Progress Step
+    context.fillStyle = "#facc15";
+    context.font = "bold 10px 'Silkscreen', 'VT323', monospace, sans-serif";
+    context.textAlign = "left";
+    context.fillText(`📋 ${quest.title} (BƯỚC ${quest.currentStepIndex + 1}/${quest.totalSteps})`, bx + 10, by + 16);
+
+    // Step Instruction
+    context.fillStyle = "#ffffff";
+    context.font = "11px 'VT323', monospace, sans-serif";
+    context.fillText(`➔ ${currentStep.instruction}`, bx + 10, by + 34);
   }
 
-  // 11. Frozen Overlay
+  // 11. Interactive Action HUD & Prompt (Bottom Bar)
+  if (options.role === "player") {
+    let promptText = null;
+
+    if (state.activeQuest) {
+      const currentStep = state.activeQuest.steps[state.activeQuest.currentStepIndex];
+      const isAtTarget = state.nearbyBuilding && state.nearbyBuilding.id === currentStep.bldgId;
+      const targetBldg = BUILDINGS_BY_ID[currentStep.bldgId];
+
+      promptText = isAtTarget
+        ? `⚡ BẤM [E / SPACE / XỬ LÝ] ĐỂ: ${currentStep.actionText.toUpperCase()} TẠI ${targetBldg.name}`
+        : `➔ ĐANG MANG HỒ SƠ ĐẾN: ${targetBldg.name} (BƯỚC ${state.activeQuest.currentStepIndex + 1}/${state.activeQuest.totalSteps})`;
+    } else if (state.nearbyBuilding) {
+      promptText = `⚡ BẤM [E / SPACE] ${state.nearbyBuilding.actionLabel.toUpperCase()}`;
+    }
+
+    if (promptText) {
+      const promptY = VIEW_HEIGHT - 24;
+      context.fillStyle = "rgba(15, 23, 42, 0.95)";
+      context.fillRect(VIEW_WIDTH / 2 - 250, promptY - 14, 500, 26);
+      context.strokeStyle = "#facc15";
+      context.lineWidth = 2;
+      context.strokeRect(VIEW_WIDTH / 2 - 250, promptY - 14, 500, 26);
+
+      context.fillStyle = "#fef08a";
+      context.font = "bold 11px 'Silkscreen', 'VT323', monospace, sans-serif";
+      context.textAlign = "center";
+      context.fillText(promptText, VIEW_WIDTH / 2, promptY + 3);
+    }
+  }
+
+  // 12. Frozen Overlay
   if (state.frozen) {
     context.fillStyle = "rgba(14, 165, 233, 0.25)";
     context.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
@@ -1188,7 +1419,7 @@ function drawScene() {
     context.fillText("❄ ĐANG TẠM DỪNG / ĐÓNG BĂNG ❄", VIEW_WIDTH / 2, VIEW_HEIGHT / 2);
   }
 
-  // 12. Scanlines
+  // 13. Scanlines
   if (state.scanlines) {
     context.fillStyle = "rgba(0, 0, 0, 0.08)";
     for (let y = 0; y < VIEW_HEIGHT; y += 4) {
