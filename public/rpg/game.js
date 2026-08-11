@@ -18,6 +18,7 @@ const state = {
   snapshot: normalizeSnapshot(),
   player: { id: options.playerId, name: options.playerName, color: options.color, x: bounds.width / 2, y: bounds.height / 2, radius: 12 },
   collectedIds: new Set(),
+  resolvedCollisionIds: new Set(),
   hazardCooldownUntil: 0,
   lastMovePostedAt: 0,
   lastFrameAt: performance.now(),
@@ -53,6 +54,10 @@ function handleCollision(entity, now) {
   if (entity.kind === "item") {
     if (state.collectedIds.has(entity.id)) return;
     state.collectedIds.add(entity.id);
+  }
+  if (entity.kind === "npc" || entity.kind === "gate") {
+    if (state.resolvedCollisionIds.has(entity.id)) return;
+    state.resolvedCollisionIds.add(entity.id);
   }
   if (entity.kind === "hazard") {
     if (now < state.hazardCooldownUntil) return;
@@ -184,6 +189,7 @@ window.addEventListener("keyup", (event) => {
   setDirection(direction, false);
 });
 window.addEventListener("message", (event) => {
+  if (event.source !== window.parent) return;
   const message = event.data;
   if (!message || typeof message !== "object") return;
   if (message.type === "GAME_SNAPSHOT") {
