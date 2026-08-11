@@ -202,6 +202,7 @@ export function isRpgMessage(value) {
       return ["up", "down", "left", "right", "stop"].includes(value.dir);
     case "FREEZE":
     case "UNFREEZE":
+    case "ACTION_INTERACT":
       return true;
     case "NHAT_SACH":
       return typeof value.bookId === "string" && value.bookId.length > 0;

@@ -236,6 +236,12 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
         const hazardSnapshot = await get(ref(db, `traps/${hazardId}`));
         const hazard = resolveCanonicalHazard(e.data.hazard, hazardSnapshot.val());
         if (!hazard) return;
+
+        // Đánh dấu bẫy/rủi ro đã xử lý để biến mất khỏi bản đồ, tránh bị spam
+        if (hazardId) {
+          await recordEntityResolution("traps", hazardId, "claimedBy", Date.now());
+        }
+
         const shouldFreeze = hazard.effect === "freeze" || !hazard.effect;
         const freezeSeconds = Math.ceil((hazard.durationMs || 3000) / 1000);
 
@@ -280,23 +286,24 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
     };
 
     window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [playerId, phaseConfig, gameState.status, postRpgSnapshot]);
-
-  // 2. Bộ đếm ngược đóng băng
-  useEffect(() => {
-    if (!isFrozen) return undefined;
-    const timer = setInterval(() => {
-      setFreezeTime((prev) => Math.max(0, prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [isFrozen]);
-
-  useEffect(() => {
     return () => {
+      window.removeEventListener("message", handleMessage);
       if (freezeTimeoutRef.current) clearTimeout(freezeTimeoutRef.current);
-      iframeRef.current?.contentWindow?.postMessage({ type: "UNFREEZE" }, "*");
     };
+  }, [
+    gameState.status,
+    playerId,
+    postRpgSnapshot,
+    selectedCharacter.id,
+    selectedCharacter.color,
+  ]);
+
+  // 2. Unfreeze khi chuyển phase
+  useEffect(() => {
+    if (freezeTimeoutRef.current) clearTimeout(freezeTimeoutRef.current);
+    setIsFrozen(false);
+    setFreezeTime(0);
+    iframeRef.current?.contentWindow?.postMessage({ type: "UNFREEZE" }, "*");
   }, [gameState.status]);
 
   // 3. Hiện thông báo khi uy tín thay đổi mạnh.
@@ -309,13 +316,17 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
     lastIntegrityRef.current = currentIntegrity;
   }, [playerInfo.integrity]);
 
-  // 4. D-pad
+  // 4. D-pad & Action Handlers
   const handleDpadPress = (dir) => {
     if (isFrozen) return;
     iframeRef.current?.contentWindow?.postMessage({ type: "DPAD_MOVE", dir }, "*");
   };
   const handleDpadRelease = () => {
     iframeRef.current?.contentWindow?.postMessage({ type: "DPAD_MOVE", dir: "stop" }, "*");
+  };
+  const handleActionPress = () => {
+    if (isFrozen) return;
+    iframeRef.current?.contentWindow?.postMessage({ type: "ACTION_INTERACT" }, "*");
   };
 
   return (
@@ -453,23 +464,56 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
       <div style={{ color: "#8b8680", fontSize: "0.75rem", marginTop: "10px", textAlign: "center", display: "flex", alignItems: "center", gap: "8px", justifyContent: "center" }}>
         <span>Điều khiển: WASD / Mũi tên</span>
         <span>•</span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}><IconBook className="w-3.5 h-3.5 text-amber-500" /> Nhặt nhiệm vụ tốt</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}><IconBook className="w-3.5 h-3.5 text-amber-500" /> Đến các bàn làm việc / trạm để xử lý</span>
         <span>•</span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}><IconBolt className="w-3.5 h-3.5 text-red-500" /> Né rủi ro công vụ</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}><IconBolt className="w-3.5 h-3.5 text-red-500" /> Bấm ⚡ / [E] để đóng dấu & nộp</span>
       </div>
 
-      {/* D-pad */}
-      <div className="dpad-container" style={{ userSelect: "none" }}>
-        <button className="dpad-btn" onMouseDown={() => handleDpadPress("up")} onMouseUp={handleDpadRelease} onTouchStart={() => handleDpadPress("up")} onTouchEnd={handleDpadRelease}>▲</button>
-        <div style={{ display: "flex", gap: "25px" }}>
-          <button className="dpad-btn" onMouseDown={() => handleDpadPress("left")} onMouseUp={handleDpadRelease} onTouchStart={() => handleDpadPress("left")} onTouchEnd={handleDpadRelease}>◀</button>
-          <button className="dpad-btn" onMouseDown={() => handleDpadPress("right")} onMouseUp={handleDpadRelease} onTouchStart={() => handleDpadPress("right")} onTouchEnd={handleDpadRelease}>▶</button>
+      {/* D-pad & Action Button Container */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "28px", marginTop: "12px", width: "100%", maxWidth: "440px" }}>
+        {/* D-pad */}
+        <div className="dpad-container" style={{ userSelect: "none", margin: 0 }}>
+          <button className="dpad-btn" onMouseDown={() => handleDpadPress("up")} onMouseUp={handleDpadRelease} onTouchStart={() => handleDpadPress("up")} onTouchEnd={handleDpadRelease}>▲</button>
+          <div style={{ display: "flex", gap: "25px" }}>
+            <button className="dpad-btn" onMouseDown={() => handleDpadPress("left")} onMouseUp={handleDpadRelease} onTouchStart={() => handleDpadPress("left")} onTouchEnd={handleDpadRelease}>◀</button>
+            <button className="dpad-btn" onMouseDown={() => handleDpadPress("right")} onMouseUp={handleDpadRelease} onTouchStart={() => handleDpadPress("right")} onTouchEnd={handleDpadRelease}>▶</button>
+          </div>
+          <button className="dpad-btn" onMouseDown={() => handleDpadPress("down")} onMouseUp={handleDpadRelease} onTouchStart={() => handleDpadPress("down")} onTouchEnd={handleDpadRelease}>▼</button>
         </div>
-        <button className="dpad-btn" onMouseDown={() => handleDpadPress("down")} onMouseUp={handleDpadRelease} onTouchStart={() => handleDpadPress("down")} onTouchEnd={handleDpadRelease}>▼</button>
+
+        {/* Action Button: Xử lý / Đóng dấu */}
+        <button
+          className="action-stamp-btn"
+          onClick={handleActionPress}
+          onTouchStart={handleActionPress}
+          style={{
+            width: "82px",
+            height: "82px",
+            borderRadius: "50%",
+            background: "radial-gradient(circle at 30% 30%, #ef4444, #991b1b)",
+            border: "4px solid #facc15",
+            boxShadow: "0 6px 18px rgba(239, 68, 68, 0.45), 0 0 0 2px #000",
+            color: "#ffffff",
+            fontFamily: "var(--font-heading)",
+            fontSize: "0.78rem",
+            fontWeight: "800",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            touchAction: "manipulation",
+            userSelect: "none",
+            gap: "2px",
+          }}
+        >
+          <span style={{ fontSize: "1.3rem" }}>⚡</span>
+          <span>XỬ LÝ</span>
+          <span style={{ fontSize: "8px", color: "#fef08a" }}>[E / SPACE]</span>
+        </button>
       </div>
     </div>
   );
 };
 
 export default RpgGamePlay;
-

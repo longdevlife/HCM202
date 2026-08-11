@@ -50,10 +50,18 @@ function playTone(freq, type = "square", duration = 0.12, startGain = 0.15) {
 
 const sfx = {
   pickup: () => {
-    playTone(523.25, "square", 0.08, 0.15); // C5
-    setTimeout(() => playTone(659.25, "square", 0.08, 0.15), 60); // E5
-    setTimeout(() => playTone(783.99, "square", 0.08, 0.15), 120); // G5
-    setTimeout(() => playTone(1046.5, "triangle", 0.15, 0.2), 180); // C6
+    playTone(523.25, "square", 0.06, 0.15); // C5
+    setTimeout(() => playTone(659.25, "square", 0.08, 0.18), 50); // E5
+  },
+  stamp: () => {
+    playTone(150, "triangle", 0.12, 0.3); // Low thump
+    setTimeout(() => playTone(880, "square", 0.08, 0.15), 40); // Click
+    setTimeout(() => playTone(1046.5, "triangle", 0.15, 0.2), 90); // Chime C6
+  },
+  server: () => {
+    playTone(440, "sine", 0.05, 0.1);
+    setTimeout(() => playTone(880, "sine", 0.06, 0.12), 40);
+    setTimeout(() => playTone(1320, "sine", 0.08, 0.15), 80);
   },
   hazard: () => {
     playTone(164.81, "sawtooth", 0.25, 0.2); // E3
@@ -73,6 +81,78 @@ const sfx = {
   },
 };
 
+// ----------------------------------------------------
+// 6 FUNCTIONAL DEPARTMENTS & WORKSTATIONS
+// ----------------------------------------------------
+const WORKSTATIONS = [
+  {
+    id: "station_reception",
+    name: "Bộ Phận Tiếp Nhận & Bốc Số",
+    shortLabel: "QUẦY TIẾP NHẬN",
+    actionLabel: "Tiếp nhận hồ sơ",
+    x: 160,
+    y: 110,
+    radius: 46,
+    type: "reception",
+    color: "#38bdf8",
+  },
+  {
+    id: "station_stamp",
+    name: "Phòng Thẩm Định & Đóng Dấu",
+    shortLabel: "BÀN ĐÓNG DẤU",
+    actionLabel: "Đóng dấu & Hoàn tất",
+    x: 800,
+    y: 110,
+    radius: 46,
+    type: "stamp",
+    color: "#ef4444",
+  },
+  {
+    id: "station_server",
+    name: "Trung Tâm Dữ Liệu Số Hóa",
+    shortLabel: "MÁY CHỦ SỐ HÓA",
+    actionLabel: "Tra cứu & Minh bạch",
+    x: 480,
+    y: 110,
+    radius: 46,
+    type: "server",
+    color: "#10b981",
+  },
+  {
+    id: "station_inspection",
+    name: "Phòng Thanh Tra & Liêm Chính",
+    shortLabel: "THANH TRA NỘI BỘ",
+    actionLabel: "Giải trình & Liêm chính",
+    x: 160,
+    y: 420,
+    radius: 46,
+    type: "inspection",
+    color: "#f59e0b",
+  },
+  {
+    id: "station_feedback",
+    name: "Khu Tiếp Dân & Lắng Nghe",
+    shortLabel: "TIẾP DÂN & Ý KIẾN",
+    actionLabel: "Lắng nghe người dân",
+    x: 800,
+    y: 420,
+    radius: 46,
+    type: "feedback",
+    color: "#ec4899",
+  },
+  {
+    id: "station_portal",
+    name: "Đại Sảnh Công Khai & Giải Trình",
+    shortLabel: "TT CÔNG KHAI",
+    actionLabel: "Bước vào hoàn thành",
+    x: 480,
+    y: 430,
+    radius: 48,
+    type: "gate",
+    color: "#06b6d4",
+  },
+];
+
 // Particles & Floating Text System
 const particles = [];
 const floatingTexts = [];
@@ -88,9 +168,9 @@ function spawnParticles(x, y, color, count = 8, speed = 60, shape = "rect") {
       vy: Math.sin(angle) * spd,
       color,
       shape,
-      size: Math.random() * 3 + 2,
+      size: Math.random() * 3.5 + 2,
       life: 0,
-      maxLife: Math.random() * 0.4 + 0.3,
+      maxLife: Math.random() * 0.45 + 0.3,
     });
   }
 }
@@ -98,11 +178,11 @@ function spawnParticles(x, y, color, count = 8, speed = 60, shape = "rect") {
 function spawnFloatingText(x, y, text, color = "#ffdf6e") {
   floatingTexts.push({
     x,
-    y: y - 10,
+    y: y - 12,
     text,
     color,
     life: 0,
-    maxLife: 1.2,
+    maxLife: 1.3,
     vy: -35,
   });
 }
@@ -121,17 +201,19 @@ const state = {
     radius: 12,
     direction: "down",
     walking: false,
-    animFrame: 0,
   },
+  carriedItem: null, // Holds item being processed
+  stampingProgress: 0, // Progress timer when stamping at desk
+  isStamping: false,
   collectedIds: new Set(),
   resolvedCollisionIds: new Set(),
-  hazardCooldownUntil: 0,
   lastMovePostedAt: 0,
   lastFrameAt: performance.now(),
   gameTime: 0,
   screenShakeTimer: 0,
   screenShakeIntensity: 0,
   scanlines: true,
+  nearbyStation: null,
 };
 
 const postToParent = (message) => window.parent?.postMessage(message, "*");
@@ -168,49 +250,151 @@ function triggerScreenShake(intensity = 6, duration = 0.25) {
   state.screenShakeTimer = duration;
 }
 
-// Handle Collisions
-function handleCollision(entity, now) {
+// Find closest workstation
+function updateNearbyWorkstation() {
+  let closest = null;
+  let minDist = Infinity;
+  for (const station of WORKSTATIONS) {
+    const dist = Math.hypot(state.player.x - station.x, state.player.y - station.y);
+    if (dist <= station.radius + 15 && dist < minDist) {
+      minDist = dist;
+      closest = station;
+    }
+  }
+  state.nearbyStation = closest;
+}
+
+// ----------------------------------------------------
+// INTERACTIVE ACTION / STAMPING MECHANISM
+// ----------------------------------------------------
+function executePlayerAction() {
+  if (options.role !== "player" || state.frozen) return;
+  getAudioContext();
+
+  // 1. If holding a carried case file/item -> process and stamp it at a workstation!
+  if (state.carriedItem) {
+    const item = state.carriedItem;
+    sfx.stamp();
+    spawnParticles(state.player.x, state.player.y, "#f59e0b", 16, 95, "star");
+    spawnFloatingText(state.player.x, state.player.y, `✓ ĐÃ ĐÓNG DẤU & NỘP: ${item.label || "Hồ sơ"}!`, "#4ade80");
+
+    postToParent({ type: "NHAT_SACH", bookId: item.id });
+    state.carriedItem = null;
+    return;
+  }
+
+  // 2. If near a workstation with specific department actions:
+  if (state.nearbyStation) {
+    const station = state.nearbyStation;
+
+    if (station.type === "server") {
+      sfx.server();
+      spawnParticles(station.x, station.y, "#10b981", 12, 70, "star");
+      spawnFloatingText(station.x, station.y, "✓ Đã xác thực & số hóa dữ liệu!", "#34d399");
+    } else if (station.type === "inspection") {
+      sfx.stamp();
+      spawnParticles(station.x, station.y, "#f59e0b", 12, 70, "star");
+      spawnFloatingText(station.x, station.y, "✓ Giải trình & Tự kiểm tra liêm chính!", "#fbbf24");
+    } else if (station.type === "feedback") {
+      sfx.npc();
+      spawnParticles(station.x, station.y, "#ec4899", 12, 70, "star");
+      spawnFloatingText(station.x, station.y, "✓ Lắng nghe góp ý từ công dân!", "#f472b6");
+    } else if (station.type === "reception") {
+      sfx.pickup();
+      spawnParticles(station.x, station.y, "#38bdf8", 10, 60, "star");
+      spawnFloatingText(station.x, station.y, "✓ Bốc số & Tiếp nhận yêu cầu mới!", "#38bdf8");
+    }
+  }
+
+  // 3. Scan nearby interactive entities to pick up or activate
+  for (const [kind, entities] of Object.entries(state.snapshot)) {
+    if (kind === "players" || !entities || typeof entities !== "object") continue;
+    for (const [id, entity] of Object.entries(entities)) {
+      if (!entity) continue;
+      const fullEntity = { ...entity, id: entity.id || id, kind: entity.kind || kind.slice(0, -1) };
+      if (state.collectedIds.has(fullEntity.id) || state.resolvedCollisionIds.has(fullEntity.id)) continue;
+      if (isEntityResolvedForPlayer(fullEntity, options.playerId)) continue;
+
+      const dist = Math.hypot(state.player.x - fullEntity.x, state.player.y - fullEntity.y);
+      if (dist <= 30) {
+        handleEntityInteraction(fullEntity, performance.now());
+        return;
+      }
+    }
+  }
+}
+
+// Handle Direct Interaction or Walking Pickup
+function handleEntityInteraction(entity, now) {
   if (options.role !== "player") return;
+  if (state.collectedIds.has(entity.id) || state.resolvedCollisionIds.has(entity.id)) return;
   if (isEntityResolvedForPlayer(entity, options.playerId)) return;
+
   const radius = Number.isFinite(entity.radius) ? entity.radius : 16;
   if (!circlesOverlap(state.player, { ...entity, radius })) return;
+
   const event = collisionMessage(entity);
   if (!event) return;
 
+  // A. ITEM (Hồ sơ, Liêm chính, Minh bạch): Nhặt và giữ hồ sơ để mang đi xử lý/đóng dấu
   if (entity.kind === "item") {
-    if (state.collectedIds.has(entity.id)) return;
     state.collectedIds.add(entity.id);
+    state.resolvedCollisionIds.add(entity.id);
     sfx.pickup();
-    spawnParticles(entity.x, entity.y, entity.color || "#ffdf6e", 12, 80, "star");
-    spawnFloatingText(entity.x, entity.y, entity.message || "+ Hồ sơ", entity.color || "#ffdf6e");
+    spawnParticles(entity.x, entity.y, entity.color || "#ffdf6e", 10, 65, "star");
+
+    // Gán hồ sơ đang giữ cho người chơi
+    state.carriedItem = {
+      id: entity.id,
+      type: entity.type || "case_file",
+      label: entity.label || entity.name || "Hồ sơ",
+      color: entity.color || "#38bdf8",
+      message: entity.message,
+    };
+
+    spawnFloatingText(
+      state.player.x,
+      state.player.y,
+      `ĐÃ NHẬN: ${state.carriedItem.label}! Đến Bàn Đóng Dấu [E]`,
+      "#38bdf8"
+    );
+
+    // Gửi event để hệ thống ghi nhận
+    postToParent(event);
+    return;
   }
 
-  if (entity.kind === "npc") {
-    if (state.resolvedCollisionIds.has(entity.id)) return;
-    state.resolvedCollisionIds.add(entity.id);
-    sfx.npc();
-    spawnParticles(entity.x, entity.y, "#26c6da", 10, 70, "star");
-    spawnFloatingText(entity.x, entity.y, entity.message || "✓ Tiếp nhận ý kiến", "#26c6da");
-  }
-
-  if (entity.kind === "gate") {
-    if (state.resolvedCollisionIds.has(entity.id)) return;
-    state.resolvedCollisionIds.add(entity.id);
-    sfx.gate();
-    spawnParticles(entity.x, entity.y, "#8cd6f7", 20, 100, "star");
-    spawnFloatingText(entity.x, entity.y, "⭐ HOÀN THÀNH GIẢI TRÌNH ⭐", "#8cd6f7");
-  }
-
+  // B. HAZARD / BẪY: Va chạm -> phát nổ, bị phạt và BIẾN MẤT NGAY LẬP TỨC để tránh spam!
   if (entity.kind === "hazard") {
-    if (now < state.hazardCooldownUntil) return;
-    state.hazardCooldownUntil = now + 1500;
+    state.resolvedCollisionIds.add(entity.id);
+    state.collectedIds.add(entity.id);
     sfx.hazard();
     triggerScreenShake(7, 0.3);
-    spawnParticles(entity.x, entity.y, "#c5272d", 14, 90, "ember");
-    spawnFloatingText(entity.x, entity.y, entity.message || "Bị cảnh cáo!", "#ff5252");
+    spawnParticles(entity.x, entity.y, "#c5272d", 16, 95, "ember");
+    spawnFloatingText(entity.x, entity.y, entity.message || "Bị phạt rủi ro!", "#ff5252");
+    postToParent(event);
+    return;
   }
 
-  postToParent(event);
+  // C. NPC (Người dân): Tương tác và biến mất / hoàn tất
+  if (entity.kind === "npc") {
+    state.resolvedCollisionIds.add(entity.id);
+    state.collectedIds.add(entity.id);
+    sfx.npc();
+    spawnParticles(entity.x, entity.y, "#26c6da", 12, 75, "star");
+    spawnFloatingText(entity.x, entity.y, entity.message || "✓ Đã hỗ trợ người dân!", "#26c6da");
+    postToParent(event);
+    return;
+  }
+
+  // D. GATE (Trung tâm Công khai & Giải trình):
+  if (entity.kind === "gate") {
+    state.resolvedCollisionIds.add(entity.id);
+    sfx.gate();
+    spawnParticles(entity.x, entity.y, "#8cd6f7", 24, 110, "star");
+    spawnFloatingText(entity.x, entity.y, "⭐ ĐÃ VÀO TRUNG TÂM CÔNG KHAI ⭐", "#8cd6f7");
+    postToParent(event);
+  }
 }
 
 function checkCollisions(now) {
@@ -218,179 +402,401 @@ function checkCollisions(now) {
     if (!Array.isArray(entities) && entities && typeof entities === "object") {
       for (const [id, entity] of Object.entries(entities)) {
         if (kind === "players" || !entity) continue;
-        handleCollision({ ...entity, id: entity.id || id, kind: entity.kind || kind.slice(0, -1) }, now);
+        handleEntityInteraction({ ...entity, id: entity.id || id, kind: entity.kind || kind.slice(0, -1) }, now);
       }
     }
   }
 }
 
 // ----------------------------------------------------
-// PIXEL ART DRAWING ENGINE
+// DETAILED ARCHITECTURAL DEPARTMENTS & MAP DRAWING
 // ----------------------------------------------------
 
-// Draw Floor & Office Background
 function drawEnvironment(time) {
-  // Parquet / Marble Tile Base
+  // Marble Checkerboard Floor Tiles
   const tileSize = 48;
   for (let y = 0; y < bounds.height; y += tileSize) {
     for (let x = 0; x < bounds.width; x += tileSize) {
       const isAlt = ((x / tileSize) + (y / tileSize)) % 2 === 0;
-      context.fillStyle = isAlt ? "#1e293b" : "#182234";
+      context.fillStyle = isAlt ? "#1a2436" : "#141c2c";
       context.fillRect(x, y, tileSize, tileSize);
 
       // Tile grout lines
-      context.fillStyle = "rgba(0, 0, 0, 0.25)";
+      context.fillStyle = "rgba(0, 0, 0, 0.3)";
       context.fillRect(x, y, tileSize, 1);
       context.fillRect(x, y, 1, tileSize);
 
-      // Soft highlight on tile edge
-      context.fillStyle = isAlt ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.04)";
+      // Subtle edge shine
+      context.fillStyle = isAlt ? "rgba(255,255,255,0.025)" : "rgba(255,255,255,0.045)";
       context.fillRect(x + 1, y + 1, tileSize - 2, 2);
     }
   }
 
-  // Red Welcome Carpet Runner in the center aisle
-  const carpetX = 400;
-  const carpetW = 160;
-  context.fillStyle = "#80181c";
-  context.fillRect(carpetX, 60, carpetW, bounds.height - 60);
-  context.fillStyle = "#a82025";
-  context.fillRect(carpetX + 4, 60, carpetW - 8, bounds.height - 60);
-  // Gold carpet borders
+  // Central Grand Red Carpet
+  const carpetX = 390;
+  const carpetW = 180;
+  context.fillStyle = "#781014";
+  context.fillRect(carpetX, 56, carpetW, bounds.height - 56);
+  context.fillStyle = "#991b1b";
+  context.fillRect(carpetX + 4, 56, carpetW - 8, bounds.height - 56);
+  // Gold Trim
   context.fillStyle = "#d4af37";
-  context.fillRect(carpetX + 2, 60, 3, bounds.height - 60);
-  context.fillRect(carpetX + carpetW - 5, 60, 3, bounds.height - 60);
+  context.fillRect(carpetX + 2, 56, 3, bounds.height - 56);
+  context.fillRect(carpetX + carpetW - 5, 56, 3, bounds.height - 56);
 
-  // Top Wall / Header Panel
-  context.fillStyle = "#0f172a";
+  // Top Administrative Header Wall
+  context.fillStyle = "#090d16";
   context.fillRect(0, 0, bounds.width, 56);
-  context.fillStyle = "#334155";
-  context.fillRect(0, 54, bounds.width, 3);
+  context.fillStyle = "#1e293b";
+  context.fillRect(0, 53, bounds.width, 3);
   context.fillStyle = "#000000";
-  context.fillRect(0, 57, bounds.width, 2);
+  context.fillRect(0, 56, bounds.width, 2);
 
-  // Decorative Wall Slogan Banner
-  const bannerW = 460;
+  // Red & Gold Slogan Banner
+  const bannerW = 480;
   const bannerX = (bounds.width - bannerW) / 2;
   context.fillStyle = "#b91c1c";
-  context.fillRect(bannerX, 8, bannerW, 36);
-  context.fillStyle = "#f59e0b";
-  context.strokeRect(bannerX + 2, 10, bannerW - 4, 32);
+  context.fillRect(bannerX, 6, bannerW, 40);
+  context.strokeStyle = "#f59e0b";
+  context.lineWidth = 2;
+  context.strokeRect(bannerX + 2, 8, bannerW - 4, 36);
 
   context.fillStyle = "#fef08a";
-  context.font = "bold 13px 'Silkscreen', 'VT323', monospace, sans-serif";
+  context.font = "bold 12px 'Silkscreen', 'VT323', monospace, sans-serif";
   context.textAlign = "center";
-  context.fillText("★ TRUNG TÂM PHỤC VỤ HÀNH CHÍNH CÔNG ★", bounds.width / 2, 26);
+  context.fillText("★ TRUNG TÂM PHỤC VỤ HÀNH CHÍNH CÔNG MỘT CỬA ★", bounds.width / 2, 24);
   context.font = "11px 'VT323', monospace, sans-serif";
   context.fillStyle = "#ffffff";
-  context.fillText("LIÊM CHÍNH - MINH BẠCH - VÌ NHÂN DÂN PHỤC VỤ", bounds.width / 2, 38);
+  context.fillText("CÔNG KHAI - MINH BẠCH - LIÊM CHÍNH - VÌ NHÂN DÂN PHỤC VỤ", bounds.width / 2, 38);
 
-  // Animated Ticking Wall Clock
-  const clockX = 65;
+  // Wall Clock
+  const clockX = 55;
   const clockY = 28;
-  context.fillStyle = "#475569";
+  context.fillStyle = "#334155";
   context.beginPath(); context.arc(clockX, clockY, 15, 0, Math.PI * 2); context.fill();
   context.fillStyle = "#f8fafc";
   context.beginPath(); context.arc(clockX, clockY, 13, 0, Math.PI * 2); context.fill();
   context.strokeStyle = "#0f172a";
   context.lineWidth = 1.5;
-  // Clock hands
   const secAngle = (time * 1.5) % (Math.PI * 2);
-  const minAngle = (time * 0.15) % (Math.PI * 2);
-  context.beginPath();
-  context.moveTo(clockX, clockY);
-  context.lineTo(clockX + Math.cos(secAngle) * 9, clockY + Math.sin(secAngle) * 9);
-  context.stroke();
-  context.beginPath();
-  context.moveTo(clockX, clockY);
-  context.lineTo(clockX + Math.cos(minAngle) * 6, clockY + Math.sin(minAngle) * 6);
-  context.stroke();
+  context.beginPath(); context.moveTo(clockX, clockY);
+  context.lineTo(clockX + Math.cos(secAngle) * 9, clockY + Math.sin(secAngle) * 9); context.stroke();
   context.lineWidth = 1;
 }
 
-// Draw Furniture & Props (Desks, Computers, Plants)
-function drawOfficeFurniture(time) {
-  // Service Counter Left
-  drawServiceDesk(50, 70, 260, "BỘ PHẬN TIẾP NHẬN", time);
-  // Service Counter Right
-  drawServiceDesk(650, 70, 260, "TRẢ KẾT QUẢ & GIẢI TRÌNH", time + 1);
+// Draw 6 Architectural Buildings / Rooms
+function drawDepartmentsAndStations(time) {
+  // 1. KHU 1: Bộ phận tiếp nhận & bốc số (Top Left)
+  drawDepartmentRoom(
+    30, 64, 260, 105,
+    "BỘ PHẬN TIẾP NHẬN & BỐC SỐ",
+    "#0284c7",
+    () => {
+      // 2 Reception Counter Windows
+      drawDeskCounter(40, 95, 105, "QUẦY 01: HỒ SƠ", "#38bdf8");
+      drawDeskCounter(165, 95, 105, "QUẦY 02: TƯ VẤN", "#38bdf8");
+      // Ticket Dispenser Kiosk
+      drawTicketKiosk(275, 85, time);
+    }
+  );
 
-  // Waiting benches at the bottom
-  drawBench(90, 470, 180);
-  drawBench(690, 470, 180);
+  // 2. KHU 2: Phòng thẩm định & Đóng dấu (Top Right)
+  drawDepartmentRoom(
+    670, 64, 260, 105,
+    "PHÒNG THẨM ĐỊNH & ĐÓNG DẤU",
+    "#dc2626",
+    () => {
+      // Large Verification Desk with Official Seal Stamp Press
+      drawVerificationDesk(685, 95, 230, "TRẠM ĐÓNG DẤU CÔNG VỤ", time);
+    }
+  );
 
-  // Indoor Potted Plants
-  drawPottedPlant(24, 75);
-  drawPottedPlant(936, 75);
-  drawPottedPlant(24, 490);
-  drawPottedPlant(936, 490);
-  drawPottedPlant(360, 75);
-  drawPottedPlant(600, 75);
+  // 3. KHU 3: Trung tâm dữ liệu số hóa & Minh bạch (Center Top)
+  drawDepartmentRoom(
+    330, 64, 300, 105,
+    "TRUNG TÂM DỮ LIỆU SỐ HÓA",
+    "#059669",
+    () => {
+      // 3 Blinking Server Racks
+      drawServerRack(345, 92, time);
+      drawServerRack(400, 92, time + 1);
+      drawServerRack(455, 92, time + 2);
+      // Large Digital Transparency Monitor Screen
+      drawDataTerminalScreen(515, 88, 105, time);
+    }
+  );
+
+  // 4. KHU 4: Phòng thanh tra & Giám sát liêm chính (Bottom Left)
+  drawDepartmentRoom(
+    30, 360, 260, 115,
+    "PHÒNG THANH TRA & LIÊM CHÍNH",
+    "#d97706",
+    () => {
+      drawInspectionDesk(45, 395, 230, "BÀN GIẢI TRÌNH & THANH TRA", time);
+    }
+  );
+
+  // 5. KHU 5: Khu tiếp dân & Lắng nghe ý kiến (Bottom Right)
+  drawDepartmentRoom(
+    670, 360, 260, 115,
+    "KHU TIẾP DÂN & Ý KIẾN",
+    "#db2777",
+    () => {
+      drawCitizenLounge(685, 395, 230, time);
+    }
+  );
+
+  // 6. KHU 6: Đại sảnh Công khai & Giải trình (Center Bottom)
+  drawPublicAccountabilityPortal(480, 435, time);
+
+  // Plants & Room Dividers
+  drawPottedPlant(20, 75);
+  drawPottedPlant(940, 75);
+  drawPottedPlant(20, 485);
+  drawPottedPlant(940, 485);
+  drawPottedPlant(310, 75);
+  drawPottedPlant(650, 75);
+  drawPottedPlant(310, 485);
+  drawPottedPlant(650, 485);
 }
 
-function drawServiceDesk(x, y, width, label, animOffset = 0) {
-  const height = 48;
-  // Main Desk Body
-  context.fillStyle = "#451a03";
-  context.fillRect(x, y, width, height);
-  // Desk Top Surface
-  context.fillStyle = "#78350f";
-  context.fillRect(x, y, width, 14);
-  context.fillStyle = "#b45309";
-  context.fillRect(x + 2, y + 2, width - 4, 4);
+// Room outline helper
+function drawDepartmentRoom(x, y, w, h, title, borderColor, renderContent) {
+  // Room floor tint
+  context.fillStyle = "rgba(15, 23, 42, 0.65)";
+  context.fillRect(x, y, w, h);
+  // Room Border Wall
+  context.strokeStyle = borderColor;
+  context.lineWidth = 2;
+  context.strokeRect(x, y, w, h);
 
-  // Glass Divider Plate
-  context.fillStyle = "rgba(147, 197, 253, 0.35)";
-  context.fillRect(x + 10, y - 16, width - 20, 16);
-  context.fillStyle = "rgba(255, 255, 255, 0.7)";
-  context.fillRect(x + 12, y - 15, width - 24, 2);
+  // Room Title Tag Header
+  context.fillStyle = borderColor;
+  context.fillRect(x, y, w, 18);
+  context.fillStyle = "#ffffff";
+  context.font = "bold 9px 'Silkscreen', 'VT323', monospace, sans-serif";
+  context.textAlign = "left";
+  context.fillText(title, x + 8, y + 13);
 
-  // Desktop Computer Terminal
-  const compX = x + width / 2 - 16;
-  const compY = y - 12;
-  context.fillStyle = "#1e293b";
-  context.fillRect(compX, compY, 32, 22);
-  // Glowing green monitor screen
-  context.fillStyle = (Math.sin(state.gameTime * 4 + animOffset) > 0) ? "#10b981" : "#059669";
-  context.fillRect(compX + 3, compY + 3, 26, 16);
-  // Green terminal code scanline
-  context.fillStyle = "#a7f3d0";
-  context.fillRect(compX + 5, compY + 6, 18, 2);
-  context.fillRect(compX + 5, compY + 10, 14, 2);
-  context.fillRect(compX + 5, compY + 14, 20, 2);
-
-  // Document Tray / Folders
-  context.fillStyle = "#3b82f6";
-  context.fillRect(x + 20, y + 2, 20, 8);
-  context.fillStyle = "#f59e0b";
-  context.fillRect(x + 22, y + 4, 18, 6);
-
-  // Label sign
-  context.fillStyle = "#fef3c7";
-  context.font = "bold 11px 'Silkscreen', 'VT323', monospace, sans-serif";
-  context.textAlign = "center";
-  context.fillText(label, x + width / 2, y + 36);
+  if (renderContent) renderContent();
 }
 
-function drawBench(x, y, width) {
-  context.fillStyle = "#1e293b";
-  context.fillRect(x, y, width, 18);
+function drawDeskCounter(x, y, w, label, color) {
   context.fillStyle = "#334155";
-  context.fillRect(x + 2, y + 2, width - 4, 6);
-  // Bench Legs
+  context.fillRect(x, y, w, 36);
+  context.fillStyle = "#475569";
+  context.fillRect(x, y, w, 10);
+  // Glass partition
+  context.fillStyle = "rgba(147, 197, 253, 0.4)";
+  context.fillRect(x + 4, y - 12, w - 8, 12);
+
+  // Label
+  context.fillStyle = color;
+  context.font = "bold 8px 'Silkscreen', 'VT323', monospace, sans-serif";
+  context.textAlign = "center";
+  context.fillText(label, x + w / 2, y + 26);
+}
+
+function drawTicketKiosk(x, y, time) {
+  // Kiosk Pillar
+  context.fillStyle = "#1e293b";
+  context.fillRect(x - 8, y, 16, 44);
+  // Screen
+  context.fillStyle = "#38bdf8";
+  context.fillRect(x - 6, y + 4, 12, 12);
+  // Flashing Ticket Slot
+  context.fillStyle = Math.sin(time * 6) > 0 ? "#facc15" : "#64748b";
+  context.fillRect(x - 4, y + 20, 8, 3);
+}
+
+function drawVerificationDesk(x, y, w, label, time) {
+  // Heavy Wood Desk
+  context.fillStyle = "#451a03";
+  context.fillRect(x, y, w, 40);
+  context.fillStyle = "#78350f";
+  context.fillRect(x, y, w, 12);
+
+  // Red Official Seal Stamper with pulsating golden aura
+  const stampX = x + w / 2;
+  const stampY = y - 4;
+  const pulse = Math.sin(time * 5) * 2;
+  context.fillStyle = "#dc2626";
+  context.fillRect(stampX - 8, stampY - 8 + pulse, 16, 12);
+  context.fillStyle = "#facc15";
+  context.fillRect(stampX - 5, stampY - 14 + pulse, 10, 6);
+  context.fillRect(stampX - 2, stampY - 18 + pulse, 4, 4);
+
+  // Ink Pad
+  context.fillStyle = "#1e293b";
+  context.fillRect(stampX + 16, y + 2, 18, 8);
+  context.fillStyle = "#ef4444";
+  context.fillRect(stampX + 18, y + 4, 14, 4);
+
+  // Label
+  context.fillStyle = "#fef08a";
+  context.font = "bold 9px 'Silkscreen', 'VT323', monospace, sans-serif";
+  context.textAlign = "center";
+  context.fillText(label, x + w / 2, y + 30);
+}
+
+function drawServerRack(x, y, time) {
   context.fillStyle = "#0f172a";
-  context.fillRect(x + 6, y + 18, 6, 8);
-  context.fillRect(x + width - 12, y + 18, 6, 8);
+  context.fillRect(x, y, 42, 48);
+  context.strokeStyle = "#334155";
+  context.lineWidth = 1;
+  context.strokeRect(x, y, 42, 48);
+
+  // Blinking Server LEDs
+  for (let row = 0; row < 4; row++) {
+    const rowY = y + 6 + row * 10;
+    context.fillStyle = "#1e293b";
+    context.fillRect(x + 4, rowY, 34, 6);
+
+    for (let led = 0; led < 3; led++) {
+      const ledX = x + 8 + led * 8;
+      const isLit = Math.sin(time * 8 + led + row) > 0;
+      context.fillStyle = isLit ? (led === 0 ? "#10b981" : led === 1 ? "#38bdf8" : "#f59e0b") : "#334155";
+      context.fillRect(ledX, rowY + 1.5, 3, 3);
+    }
+  }
+}
+
+function drawDataTerminalScreen(x, y, w, time) {
+  context.fillStyle = "#0f172a";
+  context.fillRect(x, y, w, 52);
+  context.strokeStyle = "#10b981";
+  context.lineWidth = 1.5;
+  context.strokeRect(x, y, w, 52);
+
+  // Live Chart Bars
+  context.fillStyle = "#10b981";
+  context.font = "bold 7px monospace";
+  context.fillText("MINH BẠCH DỮ LIỆU", x + 6, y + 10);
+
+  const bars = [16, 24, 18, 30, 22];
+  for (let i = 0; i < bars.length; i++) {
+    const h = bars[i] + Math.sin(time * 3 + i) * 4;
+    context.fillStyle = i === 3 ? "#facc15" : "#38bdf8";
+    context.fillRect(x + 10 + i * 18, y + 46 - h, 12, h);
+  }
+}
+
+function drawInspectionDesk(x, y, w, label, time) {
+  context.fillStyle = "#451a03";
+  context.fillRect(x, y, w, 38);
+  context.fillStyle = "#78350f";
+  context.fillRect(x, y, w, 10);
+
+  // Scales of Justice Icon
+  const iconX = x + 24;
+  const iconY = y - 4;
+  context.fillStyle = "#f59e0b";
+  context.font = "bold 14px sans-serif";
+  context.textAlign = "center";
+  context.fillText("⚖", iconX, iconY + 8);
+
+  // Audit Ledger
+  context.fillStyle = "#f8fafc";
+  context.fillRect(x + w - 40, y + 2, 22, 10);
+  context.fillStyle = "#dc2626";
+  context.fillRect(x + w - 38, y + 4, 18, 2);
+
+  context.fillStyle = "#fef08a";
+  context.font = "bold 9px 'Silkscreen', 'VT323', monospace, sans-serif";
+  context.fillText(label, x + w / 2, y + 27);
+}
+
+function drawCitizenLounge(x, y, w, time) {
+  // Round Consultation Tea Table
+  const tableX = x + 50;
+  const tableY = y + 20;
+  context.fillStyle = "#5b3d2e";
+  context.beginPath(); context.arc(tableX, tableY, 20, 0, Math.PI * 2); context.fill();
+  context.fillStyle = "#b45309";
+  context.beginPath(); context.arc(tableX, tableY, 17, 0, Math.PI * 2); context.fill();
+
+  // Flower Vase on table
+  context.fillStyle = "#ec4899";
+  context.beginPath(); context.arc(tableX, tableY, 5, 0, Math.PI * 2); context.fill();
+
+  // Suggestion Box with Red Heart
+  const boxX = x + w - 45;
+  const boxY = y + 6;
+  context.fillStyle = "#b91c1c";
+  context.fillRect(boxX, boxY, 26, 28);
+  context.fillStyle = "#facc15";
+  context.strokeRect(boxX, boxY, 26, 28);
+  context.fillStyle = "#ffffff";
+  context.font = "bold 9px sans-serif";
+  context.textAlign = "center";
+  context.fillText("❤", boxX + 13, boxY + 18);
+
+  // Label
+  context.fillStyle = "#fbcfe8";
+  context.font = "bold 9px 'Silkscreen', 'VT323', monospace, sans-serif";
+  context.fillText("BÀN LẮNG NGHE & GÓP Ý", x + w / 2, y + 46);
+}
+
+function drawPublicAccountabilityPortal(x, y, time) {
+  const width = 140;
+  const height = 75;
+
+  // Swirling Vortex Background
+  const rot = time * 2.5;
+  const grad = context.createRadialGradient(x, y, 4, x, y, 46);
+  grad.addColorStop(0, "rgba(56, 189, 248, 0.95)");
+  grad.addColorStop(0.5, "rgba(14, 165, 233, 0.65)");
+  grad.addColorStop(1, "rgba(3, 105, 161, 0)");
+  context.fillStyle = grad;
+  context.beginPath(); context.arc(x, y, 44, 0, Math.PI * 2); context.fill();
+
+  // Swirling Energy Particles
+  for (let i = 0; i < 6; i++) {
+    const angle = rot + (i * Math.PI) / 3;
+    const dist = 16 + Math.sin(time * 3 + i) * 14;
+    context.fillStyle = i % 2 === 0 ? "#facc15" : "#38bdf8";
+    context.beginPath();
+    context.arc(x + Math.cos(angle) * dist, y + Math.sin(angle) * dist, 3.5, 0, Math.PI * 2);
+    context.fill();
+  }
+
+  // Stone Archway Pillars
+  context.fillStyle = "#334155";
+  context.fillRect(x - width / 2, y - height / 2, 14, height);
+  context.fillRect(x + width / 2 - 14, y - height / 2, 14, height);
+  context.fillStyle = "#d97706";
+  context.fillRect(x - width / 2 - 2, y - height / 2 - 4, 18, 6);
+  context.fillRect(x + width / 2 - 16, y - height / 2 - 4, 18, 6);
+
+  // Top Arch
+  context.fillStyle = "#1e293b";
+  context.fillRect(x - width / 2 - 4, y - height / 2 - 14, width + 8, 14);
+  context.strokeStyle = "#facc15";
+  context.lineWidth = 1.5;
+  context.strokeRect(x - width / 2 - 4, y - height / 2 - 14, width + 8, 14);
+
+  // Emblem
+  context.fillStyle = "#ef4444";
+  context.beginPath(); context.arc(x, y - height / 2 - 7, 7, 0, Math.PI * 2); context.fill();
+  context.fillStyle = "#facc15";
+  context.font = "bold 9px sans-serif";
+  context.textAlign = "center";
+  context.fillText("★", x, y - height / 2 - 4);
+
+  // Title Banner
+  context.fillStyle = "rgba(15, 23, 42, 0.95)";
+  context.fillRect(x - 85, y + height / 2 + 2, 170, 16);
+  context.fillStyle = "#38bdf8";
+  context.font = "bold 9px 'Silkscreen', 'VT323', monospace, sans-serif";
+  context.fillText("ĐẠI SẢNH CÔNG KHAI & GIẢI TRÌNH", x, y + height / 2 + 13);
 }
 
 function drawPottedPlant(x, y) {
-  // Terracotta Pot
   context.fillStyle = "#9a3412";
   context.fillRect(x - 8, y, 16, 16);
   context.fillStyle = "#c2410c";
   context.fillRect(x - 9, y - 2, 18, 4);
 
-  // Green Foliage
   context.fillStyle = "#15803d";
   context.beginPath(); context.arc(x, y - 8, 12, 0, Math.PI * 2); context.fill();
   context.fillStyle = "#22c55e";
@@ -400,10 +806,9 @@ function drawPottedPlant(x, y) {
 }
 
 // ----------------------------------------------------
-// PIXEL SPRITE RENDERERS
+// PIXEL SPRITE RENDERERS & CARRIED ITEMS
 // ----------------------------------------------------
 
-// Draw Pixel Character Sprite
 function drawPixelCharacter(ctx, x, y, options = {}) {
   const color = options.color || "#38bdf8";
   const name = options.name || "Cán bộ";
@@ -427,11 +832,11 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
   ctx.fillRect(x - 7, bobY + 10 + footOffset, 5, 4);
   ctx.fillRect(x + 2, bobY + 10 - footOffset, 5, 4);
 
-  // Trousers / Pants
+  // Trousers
   ctx.fillStyle = "#1e293b";
   ctx.fillRect(x - 7, bobY + 4, 14, 7);
 
-  // Torso / Suit / Shirt
+  // Torso / Shirt
   ctx.fillStyle = color;
   ctx.fillRect(x - 8, bobY - 6, 16, 11);
 
@@ -445,11 +850,11 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
   ctx.fillStyle = color;
   ctx.fillRect(x - 10, bobY - 5 - footOffset * 0.5, 3, 8);
   ctx.fillRect(x + 7, bobY - 5 + footOffset * 0.5, 3, 8);
-  ctx.fillStyle = "#fed7aa"; // Skin tone hands
+  ctx.fillStyle = "#fed7aa";
   ctx.fillRect(x - 10, bobY + 3 - footOffset * 0.5, 3, 3);
   ctx.fillRect(x + 7, bobY + 3 + footOffset * 0.5, 3, 3);
 
-  // Head / Skin
+  // Head
   ctx.fillStyle = "#fed7aa";
   ctx.fillRect(x - 6, bobY - 17, 12, 11);
 
@@ -458,14 +863,30 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
   ctx.fillRect(x - 7, bobY - 20, 14, 6);
   ctx.fillRect(x - 7, bobY - 17, 3, 5);
 
-  // Eyes & Glasses
+  // Eyes
   ctx.fillStyle = "#0f172a";
   ctx.fillRect(x - 4, bobY - 12, 2, 3);
   ctx.fillRect(x + 2, bobY - 12, 2, 3);
 
-  // Local Player Arrow / Indicator
+  // CARRIED DOSSIER / ITEM FLOATING ABOVE HEAD
+  if (isLocal && state.carriedItem) {
+    const carryY = bobY - 42 + Math.sin(time * 6) * 3;
+    ctx.fillStyle = "#0284c7";
+    ctx.fillRect(x - 9, carryY - 8, 18, 14);
+    ctx.fillStyle = "#fef08a";
+    ctx.fillRect(x - 6, carryY - 10, 12, 4);
+    ctx.fillStyle = "#dc2626";
+    ctx.fillRect(x - 3, carryY - 2, 6, 6);
+
+    // Glow aura
+    ctx.strokeStyle = "#facc15";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x - 9, carryY - 8, 18, 14);
+  }
+
+  // Local Player Arrow Indicator
   if (isLocal) {
-    const arrowY = bobY - 28 + Math.sin(time * 6) * 3;
+    const arrowY = bobY - (state.carriedItem ? 52 : 28) + Math.sin(time * 6) * 3;
     ctx.fillStyle = "#facc15";
     ctx.beginPath();
     ctx.moveTo(x, arrowY + 6);
@@ -476,58 +897,39 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
   }
 
   // Name Tag
-  ctx.fillStyle = isLocal ? "rgba(15, 23, 42, 0.9)" : "rgba(30, 41, 59, 0.85)";
+  ctx.fillStyle = isLocal ? "rgba(15, 23, 42, 0.92)" : "rgba(30, 41, 59, 0.85)";
   const tagW = Math.max(50, name.length * 7 + 10);
-  ctx.fillRect(x - tagW / 2, bobY - 30, tagW, 14);
+  ctx.fillRect(x - tagW / 2, bobY - (state.carriedItem ? 32 : 30), tagW, 14);
   ctx.strokeStyle = isLocal ? "#38bdf8" : "#64748b";
   ctx.lineWidth = 1;
-  ctx.strokeRect(x - tagW / 2, bobY - 30, tagW, 14);
+  ctx.strokeRect(x - tagW / 2, bobY - (state.carriedItem ? 32 : 30), tagW, 14);
 
   ctx.fillStyle = isLocal ? "#38bdf8" : "#f1f5f9";
   ctx.font = "bold 9px 'Silkscreen', 'VT323', monospace, sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText(name, x, bobY - 20);
+  ctx.fillText(name, x, bobY - (state.carriedItem ? 22 : 20));
 }
 
-// Draw Item (Document Dossier, Golden Shield, Stars, Transparency Glass)
+// Draw Item Entity
 function drawItemEntity(ctx, entity, time) {
   const x = entity.x;
   const floatY = entity.y + Math.sin(time * 3 + (entity.x % 10)) * 4;
   const type = entity.type || "case_file";
   const label = entity.label || entity.name || (type === "case_file" ? "Hồ sơ" : "Liêm chính");
 
-  // Glowing Aura Underneath
-  const pulse = (Math.sin(time * 4 + entity.x) + 1) * 0.5;
-  ctx.fillStyle = `rgba(251, 191, 36, ${0.15 + pulse * 0.15})`;
-  ctx.beginPath();
-  ctx.ellipse(x, entity.y + 12, 14 + pulse * 4, 6, 0, 0, Math.PI * 2);
-  ctx.fill();
-
   // Floating Shadow
-  ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-  ctx.beginPath();
-  ctx.ellipse(x, entity.y + 12, 10, 4, 0, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+  ctx.beginPath(); ctx.ellipse(x, entity.y + 12, 10, 4, 0, 0, Math.PI * 2); ctx.fill();
 
-  // Item Graphics based on Type
   if (type === "integrity_item" || type === "transparency") {
-    // Golden / Emerald Integrity Shield
+    // Emerald / Gold Shield
     ctx.fillStyle = "#10b981";
     ctx.fillRect(x - 9, floatY - 11, 18, 14);
     ctx.beginPath();
-    ctx.moveTo(x - 9, floatY + 3);
-    ctx.lineTo(x, floatY + 12);
-    ctx.lineTo(x + 9, floatY + 3);
-    ctx.closePath();
-    ctx.fill();
-
-    // Gold Shield Border
-    ctx.strokeStyle = "#facc15";
-    ctx.lineWidth = 2;
+    ctx.moveTo(x - 9, floatY + 3); ctx.lineTo(x, floatY + 12); ctx.lineTo(x + 9, floatY + 3);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#facc15"; ctx.lineWidth = 2;
     ctx.strokeRect(x - 8, floatY - 10, 16, 12);
-    // Shield Star
-    ctx.fillStyle = "#facc15";
-    ctx.beginPath(); ctx.arc(x, floatY - 1, 3, 0, Math.PI * 2); ctx.fill();
   } else if (type === "positive_feedback" || type === "review") {
     // Golden Star Medal
     ctx.fillStyle = "#f59e0b";
@@ -539,13 +941,11 @@ function drawItemEntity(ctx, entity, time) {
     ctx.textAlign = "center";
     ctx.fillText("★", x, floatY + 4);
   } else {
-    // Official Blue Dossier / Case File Folder
+    // Dossier Folder
     ctx.fillStyle = "#0284c7";
     ctx.fillRect(x - 10, floatY - 12, 20, 18);
-    // Manila Paper Inserts
     ctx.fillStyle = "#fef08a";
     ctx.fillRect(x - 7, floatY - 14, 14, 6);
-    // Red Ribbon / Stamp
     ctx.fillStyle = "#dc2626";
     ctx.fillRect(x - 4, floatY - 4, 8, 8);
     ctx.fillStyle = "#facc15";
@@ -561,7 +961,7 @@ function drawItemEntity(ctx, entity, time) {
   ctx.fillText(label.slice(0, 10), x, floatY + 23);
 }
 
-// Draw Hazard (Trap: Envelope, Waste, Bureaucracy, Bệnh thành tích)
+// Draw Hazard Entity
 function drawHazardEntity(ctx, entity, time) {
   const x = entity.x;
   const y = entity.y;
@@ -576,57 +976,23 @@ function drawHazardEntity(ctx, entity, time) {
   ctx.arc(x, y, 18 + pulse, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Dark Hazard Base
-  ctx.fillStyle = "rgba(185, 28, 28, 0.2)";
-  ctx.beginPath();
-  ctx.arc(x, y, 16, 0, Math.PI * 2);
-  ctx.fill();
-
   if (type === "envelope") {
-    // Red bribe envelope
     ctx.fillStyle = "#b91c1c";
     ctx.fillRect(x - 12, y - 8, 24, 16);
     ctx.strokeStyle = "#facc15";
     ctx.lineWidth = 1.5;
     ctx.strokeRect(x - 12, y - 8, 24, 16);
-    // Flap
-    ctx.fillStyle = "#991b1b";
-    ctx.beginPath();
-    ctx.moveTo(x - 12, y - 8);
-    ctx.lineTo(x, y + 2);
-    ctx.lineTo(x + 12, y - 8);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
   } else if (type === "waste") {
-    // Toxic Leaking Waste Barrel
     ctx.fillStyle = "#475569";
     ctx.fillRect(x - 10, y - 12, 20, 20);
     ctx.fillStyle = "#eab308";
     ctx.fillRect(x - 8, y - 6, 16, 8);
-    ctx.fillStyle = "#000000";
-    ctx.font = "bold 9px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("☣", x, y + 1);
   } else {
-    // Generic Warning Hazard
     ctx.fillStyle = "#dc2626";
     ctx.beginPath();
-    ctx.moveTo(x, y - 14);
-    ctx.lineTo(x + 14, y + 10);
-    ctx.lineTo(x - 14, y + 10);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 12px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("!", x, y + 7);
+    ctx.moveTo(x, y - 14); ctx.lineTo(x + 14, y + 10); ctx.lineTo(x - 14, y + 10);
+    ctx.closePath(); ctx.fill();
   }
-
-  // Warning pulse icon
-  ctx.fillStyle = "#f87171";
-  ctx.font = "bold 10px sans-serif";
-  ctx.fillText("⚠", x + 12, y - 10 + pulse);
 
   // Label
   ctx.fillStyle = "#7f1d1d";
@@ -637,40 +1003,26 @@ function drawHazardEntity(ctx, entity, time) {
   ctx.fillText(label.slice(0, 11), x, y + 23);
 }
 
-// Draw NPC (Citizen / Visitor)
+// Draw NPC Entity
 function drawNpcEntity(ctx, entity, time) {
   const x = entity.x;
   const y = entity.y;
   const label = entity.label || entity.name || "Người dân";
 
-  // Shadow
   ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
   ctx.beginPath(); ctx.ellipse(x, y + 12, 12, 5, 0, 0, Math.PI * 2); ctx.fill();
 
-  // Body
   ctx.fillStyle = "#0284c7";
   ctx.fillRect(x - 7, y - 5, 14, 13);
-  // Head
   ctx.fillStyle = "#fed7aa";
   ctx.fillRect(x - 6, y - 16, 12, 11);
-  // Hair
-  ctx.fillStyle = "#94a3b8"; // Silver hair
+  ctx.fillStyle = "#94a3b8";
   ctx.fillRect(x - 7, y - 18, 14, 5);
-  // Eyes
-  ctx.fillStyle = "#0f172a";
-  ctx.fillRect(x - 4, y - 11, 2, 2);
-  ctx.fillRect(x + 2, y - 11, 2, 2);
 
-  // Animated Thought/Speech Bubble
+  // Animated Thought Bubble
   const bubbleY = y - 28 + Math.sin(time * 4) * 2;
   ctx.fillStyle = "#ffffff";
   ctx.beginPath(); ctx.arc(x, bubbleY, 9, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(x - 3, bubbleY + 7);
-  ctx.lineTo(x, bubbleY + 12);
-  ctx.lineTo(x + 3, bubbleY + 7);
-  ctx.closePath();
-  ctx.fill();
 
   ctx.fillStyle = "#0284c7";
   ctx.font = "bold 10px sans-serif";
@@ -687,64 +1039,6 @@ function drawNpcEntity(ctx, entity, time) {
   ctx.fillText(label.slice(0, 13), x, y + 23);
 }
 
-// Draw Gate / Exit Portal ("Trung tâm Công khai & Giải trình")
-function drawGateEntity(ctx, entity, time) {
-  const x = entity.x;
-  const y = entity.y;
-  const width = 80;
-  const height = 90;
-
-  // Swirling Vortex Background
-  const rot = time * 2;
-  const grad = ctx.createRadialGradient(x, y, 5, x, y, 40);
-  grad.addColorStop(0, "rgba(56, 189, 248, 0.9)");
-  grad.addColorStop(0.5, "rgba(14, 165, 233, 0.6)");
-  grad.addColorStop(1, "rgba(3, 105, 161, 0)");
-  ctx.fillStyle = grad;
-  ctx.beginPath(); ctx.arc(x, y, 38, 0, Math.PI * 2); ctx.fill();
-
-  // Swirling Energy Particles
-  for (let i = 0; i < 6; i++) {
-    const angle = rot + (i * Math.PI) / 3;
-    const dist = 14 + Math.sin(time * 3 + i) * 12;
-    ctx.fillStyle = i % 2 === 0 ? "#facc15" : "#38bdf8";
-    ctx.beginPath();
-    ctx.arc(x + Math.cos(angle) * dist, y + Math.sin(angle) * dist, 3, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Stone Archway Pillars
-  ctx.fillStyle = "#334155";
-  ctx.fillRect(x - width / 2, y - height / 2, 14, height);
-  ctx.fillRect(x + width / 2 - 14, y - height / 2, 14, height);
-  // Gold Caps
-  ctx.fillStyle = "#d97706";
-  ctx.fillRect(x - width / 2 - 2, y - height / 2 - 4, 18, 6);
-  ctx.fillRect(x + width / 2 - 16, y - height / 2 - 4, 18, 6);
-
-  // Top Arch
-  ctx.fillStyle = "#1e293b";
-  ctx.fillRect(x - width / 2 - 4, y - height / 2 - 14, width + 8, 14);
-  ctx.fillStyle = "#facc15";
-  ctx.strokeRect(x - width / 2 - 4, y - height / 2 - 14, width + 8, 14);
-
-  // Emblem
-  ctx.fillStyle = "#ef4444";
-  ctx.beginPath(); ctx.arc(x, y - height / 2 - 7, 7, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "#facc15";
-  ctx.font = "bold 9px sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("★", x, y - height / 2 - 4);
-
-  // Title Banner
-  ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
-  ctx.fillRect(x - 70, y + height / 2 + 2, 140, 16);
-  ctx.fillStyle = "#38bdf8";
-  ctx.font = "bold 9px 'Silkscreen', 'VT323', monospace, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("TT CÔNG KHAI & GIẢI TRÌNH", x, y + height / 2 + 13);
-}
-
 // ----------------------------------------------------
 // MAIN RENDER SCENE
 // ----------------------------------------------------
@@ -752,7 +1046,6 @@ function drawGateEntity(ctx, entity, time) {
 function drawScene() {
   const time = state.gameTime;
 
-  // Screen shake transform
   context.save();
   if (state.screenShakeTimer > 0) {
     const shakeX = (Math.random() - 0.5) * state.screenShakeIntensity * 2;
@@ -760,34 +1053,33 @@ function drawScene() {
     context.translate(shakeX, shakeY);
   }
 
-  // 1. Environment & Office Furniture
+  // 1. Environment Floor, Carpet, Wall, Clock
   drawEnvironment(time);
-  drawOfficeFurniture(time);
 
-  // 2. Interactive World Entities
+  // 2. 6 Functional Architectural Departments & Workstations
+  drawDepartmentsAndStations(time);
+
+  // 3. Interactive World Entities (Filtered if collected or claimed)
   for (const [kind, entities] of Object.entries(state.snapshot)) {
     if (kind === "players" || !entities || typeof entities !== "object") continue;
     for (const [id, entity] of Object.entries(entities)) {
       if (!entity) continue;
       const fullEntity = { ...entity, id: entity.id || id, kind: entity.kind || kind.slice(0, -1) };
 
+      if (state.collectedIds.has(fullEntity.id) || state.resolvedCollisionIds.has(fullEntity.id)) continue;
+      if (options.role === "player" && isEntityResolvedForPlayer(fullEntity, options.playerId)) continue;
+
       if (fullEntity.kind === "item") {
-        if (state.collectedIds.has(fullEntity.id)) continue;
-        if (options.role === "player" && isEntityResolvedForPlayer(fullEntity, options.playerId)) continue;
         drawItemEntity(context, fullEntity, time);
       } else if (fullEntity.kind === "hazard") {
         drawHazardEntity(context, fullEntity, time);
       } else if (fullEntity.kind === "npc") {
-        if (options.role === "player" && isEntityResolvedForPlayer(fullEntity, options.playerId)) continue;
         drawNpcEntity(context, fullEntity, time);
-      } else if (fullEntity.kind === "gate") {
-        if (options.role === "player" && isEntityResolvedForPlayer(fullEntity, options.playerId)) continue;
-        drawGateEntity(context, fullEntity, time);
       }
     }
   }
 
-  // 3. Remote Players
+  // 4. Remote Players
   for (const [id, remote] of Object.entries(state.snapshot.players)) {
     if (options.role !== "player" || id !== options.playerId) {
       drawPixelCharacter(context, remote.x, remote.y, {
@@ -799,7 +1091,7 @@ function drawScene() {
     }
   }
 
-  // 4. Local Player
+  // 5. Local Player
   if (options.role === "player") {
     drawPixelCharacter(context, state.player.x, state.player.y, {
       name: state.player.name || options.playerName,
@@ -809,7 +1101,27 @@ function drawScene() {
     });
   }
 
-  // 5. Particles Update & Render
+  // 6. Interactive Station Action HUD & Prompt
+  if (options.role === "player" && (state.nearbyStation || state.carriedItem)) {
+    const station = state.nearbyStation;
+    const promptText = state.carriedItem
+      ? `⚡ BẤM [E / SPACE / XỬ LÝ] ĐỂ ĐÓNG DẤU: ${state.carriedItem.label.toUpperCase()}`
+      : `⚡ BẤM [E / SPACE] ${station ? station.actionLabel.toUpperCase() : "TƯƠNG TÁC"}`;
+
+    const promptY = state.player.y > 440 ? 30 : bounds.height - 24;
+    context.fillStyle = "rgba(15, 23, 42, 0.95)";
+    context.fillRect(bounds.width / 2 - 210, promptY - 14, 420, 26);
+    context.strokeStyle = "#facc15";
+    context.lineWidth = 2;
+    context.strokeRect(bounds.width / 2 - 210, promptY - 14, 420, 26);
+
+    context.fillStyle = "#fef08a";
+    context.font = "bold 11px 'Silkscreen', 'VT323', monospace, sans-serif";
+    context.textAlign = "center";
+    context.fillText(promptText, bounds.width / 2, promptY + 3);
+  }
+
+  // 7. Particles Update & Render
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
     p.life += 0.016;
@@ -831,7 +1143,7 @@ function drawScene() {
     context.globalAlpha = 1.0;
   }
 
-  // 6. Floating Text Update & Render
+  // 8. Floating Text Update & Render
   for (let i = floatingTexts.length - 1; i >= 0; i--) {
     const ft = floatingTexts[i];
     ft.life += 0.016;
@@ -846,16 +1158,14 @@ function drawScene() {
     context.globalAlpha = alpha;
     context.font = "bold 13px 'Silkscreen', 'VT323', monospace, sans-serif";
     context.textAlign = "center";
-    // Text Shadow
     context.fillStyle = "#000000";
     context.fillText(ft.text, ft.x + 1, ft.y + 1);
-    // Main Text
     context.fillStyle = ft.color || "#ffdf6e";
     context.fillText(ft.text, ft.x, ft.y);
     context.restore();
   }
 
-  // 7. Frozen Overlay Effect
+  // 9. Frozen Overlay
   if (state.frozen) {
     context.fillStyle = "rgba(14, 165, 233, 0.25)";
     context.fillRect(0, 0, bounds.width, bounds.height);
@@ -865,7 +1175,7 @@ function drawScene() {
     context.fillText("❄ ĐANG TẠM DỪNG / ĐÓNG BĂNG ❄", bounds.width / 2, bounds.height / 2);
   }
 
-  // 8. Scanline Retro Overlay (if enabled)
+  // 10. Scanlines Overlay
   if (state.scanlines) {
     context.fillStyle = "rgba(0, 0, 0, 0.08)";
     for (let y = 0; y < bounds.height; y += 4) {
@@ -883,12 +1193,10 @@ function frame(now) {
   state.lastFrameAt = now;
   state.gameTime += deltaSeconds;
 
-  // Screen shake decay
   if (state.screenShakeTimer > 0) {
     state.screenShakeTimer -= deltaSeconds;
   }
 
-  // Local Player Movement
   if (!state.frozen && options.role === "player" && activeInput()) {
     state.player = movePlayer(state.player, input, deltaSeconds, bounds);
     if (now - state.lastMovePostedAt >= 100) {
@@ -903,6 +1211,7 @@ function frame(now) {
     }
   }
 
+  updateNearbyWorkstation();
   checkCollisions(now);
   drawScene();
   requestAnimationFrame(frame);
@@ -917,6 +1226,12 @@ const keyboardDirections = {
 };
 
 window.addEventListener("keydown", (event) => {
+  if (event.code === "KeyE" || event.code === "Space" || event.code === "Enter") {
+    event.preventDefault();
+    executePlayerAction();
+    return;
+  }
+
   const direction = keyboardDirections[event.code];
   if (!direction) return;
   getAudioContext();
@@ -931,7 +1246,6 @@ window.addEventListener("keyup", (event) => {
   setDirection(direction, false);
 });
 
-// Click / Touch to activate AudioContext
 window.addEventListener("pointerdown", () => {
   getAudioContext();
 });
@@ -950,6 +1264,8 @@ window.addEventListener("message", (event) => {
   } else if (message.type === "DPAD_MOVE") {
     getAudioContext();
     applyDpadMove(message.dir);
+  } else if (message.type === "ACTION_INTERACT") {
+    executePlayerAction();
   } else if (message.type === "FREEZE") {
     state.frozen = true;
     sfx.freeze();
