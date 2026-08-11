@@ -1,52 +1,108 @@
 :root {
   color-scheme: dark;
-  font-family: system-ui, sans-serif;
-  background: #091b33;
+  font-family: "VT323", monospace, system-ui, sans-serif;
+  background: #090607;
   color: #eff7ff;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   min-height: 100vh;
   margin: 0;
   display: grid;
   place-items: center;
-  background: radial-gradient(circle at top, #1d4773, #091b33 70%);
+  background: #0c0510;
+  background-image: 
+    radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+    radial-gradient(rgba(255,255,255,0.9), rgba(255,255,255,.15) 1.5px, transparent 30px);
+  background-size: 400px 400px, 280px 280px;
+  overflow: hidden;
 }
 
 .game-shell {
-  width: min(96vw, 1040px);
-  padding: 1rem;
+  width: min(98vw, 1000px);
+  padding: 0.5rem;
 }
 
 .game-heading {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  margin-bottom: 0.5rem;
 }
 
-h1 { font-size: 1.1rem; margin: 0; }
+.pixel-title {
+  font-family: "Silkscreen", monospace, sans-serif;
+  font-size: 1.1rem;
+  margin: 0;
+  color: #facc15;
+  text-shadow: 2px 2px 0 #000;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
 
-#game-status { margin: 0; color: #bfe4ff; text-align: right; }
+#game-status {
+  margin: 0;
+  color: #38bdf8;
+  font-family: "VT323", monospace;
+  font-size: 1.25rem;
+  text-align: right;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.canvas-wrapper {
+  position: relative;
+  border: 4px solid #000;
+  box-shadow:
+    0 0 0 2px #38bdf8,
+    0 0 0 6px #000,
+    0 12px 30px rgba(0, 0, 0, 0.8);
+  background: #0f172a;
+  border-radius: 4px;
+  overflow: hidden;
+}
 
 #game-canvas {
   display: block;
   width: 100%;
   height: auto;
   aspect-ratio: 16 / 9;
-  border: 3px solid #75c7f8;
-  border-radius: 0.6rem;
-  background: #183a5c;
-  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.35);
   image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
   touch-action: none;
 }
 
-.controls { margin: 0.65rem 0 0; color: #d8ebfa; font-size: 0.9rem; }
+.game-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.4rem;
+}
+
+.controls {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 1.1rem;
+  font-family: "VT323", monospace;
+}
 
 @media (max-width: 560px) {
-  .game-heading { align-items: flex-start; flex-direction: column; gap: 0.25rem; }
-  #game-status { text-align: left; }
+  .game-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  #game-status {
+    text-align: left;
+    font-size: 1.1rem;
+  }
+  .controls {
+    font-size: 0.95rem;
+  }
 }
