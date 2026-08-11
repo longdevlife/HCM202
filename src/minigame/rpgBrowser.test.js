@@ -63,6 +63,16 @@ test("host scene does not emit collision mutations", async () => {
   });
 });
 
+test("empty host scene does not draw a phantom local player", async () => {
+  await withBrowser(async (page) => {
+    await openScene(page, "host");
+    const centerPixel = await page.locator("#game-canvas").evaluate((canvas) => (
+      Array.from(canvas.getContext("2d").getImageData(480, 270, 1, 1).data)
+    ));
+    assert.notDeepEqual(centerPixel, [0, 170, 255, 255]);
+  });
+});
+
 test("player emits an overlapping NPC collision only once", async () => {
   await withBrowser(async (page) => {
     await openScene(page);

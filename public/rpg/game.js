@@ -1,6 +1,7 @@
 import {
   circlesOverlap,
   collisionMessage,
+  isEntityResolvedForPlayer,
   movePlayer,
   normalizeSnapshot,
   parseGameOptions,
@@ -48,6 +49,7 @@ function applyDpadMove(direction) {
 
 function handleCollision(entity, now) {
   if (options.role !== "player") return;
+  if (isEntityResolvedForPlayer(entity, options.playerId)) return;
   const radius = Number.isFinite(entity.radius) ? entity.radius : 16;
   if (!circlesOverlap(state.player, { ...entity, radius })) return;
   const event = collisionMessage(entity);
@@ -101,6 +103,7 @@ function drawDesk(x, y, width, label) {
 
 function drawEntity(entity, fallbackId) {
   if (entity.kind === "item" && state.collectedIds.has(entity.id || fallbackId)) return;
+  if (options.role === "player" && isEntityResolvedForPlayer(entity, options.playerId)) return;
   const x = entity.x;
   const y = entity.y;
   if (entity.kind === "item") {
@@ -151,9 +154,9 @@ function drawScene() {
     for (const [id, entity] of Object.entries(entities)) drawEntity({ ...entity, id: entity.id || id, kind: entity.kind || kind.slice(0, -1) }, id);
   }
   for (const [id, remote] of Object.entries(state.snapshot.players)) {
-    if (id !== options.playerId) drawPlayer(remote, false);
+    if (options.role !== "player" || id !== options.playerId) drawPlayer(remote, false);
   }
-  drawPlayer(state.player, true);
+  if (options.role === "player") drawPlayer(state.player, true);
   canvas.dataset.rendered = "true";
 }
 

@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ref, set, onValue, remove, update, get } from "firebase/database";
+import { ref, set, onValue, remove, update } from "firebase/database";
 import { db } from "./firebaseConfig";
 import { situations, PHASE_CONFIGS } from "./situations";
 import { applyPhaseOneGate, applyPhaseTwoGate, applyVoteOutcome, calculateFinalScore } from "./gameStateUtils";
-import { buildRpgSnapshot, createPhaseWorld } from "./rpgBridge";
+import { buildRpgSnapshot, createMarketEventEntities, createPhaseWorld } from "./rpgBridge";
 import {
   IconPhone,
   IconDesktop,
@@ -149,6 +149,7 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
         playerUpdates[`${p.id}/phaseTwoMessage`] = null;
         playerUpdates[`${p.id}/completedFinalMission`] = null;
         playerUpdates[`${p.id}/completedAt`] = null;
+        playerUpdates[`${p.id}/rpgClaims`] = null;
         playerUpdates[`${p.id}/decisionBonus`] = 0;
         playerUpdates[`${p.id}/phaseBonus`] = 0;
       });
@@ -185,12 +186,24 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
   };
 
   const handleMarketEvent = async (eventType) => {
-    const id = `${Date.now()}_${eventType}`;
-    await set(ref(db, `marketEvents/${id}`), {
-      type: eventType,
-      phase: gameState.status,
-      createdAt: Date.now(),
-    });
+    const createdAt = Date.now();
+    const id = `${createdAt}_${eventType}`;
+    const entities = createMarketEventEntities(eventType, gameState.status, currentConfig, createdAt);
+    const eventUpdates = {
+      [`marketEvents/${id}`]: {
+        type: eventType,
+        phase: gameState.status,
+        createdAt,
+      },
+    };
+
+    for (const collection of ["books", "traps", "npcs"]) {
+      for (const [entityId, entity] of Object.entries(entities[collection])) {
+        eventUpdates[`${collection}/${entityId}`] = entity;
+      }
+    }
+
+    await update(ref(db), eventUpdates);
   };
 
   const applyCollectiveGoal = async (phaseKey, updates) => {

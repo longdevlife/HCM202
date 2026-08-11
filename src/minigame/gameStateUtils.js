@@ -40,6 +40,103 @@ export const applyPlayerDelta = (player, delta) => {
   };
 };
 
+const isRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+const hasOwn = (value, key) => isRecord(value) && Object.prototype.hasOwnProperty.call(value, key);
+
+export const applyEntityRewardClaim = (player, claim = {}) => {
+  const phaseKey = claim.phaseKey;
+  const collection = claim.collection;
+  const entityId = claim.entityId;
+  const entity = claim.entity;
+  const claimedAt = claim.claimedAt;
+  if (!isRecord(player)
+    || !["books", "npcs"].includes(collection)
+    || typeof phaseKey !== "string"
+    || typeof entityId !== "string"
+    || !isRecord(entity)
+    || typeof entity.type !== "string"
+    || !Number.isFinite(claimedAt)) return null;
+
+  const allClaims = isRecord(player.rpgClaims) ? player.rpgClaims : {};
+  const phaseClaims = isRecord(allClaims[phaseKey]) ? allClaims[phaseKey] : {};
+  const collectionClaims = isRecord(phaseClaims[collection]) ? phaseClaims[collection] : {};
+  if (hasOwn(collectionClaims, entityId)) return null;
+
+  const progress = isRecord(player.progress) ? player.progress : {};
+  const phaseProgress = isRecord(progress[phaseKey]) ? progress[phaseKey] : {};
+  const rewardedPlayer = applyPlayerDelta(player, {
+    score: Number.isFinite(entity.score) ? entity.score : 0,
+    integrity: Number.isFinite(entity.integrity) ? entity.integrity : 0,
+    recoveryTask: claim.recoveryTask === true,
+  });
+
+  return {
+    ...rewardedPlayer,
+    progress: {
+      ...progress,
+      [phaseKey]: {
+        ...phaseProgress,
+        [entity.type]: (Number(phaseProgress[entity.type]) || 0) + 1,
+      },
+    },
+    rpgClaims: {
+      ...allClaims,
+      [phaseKey]: {
+        ...phaseClaims,
+        [collection]: {
+          ...collectionClaims,
+          [entityId]: claimedAt,
+        },
+      },
+    },
+  };
+};
+
+const FINAL_GATE_REQUIREMENTS = ["transparency", "accountability", "serve_people"];
+
+export const applyFinalGateCompletion = (player, completion = {}) => {
+  const phaseKey = completion.phaseKey;
+  const gateId = completion.gateId;
+  const completedAt = completion.completedAt;
+  if (!isRecord(player)
+    || phaseKey !== "phase_3"
+    || typeof gateId !== "string"
+    || !Number.isFinite(completedAt)) return null;
+
+  const progress = isRecord(player.progress) ? player.progress : {};
+  const phaseProgress = isRecord(progress.phase_3) ? progress.phase_3 : {};
+  const allClaims = isRecord(player.rpgClaims) ? player.rpgClaims : {};
+  const phaseClaims = isRecord(allClaims.phase_3) ? allClaims.phase_3 : {};
+  const gateClaims = isRecord(phaseClaims.gates) ? phaseClaims.gates : {};
+  const alreadyCompleted = player.completedFinalMission === true || Object.keys(gateClaims).length > 0;
+  const hasPrerequisites = FINAL_GATE_REQUIREMENTS.every((type) => (Number(phaseProgress[type]) || 0) >= 1);
+  if (alreadyCompleted || !hasPrerequisites) return null;
+
+  return {
+    ...player,
+    progress: {
+      ...progress,
+      phase_3: {
+        ...phaseProgress,
+        public_center: (Number(phaseProgress.public_center) || 0) + 1,
+      },
+    },
+    rpgClaims: {
+      ...allClaims,
+      phase_3: {
+        ...phaseClaims,
+        gates: {
+          ...gateClaims,
+          [gateId]: completedAt,
+        },
+      },
+    },
+    completedFinalMission: true,
+    completedAt: player.completedAt || completedAt,
+    phaseBonus: (Number(player.phaseBonus) || 0) + 100,
+  };
+};
+
 export const applyDecisionEffects = (player, effects = {}) => applyPlayerDelta(player, effects);
 
 export const applyPhaseOneGate = (player) => {

@@ -19,6 +19,33 @@ const createRandom = (seed) => {
 
 const coordinate = (random, lower, upper) => Math.floor(random() * (upper - lower + 1)) + lower;
 const entityKey = (phaseKey, seed, index) => `${phaseKey}_${seed}_${index}`;
+const eventEntityKey = (phaseKey, eventType, seed, index) => `${phaseKey}_${eventType}_${seed}_${index}`;
+
+const createRewardSchedule = (phaseConfig, maxBooks) => {
+  const rewardOptions = [
+    phaseConfig.bookReward,
+    phaseConfig.feedbackReward,
+    phaseConfig.supportReward,
+  ].filter(isObject);
+  const rewardsByType = new Map(rewardOptions
+    .filter(({ type }) => typeof type === "string" && type.length > 0)
+    .map((reward) => [reward.type, reward]));
+  const schedule = [];
+
+  if (Array.isArray(phaseConfig.progressGoals)) {
+    for (const goal of phaseConfig.progressGoals) {
+      const reward = isObject(goal) ? rewardsByType.get(goal.type) : null;
+      const target = isObject(goal) ? nonNegativeCount(goal.target) : 0;
+      for (let count = 0; reward && count < target && schedule.length < maxBooks; count += 1) {
+        schedule.push(reward);
+      }
+    }
+  }
+
+  const fallbackReward = isObject(phaseConfig.bookReward) ? phaseConfig.bookReward : {};
+  while (schedule.length < maxBooks) schedule.push(fallbackReward);
+  return schedule;
+};
 
 const mapCollection = (collection, kind) => {
   if (!isObject(collection)) return {};
@@ -44,13 +71,14 @@ export function createPhaseWorld(phaseKey, config = {}, seed = 0) {
   const npcs = {};
   const gates = {};
   const maxBooks = nonNegativeCount(phaseConfig.maxBooks);
+  const rewardSchedule = createRewardSchedule(phaseConfig, maxBooks);
   const trapCount = nonNegativeCount(phaseConfig.trapCount);
   const hazards = Array.isArray(phaseConfig.hazards) ? phaseConfig.hazards : [];
 
   for (let index = 0; index < maxBooks; index += 1) {
     const id = entityKey(phase, numericSeed, index);
     books[id] = {
-      ...(isObject(phaseConfig.bookReward) ? { ...phaseConfig.bookReward } : {}),
+      ...rewardSchedule[index],
       id,
       kind: "item",
       x: coordinate(random, SPAWN_MARGIN, WORLD_WIDTH - SPAWN_MARGIN),
@@ -95,6 +123,53 @@ export function createPhaseWorld(phaseKey, config = {}, seed = 0) {
   };
 }
 
+/** Create deterministic entities appended by the host's configured event buttons. */
+export function createMarketEventEntities(eventType, phaseKey, config = {}, seed = 0) {
+  const phase = typeof phaseKey === "string" && phaseKey ? phaseKey : "phase_1";
+  const phaseConfig = isObject(config) ? config : {};
+  const numericSeed = Number.isFinite(seed) ? Number(seed) : 0;
+  const random = createRandom(numericSeed);
+  const result = { books: {}, traps: {}, npcs: {} };
+  const positiveEvents = {
+    case_peak: { collection: "books", count: 3, kind: "item", reward: phaseConfig.bookReward },
+    citizen_support: { collection: "npcs", count: 1, kind: "npc", reward: phaseConfig.supportReward },
+    feedback_wave: { collection: "books", count: 2, kind: "item", reward: phaseConfig.feedbackReward },
+    surprise_inspection: { collection: "books", count: 1, kind: "item", reward: phaseConfig.feedbackReward },
+    citizen_feedback: { collection: "npcs", count: 1, kind: "npc", reward: phaseConfig.supportReward },
+    recovery_chance: { collection: "books", count: 1, kind: "item", reward: phaseConfig.supportReward },
+  };
+  const eventConfig = positiveEvents[eventType];
+
+  if (eventConfig && isObject(eventConfig.reward)) {
+    for (let index = 0; index < eventConfig.count; index += 1) {
+      const id = eventEntityKey(phase, eventType, numericSeed, index);
+      result[eventConfig.collection][id] = {
+        ...eventConfig.reward,
+        id,
+        kind: eventConfig.kind,
+        x: coordinate(random, SPAWN_MARGIN, WORLD_WIDTH - SPAWN_MARGIN),
+        y: coordinate(random, SPAWN_MARGIN, WORLD_HEIGHT - SPAWN_MARGIN),
+      };
+    }
+  }
+
+  if (eventType === "final_pressure") {
+    const hazards = Array.isArray(phaseConfig.hazards) ? phaseConfig.hazards.filter(isObject) : [];
+    for (let index = 0; index < Math.min(2, hazards.length); index += 1) {
+      const id = eventEntityKey(phase, eventType, numericSeed, index);
+      result.traps[id] = {
+        ...hazards[index],
+        id,
+        kind: "hazard",
+        x: coordinate(random, SPAWN_MARGIN, WORLD_WIDTH - SPAWN_MARGIN),
+        y: coordinate(random, SPAWN_MARGIN, WORLD_HEIGHT - SPAWN_MARGIN),
+      };
+    }
+  }
+
+  return result;
+}
+
 /** Convert Firebase's collection names into the groups expected by the canvas game. */
 export function buildRpgSnapshot(gameState = {}, collections = {}) {
   const state = isObject(gameState) ? gameState : {};
@@ -131,7 +206,9 @@ export function isRpgMessage(value) {
     case "NHAT_SACH":
       return typeof value.bookId === "string" && value.bookId.length > 0;
     case "DINH_BAY":
-      return isObject(value.hazard);
+      return isObject(value.hazard)
+        && typeof value.hazard.id === "string"
+        && value.hazard.id.length > 0;
     case "FOUND_LOYAL_CUSTOMER":
       return typeof value.npcId === "string" && value.npcId.length > 0;
     case "ESCAPED_GATE":
@@ -139,6 +216,14 @@ export function isRpgMessage(value) {
     default:
       return false;
   }
+}
+
+export function resolveCanonicalHazard(reportedHazard, persistedHazard) {
+  if (!isObject(reportedHazard)
+    || !isObject(persistedHazard)
+    || typeof reportedHazard.id !== "string"
+    || reportedHazard.id !== persistedHazard.id) return null;
+  return persistedHazard;
 }
 
 /** Normalize a player move to the playable canvas bounds. */

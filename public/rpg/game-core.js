@@ -71,3 +71,15 @@ export function collisionMessage(entity) {
   if (entity.kind === "gate") return { type: "ESCAPED_GATE", gateId: entity.id };
   return null;
 }
+
+export function isEntityResolvedForPlayer(entity, playerId) {
+  if (!entity || typeof entity !== "object" || typeof playerId !== "string") return false;
+  for (const field of ["claimedBy", "completedBy"]) {
+    const resolutionMap = entity[field];
+    if (resolutionMap
+      && typeof resolutionMap === "object"
+      && !Array.isArray(resolutionMap)
+      && Object.prototype.hasOwnProperty.call(resolutionMap, playerId)) return true;
+  }
+  return false;
+}

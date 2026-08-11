@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { onValue, ref, remove, runTransaction, update } from "firebase/database";
+import { get, onValue, ref, runTransaction, update } from "firebase/database";
 import { db } from "./firebaseConfig";
 import { PHASE_CONFIGS } from "./situations";
-import { applyPlayerDelta } from "./gameStateUtils";
+import { applyEntityRewardClaim, applyFinalGateCompletion, applyPlayerDelta } from "./gameStateUtils";
 import { getCharacterOption } from "./characterOptions";
-import { buildRpgSnapshot, isRpgMessage, normalizePlayerMove } from "./rpgBridge";
+import { buildRpgSnapshot, isRpgMessage, normalizePlayerMove, resolveCanonicalHazard } from "./rpgBridge";
 import {
   IconPhone,
   IconDesktop,
@@ -130,24 +130,74 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
         { applyLocally: false }
       );
 
-    const claimBook = async (bookId) => {
-      if (!bookId) return false;
-
-      const result = await runTransaction(
-        ref(db, `books/${bookId}`),
-        (book) => {
-          if (!book || book.claimedBy) return book;
-          return { ...book, claimedBy: playerId, claimedAt: Date.now() };
+    const recordEntityResolution = (collection, entityId, field, resolvedAt) =>
+      runTransaction(
+        ref(db, `${collection}/${entityId}`),
+        (entity) => {
+          if (!entity) return undefined;
+          const resolutionMap = entity[field] && typeof entity[field] === "object"
+            ? entity[field]
+            : {};
+          if (Object.prototype.hasOwnProperty.call(resolutionMap, playerId)) return entity;
+          return {
+            ...entity,
+            [field]: {
+              ...resolutionMap,
+              [playerId]: resolvedAt,
+            },
+          };
         },
         { applyLocally: false }
       );
 
-      const claimedBook = result.snapshot.val();
-      const didClaim = claimedBook?.claimedBy === playerId;
-      if (didClaim) {
-        await remove(ref(db, `books/${bookId}`));
+    const claimRewardEntity = async (collection, entityId, recoveryTask = false) => {
+      if (!entityId) return null;
+      const entitySnapshot = await get(ref(db, `${collection}/${entityId}`));
+      const entity = entitySnapshot.val();
+      if (!entity || typeof entity.type !== "string") return null;
+
+      const claimedAt = Date.now();
+      const result = await runTransaction(
+        ref(db, `players/${playerId}`),
+        (player) => applyEntityRewardClaim(player, {
+          phaseKey: gameState.status,
+          collection,
+          entityId,
+          entity,
+          claimedAt,
+          recoveryTask,
+        }) || undefined,
+        { applyLocally: false }
+      );
+
+      const recordedAt = result.snapshot.val()?.rpgClaims?.[gameState.status]?.[collection]?.[entityId];
+      if (Number.isFinite(recordedAt)) {
+        await recordEntityResolution(collection, entityId, "claimedBy", recordedAt);
       }
-      return didClaim ? claimedBook : null;
+      return result.committed ? entity : null;
+    };
+
+    const completeFinalGate = async (gateId) => {
+      if (!gateId) return null;
+      const gateSnapshot = await get(ref(db, `gates/${gateId}`));
+      const gate = gateSnapshot.val();
+      if (!gate || gate.type !== "public_center") return null;
+
+      const completedAt = Date.now();
+      const result = await runTransaction(
+        ref(db, `players/${playerId}`),
+        (player) => applyFinalGateCompletion(player, {
+          phaseKey: gameState.status,
+          gateId,
+          completedAt,
+        }) || undefined,
+        { applyLocally: false }
+      );
+      const recordedAt = result.snapshot.val()?.rpgClaims?.phase_3?.gates?.[gateId];
+      if (Number.isFinite(recordedAt)) {
+        await recordEntityResolution("gates", gateId, "completedBy", recordedAt);
+      }
+      return result.committed ? gate : null;
     };
 
     const handleMessage = async (e) => {
@@ -173,25 +223,19 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
 
       // A. Nhặt vật phẩm tích cực -> điểm công vụ / uy tín theo phase
       if (e.data.type === "NHAT_SACH") {
-        const claimedBook = await claimBook(e.data.bookId);
+        const claimedBook = await claimRewardEntity("books", e.data.bookId);
         if (!claimedBook) return;
 
-        const bonusScore = Number.isFinite(claimedBook.score)
-          ? claimedBook.score
-          : phaseConfig.bookReward.score;
-        const bonusIntegrity = Number.isFinite(claimedBook.integrity)
-          ? claimedBook.integrity
-          : phaseConfig.bookReward.integrity;
-        const progressType = claimedBook.type || phaseConfig.bookReward.type || "public_service";
-
-        await applyScoreIntegrityDelta({ score: bonusScore, integrity: bonusIntegrity });
-        await incrementProgress(progressType);
+        const bonusScore = Number.isFinite(claimedBook.score) ? claimedBook.score : 0;
         addFloatingText(claimedBook.message || `+${bonusScore} Công vụ`, claimedBook.color || "#2e7d32");
       }
 
       // B. Va chạm rủi ro công vụ -> giảm điểm / uy tín
       if (e.data.type === "DINH_BAY") {
-        const hazard = e.data.hazard || {};
+        const hazardId = e.data.hazard?.id;
+        const hazardSnapshot = await get(ref(db, `traps/${hazardId}`));
+        const hazard = resolveCanonicalHazard(e.data.hazard, hazardSnapshot.val());
+        if (!hazard) return;
         const shouldFreeze = hazard.effect === "freeze" || !hazard.effect;
         const freezeSeconds = Math.ceil((hazard.durationMs || 3000) / 1000);
 
@@ -207,12 +251,8 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
           }, hazard.durationMs || 3000);
         }
 
-        const penScore = Number.isFinite(hazard.score)
-          ? hazard.score
-          : phaseConfig.trapPenalty.score;
-        const penIntegrity = Number.isFinite(hazard.integrity)
-          ? hazard.integrity
-          : phaseConfig.trapPenalty.integrity;
+        const penScore = Number.isFinite(hazard.score) ? hazard.score : 0;
+        const penIntegrity = Number.isFinite(hazard.integrity) ? hazard.integrity : 0;
 
         await applyScoreIntegrityDelta({ score: penScore, integrity: penIntegrity });
         await incrementProgress(`hit_${hazard.type || "hazard"}`);
@@ -221,9 +261,8 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
 
       // C. Event NPC cũ được map thành hỗ trợ/phản ánh người dân.
       if (e.data.type === "FOUND_LOYAL_CUSTOMER") {
-        const reward = phaseConfig.supportReward || { score: 50, integrity: 5, type: "public_support" };
-        await applyScoreIntegrityDelta({ score: reward.score, integrity: reward.integrity, recoveryTask: true });
-        await incrementProgress(reward.type || "public_support");
+        const reward = await claimRewardEntity("npcs", e.data.npcId, true);
+        if (!reward) return;
         await runTransaction(
           ref(db, `players/${playerId}/progress/${gameState.status}/citizen_support_at`),
           (current) => current || Date.now(),
@@ -234,17 +273,8 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
 
       // D. Event cổng cũ được map thành Trung tâm Công khai & Giải trình.
       if (e.data.type === "ESCAPED_GATE") {
-        await incrementProgress("public_center");
-        await runTransaction(
-          ref(db, `players/${playerId}`),
-          (player) => ({
-            ...player,
-            completedFinalMission: true,
-            completedAt: player?.completedAt || Date.now(),
-            phaseBonus: (Number(player?.phaseBonus) || 0) + 100,
-          }),
-          { applyLocally: false }
-        );
+        const gate = await completeFinalGate(e.data.gateId);
+        if (!gate) return;
         addFloatingText("Đã đến Trung tâm Công khai!", "#c9922a");
       }
     };
