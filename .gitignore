@@ -28,3 +28,6 @@ dist-ssr
 
 # AI Skills Folder
 skills/
+
+# Local isolated worktrees
+.worktrees/
