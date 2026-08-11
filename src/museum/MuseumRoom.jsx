@@ -666,9 +666,9 @@ export function MuseumRoom() {
         accent="#C5A028"
         label="Sảnh chính"
         openingLabels={{
-          left: "Nhà nước dân chủ",
-          back: "Nhà nước pháp quyền",
-          right: "Nhà nước trong sạch, vững mạnh",
+          left: "Nhà nước hợp hiến, hợp pháp",
+          back: "Nhà nước thượng tôn pháp luật",
+          right: " Pháp quyền nhân nghĩa",
         }}
         chandelier="large"
         decor="lobby"
@@ -702,14 +702,14 @@ export function MuseumRoom() {
         label="Nhà nước pháp quyền"
       />
 
-      {/* ── RIGHT ROOM: Nhà nước trong sạch, vững mạnh ── */}
+      {/* ── RIGHT ROOM:Pháp luật nhân nghĩa ── */}
       <Room
         position={ROOM_RIGHT_POS}
         size={ROOM_SIZE}
         textures={textures}
         openings={["left"]}
         accent="#6F8F4E"
-        label="Nhà nước trong sạch, vững mạnh"
+        label="Pháp luật nhân nghĩa"
       />
     </group>
   );

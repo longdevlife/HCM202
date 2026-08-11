@@ -29,8 +29,8 @@ export const ROOM_RIGHT_POS = [16, 0, 0];
 const rawRooms = [
   {
     id: "constitutional-legal",
-    title: "Nhà nước dân chủ",
-    shortTitle: "Nhà nước dân chủ",
+    title: "Nhà nước hợp hiến, hợp pháp",
+    shortTitle: "Nhà nước hợp hiến, hợp pháp",
     accent: "#C5272D",
     position: ROOM_LEFT_POS,
     direction: "left",
@@ -39,14 +39,18 @@ const rawRooms = [
         id: "room1-left",
         type: "theory",
         wall: "left",
-        title: "Cơ sở lý thuyết",
-        heading: "Vận hành theo pháp luật",
+        title: "",
+        heading: "",
         // visitor-left wall when entering from the lobby (south wall, facing -z)
         position: [-16, 3, 4.9],
         rotation: [0, Math.PI, 0],
         images: [
           "/museum/nhanuochophienhopphap/tuong_trai_1.jpg",
           "/museum/nhanuochophienhopphap/tuong_trai_2.jpg"
+        ],
+        captions: [
+          "Hồ Chí Minh bỏ phiếu trong Tổng tuyển cử năm 1946",
+          "Nhân dân tham gia Tổng tuyển cử ngày 6/1/1946"
         ]
       },
       {
@@ -59,8 +63,12 @@ const rawRooms = [
         position: [-21.9, 3, 0],
         rotation: [0, Math.PI / 2, 0],
         images: [
-          "/museum/nhanuochophienhopphap/tuong_giua_1.png",
+          "/museum/nhanuochophienhopphap/tuong_giua_1.jpg",
           "/museum/nhanuochophienhopphap/tuong_giua_2.jpg"
+        ],
+        captions: [
+          "Các đại biểu tại Kỳ họp thứ nhất Quốc hội khóa I, ngày 2/3/1946",
+          "Bản Hiến pháp năm 1946"
         ]
       },
       {
@@ -74,7 +82,11 @@ const rawRooms = [
         rotation: [0, 0, 0],
         images: [
           "/museum/nhanuochophienhopphap/tuong_phai_1.jpg",
-          "/museum/nhanuochophienhopphap/tuong_phai_2.png"
+          "/museum/nhanuochophienhopphap/tuong_phai_2.jpg"
+        ],
+        captions: [
+          "Hồ Chí Minh ký Hiến pháp năm 1959",
+          "Tư liệu bổ sung"
         ]
       }
     ]
@@ -97,8 +109,12 @@ const rawRooms = [
         position: [-5.9, 3, -19],
         rotation: [0, Math.PI / 2, 0],
         images: [
-          "/museum/nhanuocphapquyen/tuong_trai_1.png",
-          "/museum/nhanuocphapquyen/tuong_trai_2.png"
+          "/museum/nhanuocphapquyen/tuong_trai_1.jpg",
+          "/museum/nhanuocphapquyen/tuong_trai_2.jpg"
+        ],
+        captions: [
+          "Quốc hội biểu quyết thông qua luật",
+          "Hiến pháp nước CHXHCN Việt Nam"
         ]
       },
       {
@@ -113,6 +129,10 @@ const rawRooms = [
         images: [
           "/museum/nhanuocphapquyen/tuong_giua_1.jpg",
           "/museum/nhanuocphapquyen/tuong_giua_2.jpg"
+        ],
+        captions: [
+          "Phiên tòa xét xử của Tòa án nhân dân",
+          "Hoạt động phổ biến, giáo dục pháp luật"
         ]
       },
       {
@@ -127,14 +147,18 @@ const rawRooms = [
         images: [
           "/museum/nhanuocphapquyen/tuong_phai_1.jpg",
           "/museum/nhanuocphapquyen/tuong_phai_2.jpg"
+        ],
+        captions: [
+          "Người dân được tư vấn/trợ giúp pháp lý",
+          "Kỳ họp Quốc hội"
         ]
       }
     ]
   },
   {
     id: "humanistic-rule",
-    title: "Nhà nước trong sạch, vững mạnh",
-    shortTitle: "Nhà nước trong sạch, vững mạnh",
+    title: "Pháp luật nhân nghĩa",
+    shortTitle: "Pháp luật nhân nghĩa",
     accent: "#6F8F4E",
     position: ROOM_RIGHT_POS,
     direction: "right",
@@ -150,22 +174,29 @@ const rawRooms = [
         rotation: [0, 0, 0],
         images: [
           "/museum/phapquyennhannghia/tuong_trai_1.jpg",
-          "/museum/phapquyennhannghia/tuong_trai_2.png",
-          "/museum/phapquyennhannghia/tuong_trai_3.jpg"
+          "/museum/phapquyennhannghia/tuong_trai_2.jpg"
+        ],
+        captions: [
+          "Hồ Chí Minh với cán bộ ngành Tư pháp",
+          "Trợ giúp pháp lý, tư vấn pháp luật"
         ]
       },
       {
         id: "room3-center",
         type: "practice",
         wall: "center",
-        title: "Liên hệ thực tiễn",
-        heading: "Đặc xá & Khoan hồng",
+        title: "",
+        heading: "",
         // back wall of right room (east wall, facing -x)
         position: [21.9, 3, 0],
         rotation: [0, -Math.PI / 2, 0],
         images: [
           "/museum/phapquyennhannghia/tuong_giua_1.jpg",
           "/museum/phapquyennhannghia/tuong_giua_2.jpg"
+        ],
+        captions: [
+          "Giáo dục, cải tạo và tái hòa nhập cộng đồng",
+          "Trợ giúp pháp lý cho người nghèo, người yếu thế"
         ]
       },
       {
@@ -180,6 +211,10 @@ const rawRooms = [
         images: [
           "/museum/phapquyennhannghia/tuong_phai_1.jpg",
           "/museum/phapquyennhannghia/tuong_phai_2.png"
+        ],
+        captions: [
+          "Hoạt động bảo vệ quyền con người/quyền công dân",
+          ""
         ]
       }
     ]
@@ -194,7 +229,7 @@ export const museumRooms = rawRooms.map(room => {
   room.walls.forEach(wall => {
     const images = wall.images || [];
     const count = images.length;
-    
+
     // Calculate offsets based on count to center them on the wall
     const spacing = 3.4; // Distance between frames
     const startOffset = -((count - 1) * spacing) / 2;
@@ -202,19 +237,19 @@ export const museumRooms = rawRooms.map(room => {
     for (let i = 0; i < count; i++) {
       let newPos = [...wall.position];
       const isFacingX = Math.abs(Math.cos(wall.rotation[1])) < 0.01;
-      
+
       const offset = startOffset + i * spacing;
 
       if (isFacingX) {
-        newPos[2] -= offset * Math.sin(wall.rotation[1]); 
+        newPos[2] -= offset * Math.sin(wall.rotation[1]);
       } else {
-        newPos[0] += offset * Math.cos(wall.rotation[1]); 
+        newPos[0] += offset * Math.cos(wall.rotation[1]);
       }
 
       expandedWalls.push({
         ...wall,
         id: `${wall.id}-${i + 1}`,
-        title: count > 1 ? `${wall.title} - ${panelCopyLabels[i]}` : wall.title,
+        title: wall.captions && wall.captions[i] ? wall.captions[i] : (count > 1 ? `${wall.title} - ${panelCopyLabels[i]}` : wall.title),
         sequenceLabel: panelCopyLabels[i],
         position: newPos,
         imageSrc: images[i]
