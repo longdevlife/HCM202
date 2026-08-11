@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
-import { ref, remove, runTransaction } from "firebase/database";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { onValue, ref, remove, runTransaction, update } from "firebase/database";
 import { db } from "./firebaseConfig";
 import { PHASE_CONFIGS } from "./situations";
 import { applyPlayerDelta } from "./gameStateUtils";
 import { getCharacterOption } from "./characterOptions";
+import { buildRpgSnapshot, isRpgMessage, normalizePlayerMove } from "./rpgBridge";
 import {
   IconPhone,
   IconDesktop,
@@ -32,10 +33,14 @@ const getPhaseIcon = (status, className = "w-5 h-5") => {
   return null;
 };
 
+const EMPTY_WORLD = { players: {}, books: {}, traps: {}, npcs: {}, gates: {} };
 
 const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState }) => {
   const iframeRef = useRef(null);
+  const iframeReadyRef = useRef(false);
+  const lastPlayerMoveAtRef = useRef(0);
   const selectedCharacter = getCharacterOption(playerInfo.character);
+  const [world, setWorld] = useState(EMPTY_WORLD);
 
   // Trạng thái đóng băng
   const [isFrozen, setIsFrozen] = useState(false);
@@ -90,6 +95,32 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const collections = ["players", "books", "traps", "npcs", "gates"];
+    const unsubscribes = collections.map((collection) => onValue(ref(db, collection), (snapshot) => {
+      setWorld((currentWorld) => ({
+        ...currentWorld,
+        [collection]: snapshot.val() || {},
+      }));
+    }));
+    return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
+  }, []);
+
+  const postRpgSnapshot = useCallback((force = false) => {
+    const iframeWindow = iframeRef.current?.contentWindow;
+    if (!iframeWindow || (!iframeReadyRef.current && !force)) return;
+    iframeWindow.postMessage(buildRpgSnapshot(gameState, world), "*");
+  }, [gameState, world]);
+
+  const handleIframeLoad = useCallback(() => {
+    iframeReadyRef.current = true;
+    postRpgSnapshot(true);
+  }, [postRpgSnapshot]);
+
+  useEffect(() => {
+    postRpgSnapshot();
+  }, [postRpgSnapshot]);
+
   // 1. Lắng nghe postMessage từ Phaser
   useEffect(() => {
     const applyScoreIntegrityDelta = (delta) =>
@@ -120,7 +151,25 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
     };
 
     const handleMessage = async (e) => {
-      if (!e.data) return;
+      if (e.source !== iframeRef.current?.contentWindow || !isRpgMessage(e.data)) return;
+
+      if (e.data.type === "RPG_READY") {
+        iframeReadyRef.current = true;
+        postRpgSnapshot(true);
+        return;
+      }
+
+      if (e.data.type === "PLAYER_MOVE") {
+        const move = normalizePlayerMove(e.data);
+        const now = Date.now();
+        if (!move || now - lastPlayerMoveAtRef.current < 100) return;
+        lastPlayerMoveAtRef.current = now;
+        await update(ref(db, `players/${playerId}`), {
+          position: { x: move.x, y: move.y },
+          direction: move.direction || "down",
+        });
+        return;
+      }
 
       // A. Nhặt vật phẩm tích cực -> điểm công vụ / uy tín theo phase
       if (e.data.type === "NHAT_SACH") {
@@ -202,7 +251,7 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [playerId, phaseConfig, gameState.status]);
+  }, [playerId, phaseConfig, gameState.status, postRpgSnapshot]);
 
   // 2. Bộ đếm ngược đóng băng
   useEffect(() => {
@@ -340,6 +389,7 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
           <iframe
             ref={iframeRef}
             src={`/rpg/index.html?role=player&id=${playerId}&name=${encodeURIComponent(playerName)}&character=${encodeURIComponent(selectedCharacter.id)}&color=${encodeURIComponent(selectedCharacter.color)}`}
+            onLoad={handleIframeLoad}
             style={{ width: "100%", height: "100%", border: "none", display: "block" }}
             title="Phaser RPG"
           />

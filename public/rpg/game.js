@@ -26,6 +26,7 @@ const state = {
 
 const postToParent = (message) => window.parent?.postMessage(message, "*");
 const activeInput = () => input.up || input.down || input.left || input.right;
+const activeDirection = () => ["up", "down", "left", "right"].find((direction) => input[direction]);
 
 function setStatus(message) {
   status.textContent = message;
@@ -163,7 +164,13 @@ function frame(now) {
     state.player = movePlayer(state.player, input, deltaSeconds, bounds);
     if (now - state.lastMovePostedAt >= 100) {
       state.lastMovePostedAt = now;
-      postToParent({ type: "PLAYER_MOVE", playerId: options.playerId, x: state.player.x, y: state.player.y });
+      postToParent({
+        type: "PLAYER_MOVE",
+        playerId: options.playerId,
+        x: state.player.x,
+        y: state.player.y,
+        direction: activeDirection(),
+      });
     }
   }
   checkCollisions(now);

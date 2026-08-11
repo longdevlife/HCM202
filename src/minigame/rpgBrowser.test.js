@@ -89,3 +89,18 @@ test("scene ignores a snapshot that does not originate from its parent", async (
     assert.deepEqual(messages, []);
   });
 });
+
+test("player movement reports its active direction to the parent", async () => {
+  await withBrowser(async (page) => {
+    await openScene(page);
+    const movement = await page.evaluate(async () => {
+      const sent = [];
+      window.parent.postMessage = (message) => sent.push(message);
+      window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyW" }));
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      window.dispatchEvent(new KeyboardEvent("keyup", { code: "KeyW" }));
+      return sent.find((message) => message.type === "PLAYER_MOVE");
+    });
+    assert.equal(movement.direction, "up");
+  });
+});

@@ -33,8 +33,24 @@ test("buildRpgSnapshot maps Firebase names to canvas entity groups", () => {
   assert.equal(snapshot.items.b1.kind, "item");
 });
 
+test("buildRpgSnapshot exposes persisted player positions to the canvas", () => {
+  const snapshot = buildRpgSnapshot(
+    { status: "phase_1" },
+    { players: { p1: { position: { x: 10, y: 20 } } } },
+  );
+  assert.equal(snapshot.players.p1.x, 10);
+  assert.equal(snapshot.players.p1.y, 20);
+});
+
 test("movement messages require finite coordinates", () => {
   assert.equal(isRpgMessage({ type: "PLAYER_MOVE", x: 12, y: 18 }), true);
   assert.equal(isRpgMessage({ type: "PLAYER_MOVE", x: "12", y: 18 }), false);
+  assert.equal(isRpgMessage({ type: "PLAYER_MOVE", x: 12, y: 18, direction: "diagonal" }), false);
   assert.deepEqual(normalizePlayerMove({ x: -50, y: 900, direction: "left" }), { x: 12, y: 528, direction: "left" });
+});
+
+test("isRpgMessage accepts gameplay contracts and rejects unknown types", () => {
+  assert.equal(isRpgMessage({ type: "NHAT_SACH", bookId: "b1" }), true);
+  assert.equal(isRpgMessage({ type: "DINH_BAY", hazard: { type: "waste" } }), true);
+  assert.equal(isRpgMessage({ type: "DELETE_ALL_PLAYERS" }), false);
 });

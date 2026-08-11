@@ -24,7 +24,12 @@ const mapCollection = (collection, kind) => {
   if (!isObject(collection)) return {};
   return Object.fromEntries(Object.entries(collection).flatMap(([id, value]) => {
     if (!isObject(value)) return [];
-    return [[id, { ...value, id: value.id || id, kind }]];
+    const position = kind === "player" && isObject(value.position) ? value.position : {};
+    const coordinates = {
+      ...(finiteCoordinate(position.x) ? { x: position.x } : {}),
+      ...(finiteCoordinate(position.y) ? { y: position.y } : {}),
+    };
+    return [[id, { ...value, ...coordinates, id: value.id || id, kind }]];
   }));
 };
 
@@ -112,7 +117,8 @@ export function isRpgMessage(value) {
   if (!isObject(value) || typeof value.type !== "string") return false;
   switch (value.type) {
     case "PLAYER_MOVE":
-      return messageHasFiniteCoordinates(value);
+      return messageHasFiniteCoordinates(value)
+        && (value.direction === undefined || ["up", "down", "left", "right"].includes(value.direction));
     case "GAME_SNAPSHOT":
       return typeof value.phase === "string";
     case "RPG_READY":
