@@ -1,5 +1,6 @@
 import { useTexture } from "@react-three/drei";
-import { useCallback } from "react";
+import { useCallback, useState, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 const FRAME_DARK = "#24170e";
@@ -10,26 +11,59 @@ const FRAME_INNER_VELVET = "#140e0a";
 export function MuseumArtwork({ panel, focused, onSelect }) {
   const texture = useTexture(panel.imageSrc || "/textures/bìa đầu.png");
   texture.colorSpace = THREE.SRGBColorSpace;
+  
+  const groupRef = useRef(null);
+  const spotLightRef = useRef(null);
+  const frameMatRef = useRef(null);
+
+  useFrame((state, delta) => {
+    if (!groupRef.current) return;
+
+    const artworkPos = new THREE.Vector3();
+    groupRef.current.getWorldPosition(artworkPos);
+
+    const toArtwork = new THREE.Vector3().subVectors(artworkPos, state.camera.position);
+    const distance = toArtwork.length();
+    toArtwork.normalize();
+
+    const cameraForward = new THREE.Vector3();
+    state.camera.getWorldDirection(cameraForward);
+
+    const dot = cameraForward.dot(toArtwork);
+    const isLookingAt = dot > 0.85 && distance < 15;
+
+    const targetIntensity = isLookingAt ? 2.5 : 0.0;
+    const currentIntensity = spotLightRef.current ? spotLightRef.current.intensity : 0;
+    const newIntensity = THREE.MathUtils.lerp(currentIntensity, targetIntensity, delta * 6);
+    
+    if (spotLightRef.current) spotLightRef.current.intensity = newIntensity;
+    if (frameMatRef.current) {
+        frameMatRef.current.emissive = new THREE.Color("#ffc445");
+        frameMatRef.current.emissiveIntensity = newIntensity * 0.4;
+    }
+  });
 
   const handleClick = useCallback((e) => {
     e.stopPropagation();
     if (onSelect) onSelect(panel);
   }, [onSelect, panel]);
 
-  const handlePointerOver = useCallback(() => {
-    document.body.style.cursor = "pointer";
-  }, []);
-
-  const handlePointerOut = useCallback(() => {
-    document.body.style.cursor = "default";
-  }, []);
-
   return (
     <group
+      ref={groupRef}
       position={panel.position}
       rotation={panel.rotation}
       scale={focused ? 0.756 : 0.75}
     >
+      {/* Soft Front Light */}
+      <pointLight
+        ref={spotLightRef}
+        position={[0, 0, 1.2]}
+        intensity={0}
+        color="#ffebb8"
+        distance={4}
+      />
+
       {/* Lớp 1: Khung nền gỗ sẫm */}
       <mesh position={[0, 0, -0.06]}>
         <boxGeometry args={[2.3, 2.9, 0.1]} />
@@ -51,7 +85,7 @@ export function MuseumArtwork({ panel, focused, onSelect }) {
       {/* Lớp 4: Chỉ viền đồng cổ sáng */}
       <mesh position={[0, 0, 0.025]}>
         <boxGeometry args={[2.02, 2.62, 0.04]} />
-        <meshStandardMaterial color={FRAME_GOLD_LIGHT} roughness={0.32} metalness={0.85} />
+        <meshStandardMaterial ref={frameMatRef} color={FRAME_GOLD_LIGHT} roughness={0.32} metalness={0.85} />
       </mesh>
 
       {/* Lớp 5: Passpartout nhung đen */}
@@ -70,11 +104,9 @@ export function MuseumArtwork({ panel, focused, onSelect }) {
       <mesh
         position={[0, 0, 0.056]}
         onClick={handleClick}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
       >
         <planeGeometry args={[1.8, 2.4]} />
-        <meshBasicMaterial map={texture} toneMapped={false} />
+        <meshStandardMaterial map={texture} roughness={0.9} metalness={0.1} />
       </mesh>
     </group>
   );

@@ -323,38 +323,51 @@ function LobbyCenterpiece({ accent }) {
         <meshStandardMaterial color={DOOR_BRASS_COLOR} roughness={0.34} metalness={0.5} />
       </mesh>
 
+      {/* Spotlight chiếu riêng cho tượng Bác */}
+      <spotLight 
+        position={[0, 5, 1.5]} 
+        angle={0.4} 
+        penumbra={0.8} 
+        intensity={6.5} 
+        color="#ffebb8" 
+        distance={10} 
+        castShadow
+      >
+        <object3D attach="target" position={[0, 2.8, 0]} />
+      </spotLight>
+
       {/* Tượng Chủ tịch Hồ Chí Minh uy nghiêm - nâng nhẹ để bệ không thụt xuống sàn */}
       <primitive
         object={statueScene}
-        position={[0.22, 1.8, 0.95]}
+        position={[0, 1.8, 0]}
         scale={[4.2, 4.2, 4.2]}
         rotation={[0, 0, 0]}
       />
 
-      {/* 4 Cột chắn đồng hoàng gia mở rộng thành hình chữ nhật khổng lồ (5.6m x 6.0m) bao quanh tượng vô cùng rộng rãi */}
-      <StanchionPost position={[-2.8, 0, 2.6]} />
-      <StanchionPost position={[2.8, 0, 2.6]} />
-      <StanchionPost position={[-2.8, 0, -3.4]} />
-      <StanchionPost position={[2.8, 0, -3.4]} />
+      {/* 4 Cột chắn đồng hoàng gia mở rộng thành hình vuông (6.0m x 6.0m) bao quanh tượng vô cùng rộng rãi */}
+      <StanchionPost position={[-3.0, 0, 3.0]} />
+      <StanchionPost position={[3.0, 0, 3.0]} />
+      <StanchionPost position={[-3.0, 0, -3.0]} />
+      <StanchionPost position={[3.0, 0, -3.0]} />
 
-      {/* Dây nhung ruy băng màu đỏ thẫm kết nối 4 cột, rộng rãi và hoàn toàn không chạm vào tượng */}
+      {/* Dây nhung ruy băng màu đỏ thẫm kết nối 4 cột */}
       {/* Cột 1 (Trước-Trái) -> Cột 2 (Trước-Phải) */}
-      <mesh position={[0, 0.72, 2.6]} rotation={[0, 0, Math.PI / 2]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.02, 0.02, 5.6, 16]} />
+      <mesh position={[0, 0.72, 3.0]} rotation={[0, 0, Math.PI / 2]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.02, 0.02, 6.0, 16]} />
         <meshStandardMaterial color="#901111" roughness={0.8} />
       </mesh>
       {/* Cột 3 (Sau-Trái) -> Cột 4 (Sau-Phải) */}
-      <mesh position={[0, 0.72, -3.4]} rotation={[0, 0, Math.PI / 2]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.02, 0.02, 5.6, 16]} />
+      <mesh position={[0, 0.72, -3.0]} rotation={[0, 0, Math.PI / 2]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.02, 0.02, 6.0, 16]} />
         <meshStandardMaterial color="#901111" roughness={0.8} />
       </mesh>
       {/* Cột 1 (Trước-Trái) -> Cột 3 (Sau-Trái) */}
-      <mesh position={[-2.8, 0.72, -0.4]} rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
+      <mesh position={[-3.0, 0.72, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[0.02, 0.02, 6.0, 16]} />
         <meshStandardMaterial color="#901111" roughness={0.8} />
       </mesh>
       {/* Cột 2 (Trước-Phải) -> Cột 4 (Sau-Phải) */}
-      <mesh position={[2.8, 0.72, -0.4]} rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
+      <mesh position={[3.0, 0.72, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[0.02, 0.02, 6.0, 16]} />
         <meshStandardMaterial color="#901111" roughness={0.8} />
       </mesh>
@@ -362,7 +375,7 @@ function LobbyCenterpiece({ accent }) {
       <pointLight position={[0, 2.6, 0]} intensity={0.46} color={accent} distance={5} />
 
       {/* Giá đỡ bảng tên bằng đồng nghiêng sang trọng đặt phía trước ngoài hàng rào ruy băng mới */}
-      <group position={[0, 0, 2.78]}>
+      <group position={[0, 0, 3.4]}>
         {/* Chân đế giá đỡ */}
         <mesh position={[0, 0.015, 0]} castShadow receiveShadow>
           <cylinderGeometry args={[0.07, 0.09, 0.03, 16]} />
@@ -378,35 +391,35 @@ function LobbyCenterpiece({ accent }) {
           <boxGeometry args={[0.66, 0.32, 0.02]} />
           <meshStandardMaterial color="#b88a32" roughness={0.2} metalness={0.8} />
         </mesh>
-      </group>
 
-      {/* Bảng tên đồng vinh danh Bác trang trọng đặt nghiêng hướng lên, thêm occlude để ẩn khi bị khuất */}
-      <Html position={[0, 0.52, 2.84]} rotation={[-0.4, 0, 0]} transform center scale={0.22} occlude>
-        <div
-          style={{
-            minWidth: 260,
-            border: "2px solid #c5a028",
-            borderRadius: 4,
-            background: "linear-gradient(135deg, #2c1a0e, #1a100a)",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
-            color: "#e4bd67",
-            fontFamily: "'Playfair Display', serif",
-            fontWeight: "bold",
-            fontSize: 13,
-            letterSpacing: "0.1em",
-            padding: "8px 16px",
-            pointerEvents: "none",
-            textAlign: "center",
-            textTransform: "uppercase",
-            borderImage: "linear-gradient(to right, #c5a028, #f4df8a, #c5a028) 1",
-          }}
-        >
-          Chủ tịch Hồ Chí Minh <br />
-          <span style={{ fontSize: 10, fontFamily: "'Outfit', sans-serif", opacity: 0.85 }}>
-            (1890 - 1969)
-          </span>
-        </div>
-      </Html>
+        {/* Bảng tên đồng vinh danh Bác trang trọng đặt nghiêng hướng lên */}
+        <Html position={[0, 0.51, 0.075]} rotation={[-0.4, 0, 0]} transform center scale={0.22} occlude>
+          <div
+            style={{
+              minWidth: 260,
+              border: "2px solid #c5a028",
+              borderRadius: 4,
+              background: "linear-gradient(135deg, #2c1a0e, #1a100a)",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+              color: "#e4bd67",
+              fontFamily: "'Playfair Display', serif",
+              fontWeight: "bold",
+              fontSize: 13,
+              letterSpacing: "0.1em",
+              padding: "8px 16px",
+              pointerEvents: "none",
+              textAlign: "center",
+              textTransform: "uppercase",
+              borderImage: "linear-gradient(to right, #c5a028, #f4df8a, #c5a028) 1",
+            }}
+          >
+            Chủ tịch Hồ Chí Minh <br />
+            <span style={{ fontSize: 10, fontFamily: "'Outfit', sans-serif", opacity: 0.85 }}>
+              (1890 - 1969)
+            </span>
+          </div>
+        </Html>
+      </group>
     </group>
   );
 }
@@ -653,9 +666,9 @@ export function MuseumRoom() {
         accent="#C5A028"
         label="Sảnh chính"
         openingLabels={{
-          left: "Nhà nước hợp hiến, hợp pháp",
-          back: "Nhà nước thượng tôn pháp luật",
-          right: "Pháp quyền nhân nghĩa",
+          left: "Nhà nước dân chủ",
+          back: "Nhà nước pháp quyền",
+          right: "Nhà nước trong sạch, vững mạnh",
         }}
         chandelier="large"
         decor="lobby"
@@ -669,34 +682,34 @@ export function MuseumRoom() {
         textures={textures}
       />
 
-      {/* ── LEFT ROOM: Nhà nước hợp hiến, hợp pháp ── */}
+      {/* ── LEFT ROOM: Nhà nước dân chủ ── */}
       <Room
         position={ROOM_LEFT_POS}
         size={ROOM_SIZE}
         textures={textures}
         openings={["right"]}
         accent="#C5272D"
-        label=""
+        label="Nhà nước dân chủ"
       />
 
-      {/* ── CENTER ROOM: Nhà nước thượng tôn pháp luật ── */}
+      {/* ── CENTER ROOM: Nhà nước pháp quyền ── */}
       <Room
         position={ROOM_CENTER_POS}
         size={ROOM_SIZE}
         textures={textures}
         openings={["front"]}
         accent="#C5A028"
-        label=""
+        label="Nhà nước pháp quyền"
       />
 
-      {/* ── RIGHT ROOM: Pháp quyền nhân nghĩa ── */}
+      {/* ── RIGHT ROOM: Nhà nước trong sạch, vững mạnh ── */}
       <Room
         position={ROOM_RIGHT_POS}
         size={ROOM_SIZE}
         textures={textures}
         openings={["left"]}
         accent="#6F8F4E"
-        label=""
+        label="Nhà nước trong sạch, vững mạnh"
       />
     </group>
   );

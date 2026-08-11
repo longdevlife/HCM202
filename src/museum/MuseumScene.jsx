@@ -1,4 +1,4 @@
-import { ContactShadows, Sparkles } from "@react-three/drei";
+import { ContactShadows, Sparkles, Environment } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useRef } from "react";
 import * as THREE from "three";
@@ -49,6 +49,7 @@ function MuseumWorld({ focusedPanel, onFocusPanel, onSelectPanel, controlsEnable
     <>
       <color attach="background" args={["#090604"]} />
       <fog attach="fog" args={["#090604", 16, 55]} />
+      <Environment preset="city" />
 
       <ambientLight intensity={0.9} />
       <hemisphereLight args={["#ffffff", "#4a3324", 0.9]} />

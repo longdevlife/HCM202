@@ -29,8 +29,8 @@ export const ROOM_RIGHT_POS = [16, 0, 0];
 const rawRooms = [
   {
     id: "constitutional-legal",
-    title: "Nhà nước hợp hiến, hợp pháp",
-    shortTitle: "Hợp hiến, hợp pháp",
+    title: "Nhà nước dân chủ",
+    shortTitle: "Nhà nước dân chủ",
     accent: "#C5272D",
     position: ROOM_LEFT_POS,
     direction: "left",
@@ -45,22 +45,22 @@ const rawRooms = [
         position: [-16, 3, 4.9],
         rotation: [0, Math.PI, 0],
         images: [
-          "/museum/nhanuochophienhopphap/tuong_trai_1.png",
-          "/museum/nhanuochophienhopphap/tuong_trai_2.png"
+          "/museum/nhanuochophienhopphap/tuong_trai_1.jpg",
+          "/museum/nhanuochophienhopphap/tuong_trai_2.jpg"
         ]
       },
       {
         id: "room1-center",
         type: "practice",
         wall: "center",
-        title: "Liên hệ thực tiễn",
-        heading: "Tính Hợp Hiến & Uy Tín",
+        title: "",
+        heading: "",
         // back wall of left room (west wall, facing +x)
         position: [-21.9, 3, 0],
         rotation: [0, Math.PI / 2, 0],
         images: [
           "/museum/nhanuochophienhopphap/tuong_giua_1.png",
-          "/museum/nhanuochophienhopphap/tuong_giua_2.png"
+          "/museum/nhanuochophienhopphap/tuong_giua_2.jpg"
         ]
       },
       {
@@ -73,7 +73,7 @@ const rawRooms = [
         position: [-16, 3, -4.9],
         rotation: [0, 0, 0],
         images: [
-          "/museum/nhanuochophienhopphap/tuong_phai_1.png",
+          "/museum/nhanuochophienhopphap/tuong_phai_1.jpg",
           "/museum/nhanuochophienhopphap/tuong_phai_2.png"
         ]
       }
@@ -81,8 +81,8 @@ const rawRooms = [
   },
   {
     id: "law-supremacy",
-    title: "Nhà nước thượng tôn pháp luật",
-    shortTitle: "Thượng tôn pháp luật",
+    title: "Nhà nước pháp quyền",
+    shortTitle: "Nhà nước pháp quyền",
     accent: "#C5A028",
     position: ROOM_CENTER_POS,
     direction: "center",
@@ -97,8 +97,8 @@ const rawRooms = [
         position: [-5.9, 3, -19],
         rotation: [0, Math.PI / 2, 0],
         images: [
-          "/museum/nhanuocthuongtonphapluat/tuong_trai_1.png",
-          "/museum/nhanuocthuongtonphapluat/tuong_trai_2.png"
+          "/museum/nhanuocphapquyen/tuong_trai_1.png",
+          "/museum/nhanuocphapquyen/tuong_trai_2.png"
         ]
       },
       {
@@ -106,13 +106,13 @@ const rawRooms = [
         type: "practice",
         wall: "center",
         title: "Liên hệ thực tiễn",
-        heading: "Đại án Vạn Thịnh Phát",
+        heading: "Phòng, chống tội phạm về kinh tế, tham nhũng",
         // back wall of center room (facing +z)
         position: [0, 3, -23.9],
         rotation: [0, 0, 0],
         images: [
-          "/museum/nhanuocthuongtonphapluat/tuong_giua_1.png",
-          "/museum/nhanuocthuongtonphapluat/tuong_giua_2.png"
+          "/museum/nhanuocphapquyen/tuong_giua_1.jpg",
+          "/museum/nhanuocphapquyen/tuong_giua_2.jpg"
         ]
       },
       {
@@ -125,16 +125,16 @@ const rawRooms = [
         position: [5.9, 3, -19],
         rotation: [0, -Math.PI / 2, 0],
         images: [
-          "/museum/nhanuocthuongtonphapluat/tuong_phai_1.png",
-          "/museum/nhanuocthuongtonphapluat/tuong_phai_2.png"
+          "/museum/nhanuocphapquyen/tuong_phai_1.jpg",
+          "/museum/nhanuocphapquyen/tuong_phai_2.jpg"
         ]
       }
     ]
   },
   {
     id: "humanistic-rule",
-    title: "Pháp quyền nhân nghĩa",
-    shortTitle: "Pháp quyền nhân nghĩa",
+    title: "Nhà nước trong sạch, vững mạnh",
+    shortTitle: "Nhà nước trong sạch, vững mạnh",
     accent: "#6F8F4E",
     position: ROOM_RIGHT_POS,
     direction: "right",
@@ -143,15 +143,15 @@ const rawRooms = [
         id: "room3-left",
         type: "theory",
         wall: "left",
-        title: "Cơ sở lý thuyết",
-        heading: "Pháp luật vì con người",
+        title: "",
+        heading: "",
         // visitor-left wall when entering from the lobby (north wall, facing +z)
         position: [16, 3, -4.9],
         rotation: [0, 0, 0],
         images: [
-          "/museum/phapquyennhannghia/tuong_trai_1.png",
+          "/museum/phapquyennhannghia/tuong_trai_1.jpg",
           "/museum/phapquyennhannghia/tuong_trai_2.png",
-          "/museum/phapquyennhannghia/tuong_trai_3.png"
+          "/museum/phapquyennhannghia/tuong_trai_3.jpg"
         ]
       },
       {
@@ -164,8 +164,8 @@ const rawRooms = [
         position: [21.9, 3, 0],
         rotation: [0, -Math.PI / 2, 0],
         images: [
-          "/museum/phapquyennhannghia/tuong_giua_1.png",
-          "/museum/phapquyennhannghia/tuong_giua_2.png"
+          "/museum/phapquyennhannghia/tuong_giua_1.jpg",
+          "/museum/phapquyennhannghia/tuong_giua_2.jpg"
         ]
       },
       {
@@ -178,7 +178,7 @@ const rawRooms = [
         position: [16, 3, 4.9],
         rotation: [0, Math.PI, 0],
         images: [
-          "/museum/phapquyennhannghia/tuong_phai_1.png",
+          "/museum/phapquyennhannghia/tuong_phai_1.jpg",
           "/museum/phapquyennhannghia/tuong_phai_2.png"
         ]
       }
