@@ -1,120 +1,178 @@
-// 2 Tình huống biểu quyết A/B (kịch bản gốc của nhóm)
+// 2 tình huống biểu quyết A/B cho chủ đề Sứ Mệnh Liêm Chính.
 export const situations = [
   {
     id: 1,
-    title: "Ứng phó với làn sóng tăng phí sàn",
+    title: "Người quen xin ưu tiên",
     story:
-      "Gian hàng handmade của bạn bắt đầu khởi sắc, đạt cột mốc 500 đơn hàng/tháng. " +
-      "Bất ngờ, sàn S thông báo điều chỉnh chính sách: tăng phí xử lý giao dịch lên 6%, " +
-      "phí cố định lên 15% và ép buộc bạn phải đăng ký tham gia gói voucher giảm giá 5%. " +
-      "Nếu từ chối, thuật toán sẽ bóp giảm hiển thị shop của bạn.",
+      "Bạn đang trực tại bộ phận tiếp nhận. Một người quen gọi điện nhờ bạn “giúp một chút”, " +
+      "đưa hồ sơ của họ lên xử lý trước vì họ đang rất bận. Hồ sơ hoàn toàn bình thường và " +
+      "không thuộc diện ưu tiên. Người này nói: “Có gì đâu, chỉ đổi thứ tự một chút thôi mà.”",
     optionA: {
-      label: "Chấp nhận đóng phí để giữ tương tác",
+      label: "“Linh động” giúp người quen",
+      shortLabel: "Ưu tiên người quen",
       consequence:
-        "Bạn tiếp tục duy trì được lượng đơn hàng ổn định. Tuy nhiên, sau khi khấu trừ " +
-        "tất cả các loại phí sàn tăng thêm, lợi nhuận thực tế thu về chạm đáy, " +
-        "thậm chí không đủ chi trả tiền thuê nhà.",
+        "Bạn có thêm điểm thành tích trước mắt, nhưng làm suy giảm nguyên tắc công bằng. " +
+        "Quyền lực công bị dùng để tạo đặc quyền cho quan hệ cá nhân.",
+      effects: { score: 50, integrity: -20, publicTrust: -5 },
     },
     optionB: {
-      label: "Kiên quyết từ chối đóng phí",
+      label: "Giải quyết theo quy trình công khai",
+      shortLabel: "Giữ nguyên tắc",
       consequence:
-        "Hệ thống sàn lập tức bóp nghẹt tương tác, lượng truy cập của shop bị đóng băng, " +
-        "đơn hàng rơi thẳng đứng về con số 0.",
+        "Bạn giải thích rằng mọi hồ sơ phải được xử lý công bằng theo thứ tự và tiêu chí đã công bố. " +
+        "Người dân có thể chưa hài lòng ngay, nhưng niềm tin vào sự công bằng được giữ vững.",
+      effects: { integrity: 15, decisionBonus: 20, publicTrust: 5 },
     },
+    discussionQuestion: "Vì sao quyền lực công không thể được dùng để tạo ưu tiên cho quan hệ cá nhân?",
     marxLenin:
-      "Đây là biểu hiện của quy luật tích tụ và tập trung tư bản: " +
-      "Khi sàn TMĐT đã giành được vị thế độc quyền trên thị trường, " +
-      "họ sẽ tăng cường bóc lột người sản xuất nhỏ bằng cách áp đặt " +
-      "mức phí độc quyền ngày càng cao. Dù chấp nhận hay từ chối, " +
-      "người bán nhỏ đều rơi vào thế thua.",
+      "Quyền lực nhà nước phải hướng tới phục vụ nhân dân, được thực thi công bằng, minh bạch và có trách nhiệm. " +
+      "Một bộ máy trong sạch không dựa vào sự tùy tiện của cá nhân, mà dựa vào nguyên tắc, kỷ luật và công khai.",
   },
   {
     id: 2,
-    title: "Đối đầu trực diện với 'ông lớn' vừa đá bóng vừa thổi còi",
+    title: "Áp lực từ cấp trên",
     story:
-      "Giữa lúc khó khăn, bạn phát hiện ra gian hàng \"Mall chính hãng\" do chính sàn S " +
-      "vận hành đã sao chép nguyên mẫu sản phẩm handmade bán chạy nhất của bạn. " +
-      "Họ sản xuất hàng loạt với giá rẻ hơn 20% và luôn được thuật toán ưu tiên " +
-      "hiển thị ở vị trí trang đầu.",
+      "Cơ quan của bạn đang chuẩn bị báo cáo kết quả cuối năm. Một chỉ tiêu quan trọng chưa đạt. " +
+      "Người phụ trách đề nghị nhóm điều chỉnh cách ghi nhận số liệu để báo cáo “đẹp hơn”. " +
+      "Họ giải thích: “Không phải tham ô gì cả. Nếu báo cáo không đẹp thì cả đơn vị bị đánh giá thấp, " +
+      "mọi người đều bị ảnh hưởng.” Nếu bạn phản đối, quan hệ với người phụ trách có thể xấu đi " +
+      "và nhóm của bạn có khả năng mất thành tích thi đua.",
     optionA: {
-      label: "Hạ giá khô máu để quyết chiến",
+      label: "Điều chỉnh số liệu",
+      shortLabel: "Báo cáo đẹp hơn",
       consequence:
-        "Bạn nhanh chóng kiệt quệ tài chính và phá sản chỉ sau 3 ngày " +
-        "vì không thể đọ lại quy mô vốn và nguồn lực khổng lồ của sàn.",
+        "Thành tích trước mắt tăng, nhưng uy tín giảm mạnh vì số liệu không còn phản ánh đúng thực tế. " +
+        "Khi minh bạch bị hy sinh, niềm tin nhân dân cũng suy giảm.",
+      effects: { score: 100, integrity: -25, publicTrust: -5 },
     },
     optionB: {
-      label: "Chuyển hướng sang thị trường ngách (quà cá nhân hóa)",
+      label: "Báo cáo đúng thực tế",
+      shortLabel: "Minh bạch số liệu",
       consequence:
-        "Bạn sống sót thành công và bắt đầu có nguồn lãi ổn định. " +
-        "Lý do: Sàn lớn theo đuổi sản xuất đại trà nên không thể vươn tay " +
-        "làm thủ công từng sản phẩm cá nhân hóa theo yêu cầu riêng biệt.",
+        "Bạn giữ nguyên số liệu, đồng thời đề xuất kế hoạch khắc phục chỉ tiêu chưa đạt. " +
+        "Không có điểm thành tích tức thời, nhưng trách nhiệm và minh bạch được củng cố.",
+      effects: { integrity: 20, decisionBonus: 30, publicTrust: 8 },
     },
+    discussionQuestion: "Tại sao một cán bộ có thể biết B đúng nhưng vẫn chọn A?",
     marxLenin:
-      "Đây là mâu thuẫn 'vừa đá bóng vừa thổi còi' của tư bản độc quyền số. " +
-      "Sàn vừa là trung gian vừa là đối thủ cạnh tranh trực tiếp, " +
-      "kiểm soát cả thuật toán hiển thị lẫn dữ liệu lớn để chèn ép " +
-      "và triệt tiêu các đối thủ nhỏ hơn trên chính sân chơi của họ. " +
-      "Chiến lược 'thị trường ngách' là cách duy nhất sinh tồn trước độc quyền.",
+      "Xây dựng Nhà nước trong sạch, vững mạnh không chỉ dựa vào đạo đức cá nhân. " +
+      "Cần trách nhiệm, minh bạch và cơ chế kiểm soát quyền lực để cán bộ có thể đứng vững trước áp lực thành tích, quan hệ và lợi ích.",
   },
 ];
 
 export const PHASE_CONFIGS = {
   phase_1: {
-    name: "Thị Trường Tự Do",
-    emoji: "🌱",
-    description: "Phí thấp, cơ hội nhiều — thời kỳ vàng son!",
-    mcNarration: "Chào mừng các bạn đến với thị trường tự do cạnh tranh sôi động! Cơ hội đang chia đều cho tất cả mọi người. Các bạn hãy nhanh tay di chuyển để gom các Đơn Hàng mới và tích lũy thật nhiều Review 5 sao nhằm gia tăng doanh thu và xây dựng uy tín cho gian hàng của mình nhé!",
-    mission: "Kiếm đủ 5 đơn hàng và 2 review. Thiếu một trong hai sẽ bị loại.",
-    learningMeaning: "Cơ hội còn mở. Shop nhỏ vẫn có đất sống trong giai đoạn cạnh tranh tự do.",
-    recap: "Bạn vừa thấy cạnh tranh tự do: cơ hội nhiều, shop nhỏ dễ tích lũy vốn và uy tín.",
+    name: "Vì Dân Phục Vụ",
+    emoji: "📄",
+    description: "Quyền lực nhà nước phải hướng đến phục vụ nhân dân.",
+    mcNarration:
+      "Các bạn vừa trở thành những cán bộ trẻ tại Trung tâm phục vụ hành chính. Trước mắt các bạn là hàng loạt hồ sơ và yêu cầu của người dân. Nhiệm vụ đầu tiên rất đơn giản: làm đúng trách nhiệm, giải quyết công việc kịp thời và đừng để người dân phải chạy lòng vòng vì sự quan liêu của chúng ta.",
+    mission: "Xử lý 5 hồ sơ đúng hạn và nhận 2 phản hồi tích cực.",
+    learningMeaning:
+      "Thực thi công vụ bắt đầu từ trách nhiệm phục vụ nhân dân: đúng quy trình, đúng hẹn và giảm phiền hà.",
+    recap:
+      "Bạn vừa trải nghiệm nguyên tắc vì dân phục vụ: hiệu quả công vụ phải đi cùng thái độ trách nhiệm và tôn trọng người dân.",
+    collectiveGoal: { ratio: 0.7, trustReward: 8, label: "70% cán bộ hoàn thành nhiệm vụ" },
     progressGoals: [
-      { type: "order", target: 5, label: "Don hang" },
-      { type: "review", target: 2, label: "Review" },
+      { type: "case_file", target: 5, label: "Hồ sơ" },
+      { type: "positive_feedback", target: 2, label: "Phản hồi tốt" },
     ],
     maxBooks: 10,
     trapCount: 2,
     trapSpeed: 3.5,
-    bookReward: { score: 50, capital: 1000000 },
-    trapPenalty: { score: -50, capital: -3000000 },
-    platformFeeInterval: 0,
-    platformFeeAmount: 0,
+    bookReward: { score: 30, integrity: 0, type: "case_file", message: "+30 Hồ sơ đúng hạn", color: "#4fc3f7" },
+    supportReward: { score: 50, integrity: 5, type: "public_support", message: "+50 Hỗ trợ người dân", color: "#66bb6a" },
+    feedbackReward: { score: 50, integrity: 0, type: "positive_feedback", message: "+50 Phản hồi tốt", color: "#ffca28" },
+    trapPenalty: { score: -20, integrity: -5, type: "delay", message: "Trễ hẹn: -5 Uy tín", color: "#c5272d" },
+    hazards: [
+      { type: "buck_passing", label: "Đùn đẩy trách nhiệm", score: -20, integrity: -5, message: "Không phải việc của tôi!", durationMs: 2000 },
+      { type: "late_deadline", label: "Trễ hẹn", score: -20, integrity: -5, message: "Trễ hẹn: người dân phải chờ lâu." },
+      { type: "bureaucracy", label: "Quan liêu", score: -30, integrity: -10, message: "Người dân bị yêu cầu đi lại nhiều lần!" },
+    ],
+    hostEvents: [
+      { type: "case_peak", label: "Cao điểm hồ sơ", hint: "Tăng hồ sơ trong 15s" },
+      { type: "citizen_support", label: "Người dân cần hỗ trợ", hint: "Spawn NPC hỗ trợ" },
+      { type: "feedback_wave", label: "Đợt phản ánh", hint: "Cụm phản hồi tốt" },
+    ],
+    pressureInterval: 0,
+    pressureLabel: "",
   },
   phase_2: {
-    name: "Độc Quyền Siết Chặt",
-    emoji: "⚠️",
-    description: "Sàn nắm thế độc quyền — tìm khách ruột hoặc bị loại!",
-    mcNarration: "Lúc này, các ông lớn công nghệ đã thâu tóm toàn bộ thị trường! Lượng khách tự nhiên ngày càng thưa thớt, trong khi tiền phí sàn liên tục bị trừ thẳng vào tài khoản của bạn. Để sống sót, các chủ shop chỉ còn một con đường duy nhất: Nhanh chóng tìm kiếm những khách hàng trung thành, tức là 'Khách Ruột' của mình, nhằm xây dựng tệp khách trực tiếp và thoát khỏi sự thao túng của thuật toán!",
-    mission: "Tìm Khách Ruột đang ẩn trên bản đồ trong 60 giây.",
-    learningMeaning: "Khi nền tảng nắm quyền, shop nhỏ không làm sai vẫn mất tiền vì luật chơi bị áp đặt. Khách ruột là tài sản sống còn.",
-    recap: "Bạn vừa thấy quyền lực nền tảng: phí sàn, voucher và thuật toán làm shop nhỏ mất lợi nhuận. Khách ruột và quan hệ trực tiếp là cách sống sót.",
+    name: "Thử Thách Quyền Lực",
+    emoji: "🛡️",
+    description: "Khi có quyền lực, cán bộ phải đối mặt với nhiều cám dỗ hơn.",
+    mcNarration:
+      "Công việc đã đi vào guồng, nhưng quyền lực luôn đi kèm thử thách. Các bạn sẽ gặp áp lực thành tích, quan hệ nội bộ và những lời mời tưởng như vô hại. Hãy giữ liêm chính, công khai và trách nhiệm trong từng lựa chọn.",
+    mission: "Trong 90 giây, thu thập 3 Liêm chính và 2 Minh bạch.",
+    learningMeaning:
+      "Liêm chính không phải khẩu hiệu. Nó được kiểm chứng khi cán bộ có quyền xử lý công việc và gặp cám dỗ.",
+    recap:
+      "Bạn vừa thấy quyền lực cần được kiểm soát bằng minh bạch, kỷ luật và trách nhiệm giải trình.",
+    collectiveGoal: { ratio: 0.65, trustReward: 8, label: "65% cán bộ vượt qua thử thách quyền lực" },
     progressGoals: [
-      { type: "loyal_customer_found", target: 1, label: "Khach ruot" },
+      { type: "integrity_item", target: 3, label: "Liêm chính" },
+      { type: "transparency", target: 2, label: "Minh bạch" },
     ],
-    maxBooks: 5,
+    maxBooks: 6,
     trapCount: 4,
     trapSpeed: 5.5,
-    bookReward: { score: 30, capital: 500000 },
-    trapPenalty: { score: -75, capital: -4000000 },
-    platformFeeInterval: 10000,
-    platformFeeAmount: 500000,
+    bookReward: { score: 40, integrity: 5, type: "integrity_item", message: "+ Liêm chính", color: "#66bb6a" },
+    supportReward: { score: 100, integrity: 10, type: "citizen_feedback", message: "+100 Phản ánh được xử lý", color: "#26c6da" },
+    feedbackReward: { score: 40, integrity: 10, type: "transparency", message: "+ Minh bạch", color: "#ffca28" },
+    trapPenalty: { score: -30, integrity: -10, type: "waste", message: "Lãng phí: -10 Uy tín", color: "#c5272d" },
+    hazards: [
+      { type: "envelope", label: "Phong bì", score: 0, integrity: -15, message: "Một chút cảm ơn thôi mà…" },
+      { type: "waste", label: "Lãng phí", score: -30, integrity: -10, message: "Lãng phí nguồn lực công." },
+      { type: "group_interest", label: "Lợi ích nhóm", score: 0, integrity: -20, message: "Lợi ích nhóm kéo lệch trách nhiệm.", durationMs: 3000 },
+      { type: "bureaucracy", label: "Quan liêu", score: 0, integrity: -10, message: "Quan liêu làm người dân mất niềm tin." },
+    ],
+    hostEvents: [
+      { type: "surprise_inspection", label: "Kiểm tra đột xuất", hint: "Spawn Minh bạch" },
+      { type: "citizen_feedback", label: "Phản ánh người dân", hint: "NPC phản ánh" },
+    ],
+    pressureInterval: 20000,
+    pressureLabel: "Áp lực thành tích",
+    durationMs: 90000,
   },
   phase_3: {
-    name: "Thoát Khỏi Nền Tảng",
-    emoji: "🔥",
-    description: "Mall sao chép, giá độc quyền — chạy tới Cổng Thoát!",
-    mcNarration: "Sự độc quyền số đã bước vào giai đoạn khốc liệt nhất! Các gian hàng Mall lớn bắt đầu sao chép sản phẩm, đồng thời thuật toán chèn ép không thương tiếc các shop nhỏ lẻ. Lúc này, đừng cố đâm đầu vào cạnh tranh đốt tiền nữa — hãy nhanh chân tìm đường chạy tới Cổng Thoát để giải phóng bản thân khỏi sự phụ thuộc vào các siêu nền tảng này!",
-    mission: "Chạy tới Cổng Thoát để rời khỏi sự phụ thuộc nền tảng.",
-    learningMeaning: "Đối đầu đốt tiền với độc quyền rất dễ cạn vốn. Cổng thoát đại diện cho việc xây kênh riêng, khách hàng riêng, và năng lực độc lập ngoài nền tảng.",
-    recap: "Bạn vừa thấy cạnh tranh trong độc quyền: tiếp tục phụ thuộc nền tảng không phải chiến lược bền vững. Cổng thoát là xây kênh riêng, khách riêng và năng lực độc lập.",
+    name: "Giữ Vững Liêm Chính",
+    emoji: "🏛️",
+    description: "Một bộ máy mạnh phải vừa hiệu quả, vừa trong sạch.",
+    mcNarration:
+      "Chặng cuối là lúc các bạn phải giữ vững liêm chính trong một môi trường phức tạp hơn. Hãy thu thập Minh bạch, Trách nhiệm và Phục vụ nhân dân, sau đó tiến tới Trung tâm Công khai & Giải trình.",
+    mission: "Thu thập 1 Minh bạch, 1 Trách nhiệm, 1 Phục vụ nhân dân rồi tới Trung tâm Công khai & Giải trình.",
+    learningMeaning:
+      "Nhà nước trong sạch, vững mạnh cần cả đạo đức cán bộ lẫn cơ chế công khai, trách nhiệm và kiểm soát quyền lực.",
+    recap:
+      "Bạn vừa thấy một bộ máy mạnh không chỉ làm nhanh, mà còn phải minh bạch, trách nhiệm và đặt nhân dân ở trung tâm.",
+    collectiveGoal: { ratio: 0.65, trustReward: 10, label: "65% cán bộ hoàn thành nhiệm vụ cuối" },
     progressGoals: [
-      { type: "escaped_gate", target: 1, label: "Cong thoat" },
+      { type: "transparency", target: 1, label: "Minh bạch" },
+      { type: "accountability", target: 1, label: "Trách nhiệm" },
+      { type: "serve_people", target: 1, label: "Phục vụ ND" },
+      { type: "public_center", target: 1, label: "TT công khai" },
     ],
-    maxBooks: 3,
+    maxBooks: 5,
     trapCount: 6,
     trapSpeed: 7.5,
-    bookReward: { score: 20, capital: 300000 },
-    trapPenalty: { score: -100, capital: -5000000 },
-    platformFeeInterval: 8000,
-    platformFeeAmount: 1000000,
+    bookReward: { score: 35, integrity: 5, type: "transparency", message: "+ Minh bạch", color: "#26c6da" },
+    supportReward: { score: 35, integrity: 5, type: "serve_people", message: "+ Phục vụ nhân dân", color: "#66bb6a" },
+    feedbackReward: { score: 35, integrity: 5, type: "accountability", message: "+ Trách nhiệm", color: "#ffca28" },
+    trapPenalty: { score: -20, integrity: -15, type: "achievement_disease", message: "Bệnh thành tích: -15 Uy tín", color: "#c5272d" },
+    hazards: [
+      { type: "personal_gain", label: "Lợi ích cá nhân", score: 0, integrity: -20, message: "Lợi ích cá nhân làm lệch công vụ." },
+      { type: "group_interest", label: "Lợi ích nhóm", score: 0, integrity: -20, message: "Lợi ích nhóm làm suy giảm niềm tin." },
+      { type: "bureaucracy", label: "Quan liêu", score: 0, integrity: -10, message: "Quan liêu tạo khoảng cách với nhân dân." },
+      { type: "waste", label: "Lãng phí", score: -20, integrity: -10, message: "Lãng phí nguồn lực công." },
+      { type: "achievement_disease", label: "Bệnh thành tích", score: 0, integrity: -15, message: "Thành tích không thể thay sự thật." },
+      { type: "privilege", label: "Đặc quyền", score: 0, integrity: -25, message: "Đặc quyền phá vỡ nguyên tắc công bằng." },
+    ],
+    hostEvents: [
+      { type: "final_pressure", label: "Tăng áp lực", hint: "Hazard nhanh hơn" },
+      { type: "recovery_chance", label: "Cơ hội khắc phục", hint: "Spawn item tốt" },
+    ],
+    pressureInterval: 0,
+    pressureLabel: "Thử thách cuối cùng",
+    durationMs: 120000,
   },
 };

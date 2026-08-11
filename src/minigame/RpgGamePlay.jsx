@@ -92,7 +92,7 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
 
   // 1. Lắng nghe postMessage từ Phaser
   useEffect(() => {
-    const applyScoreCapitalDelta = (delta) =>
+    const applyScoreIntegrityDelta = (delta) =>
       runTransaction(
         ref(db, `players/${playerId}`),
         (player) => applyPlayerDelta(player, delta),
@@ -122,7 +122,7 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
     const handleMessage = async (e) => {
       if (!e.data) return;
 
-      // A. Nhặt cơ hội kinh doanh → Bonus theo object type
+      // A. Nhặt vật phẩm tích cực -> điểm công vụ / uy tín theo phase
       if (e.data.type === "NHAT_SACH") {
         const claimedBook = await claimBook(e.data.bookId);
         if (!claimedBook) return;
@@ -130,16 +130,17 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
         const bonusScore = Number.isFinite(claimedBook.score)
           ? claimedBook.score
           : phaseConfig.bookReward.score;
-        const bonusCapital = Number.isFinite(claimedBook.capital)
-          ? claimedBook.capital
-          : phaseConfig.bookReward.capital;
+        const bonusIntegrity = Number.isFinite(claimedBook.integrity)
+          ? claimedBook.integrity
+          : phaseConfig.bookReward.integrity;
+        const progressType = claimedBook.type || phaseConfig.bookReward.type || "public_service";
 
-        await applyScoreCapitalDelta({ score: bonusScore, capital: bonusCapital });
-        await incrementProgress(claimedBook.type || "opportunity");
-        addFloatingText(claimedBook.message || `+${bonusScore}đ Cơ hội`, claimedBook.color || "#2e7d32");
+        await applyScoreIntegrityDelta({ score: bonusScore, integrity: bonusIntegrity });
+        await incrementProgress(progressType);
+        addFloatingText(claimedBook.message || `+${bonusScore} Công vụ`, claimedBook.color || "#2e7d32");
       }
 
-      // B. Va chạm rủi ro nền tảng → Phạt theo hazard type
+      // B. Va chạm rủi ro công vụ -> giảm điểm / uy tín
       if (e.data.type === "DINH_BAY") {
         const hazard = e.data.hazard || {};
         const shouldFreeze = hazard.effect === "freeze" || !hazard.effect;
@@ -160,39 +161,42 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
         const penScore = Number.isFinite(hazard.score)
           ? hazard.score
           : phaseConfig.trapPenalty.score;
-        const penCapital = Number.isFinite(hazard.capital)
-          ? hazard.capital
-          : phaseConfig.trapPenalty.capital;
+        const penIntegrity = Number.isFinite(hazard.integrity)
+          ? hazard.integrity
+          : phaseConfig.trapPenalty.integrity;
 
-        await applyScoreCapitalDelta({ score: penScore, capital: penCapital });
+        await applyScoreIntegrityDelta({ score: penScore, integrity: penIntegrity });
         await incrementProgress(`hit_${hazard.type || "hazard"}`);
-        addFloatingText(hazard.message || `${penScore}đ Rủi ro`, hazard.color || "#c5272d");
+        addFloatingText(hazard.message || `${penScore} Rủi ro`, hazard.color || "#c5272d");
       }
 
-      // C. Tìm thấy Khách Ruột (Phase 2 NPC) — NPC vẫn ở đó cho người khác tìm
+      // C. Event NPC cũ được map thành hỗ trợ/phản ánh người dân.
       if (e.data.type === "FOUND_LOYAL_CUSTOMER") {
-        await incrementProgress("loyal_customer_found");
+        const reward = phaseConfig.supportReward || { score: 50, integrity: 5, type: "public_support" };
+        await applyScoreIntegrityDelta({ score: reward.score, integrity: reward.integrity, recoveryTask: true });
+        await incrementProgress(reward.type || "public_support");
         await runTransaction(
-          ref(db, `players/${playerId}/progress/${gameState.status}/loyal_customer_found_at`),
+          ref(db, `players/${playerId}/progress/${gameState.status}/citizen_support_at`),
           (current) => current || Date.now(),
           { applyLocally: false }
         );
-        addFloatingText("🎉 Tìm thấy Khách Ruột!", "#00897b");
+        addFloatingText(reward.message || "Đã hỗ trợ người dân!", reward.color || "#00897b");
       }
 
-      // D. Thoát qua Cổng Thoát (Phase 3)
+      // D. Event cổng cũ được map thành Trung tâm Công khai & Giải trình.
       if (e.data.type === "ESCAPED_GATE") {
-        await incrementProgress("escaped_gate");
+        await incrementProgress("public_center");
         await runTransaction(
           ref(db, `players/${playerId}`),
           (player) => ({
             ...player,
-            escaped: true,
-            escapedAt: player?.escapedAt || Date.now(),
+            completedFinalMission: true,
+            completedAt: player?.completedAt || Date.now(),
+            phaseBonus: (Number(player?.phaseBonus) || 0) + 100,
           }),
           { applyLocally: false }
         );
-        addFloatingText("Đã thoát khỏi nền tảng!", "#c9922a");
+        addFloatingText("Đã đến Trung tâm Công khai!", "#c9922a");
       }
     };
 
@@ -216,20 +220,15 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
     };
   }, [gameState.status]);
 
-  // 3. Hiện thông báo phí sàn khi bị trừ tự động (qua Firebase onValue)
-  const lastCapitalRef = useRef(playerInfo.capital);
+  // 3. Hiện thông báo khi uy tín thay đổi mạnh.
+  const lastIntegrityRef = useRef(playerInfo.integrity);
   useEffect(() => {
-    // Detect phí sàn bị trừ (capital giảm mà không phải do bẫy/sách)
-    if (phaseConfig.platformFeeInterval > 0 && playerInfo.capital < lastCapitalRef.current && !isFrozen) {
-      const diff = lastCapitalRef.current - playerInfo.capital;
-      // Chỉ hiện nếu đúng mức phí sàn (±20% tolerance)
-      if (Math.abs(diff - phaseConfig.platformFeeAmount) < phaseConfig.platformFeeAmount * 0.3) {
-        addFloatingText(`-${(phaseConfig.platformFeeAmount / 1000000).toFixed(0)}tr Phí sàn`, "#ff6b35");
-      }
+    const currentIntegrity = Number.isFinite(playerInfo.integrity) ? playerInfo.integrity : 100;
+    if (currentIntegrity < lastIntegrityRef.current && !isFrozen) {
+      addFloatingText(`-${lastIntegrityRef.current - currentIntegrity} Uy tín`, "#ff6b35");
     }
-
-    lastCapitalRef.current = playerInfo.capital;
-  }, [playerInfo.capital]);
+    lastIntegrityRef.current = currentIntegrity;
+  }, [playerInfo.integrity]);
 
   // 4. D-pad
   const handleDpadPress = (dir) => {
@@ -254,44 +253,38 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
         </div>
         <div style={{ width: "2px", background: "#000", margin: "0 12px", height: "30px" }} />
 
-        {/* Vốn */}
+        {/* Uy tín */}
         <div style={{ textAlign: "center", flex: 1 }}>
-          <div style={{ fontSize: "7px", color: "#8b8680", fontWeight: "800", letterSpacing: "1px" }}>VỐN</div>
-          <div style={{ fontSize: "0.95rem", fontWeight: "800", color: playerInfo.isBankrupt ? "var(--neon-red)" : "var(--neon-green)", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", marginTop: "2px", fontFamily: "var(--font-mono)" }}>
-            {playerInfo.isBankrupt ? (
-              <>
-                <IconSkull className="w-4 h-4 text-red-500 animate-pulse" /> PHÁ SẢN
-              </>
-            ) : (
-              <span className="pix-num">{`${(playerInfo.capital || 0).toLocaleString()}đ`}</span>
-            )}
+          <div style={{ fontSize: "7px", color: "#8b8680", fontWeight: "800", letterSpacing: "1px" }}>UY TÍN</div>
+          <div style={{ fontSize: "0.95rem", fontWeight: "800", color: (playerInfo.integrity ?? 100) >= 60 ? "var(--neon-green)" : "var(--neon-red)", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", marginTop: "2px", fontFamily: "var(--font-mono)" }}>
+            <span className="pix-num">{playerInfo.integrity ?? 100}</span>
           </div>
         </div>
         <div style={{ width: "2px", background: "#000", margin: "0 12px", height: "30px" }} />
 
         {/* Điểm */}
         <div style={{ textAlign: "center", flex: 1 }}>
-          <div style={{ fontSize: "7px", color: "#8b8680", fontWeight: "800", letterSpacing: "1px" }}>ĐIỂM TÍCH LŨY</div>
+          <div style={{ fontSize: "7px", color: "#8b8680", fontWeight: "800", letterSpacing: "1px" }}>ĐIỂM CÔNG VỤ</div>
           <div style={{ fontSize: "0.95rem", fontWeight: "800", color: "var(--neon-blue)", marginTop: "2px", fontFamily: "var(--font-mono)" }}>
-            <span className="pix-num">{playerInfo.score || 0}đ</span>
+            <span className="pix-num">{playerInfo.score || 0}</span>
           </div>
         </div>
         <div style={{ width: "2px", background: "#000", margin: "0 12px", height: "30px" }} />
 
-        {/* Nhân vật */}
+        {/* Niềm tin */}
         <div style={{ textAlign: "center", flex: 1 }}>
-          <div style={{ fontSize: "7px", color: "#8b8680", fontWeight: "800", letterSpacing: "1px" }}>CHỦ SHOP</div>
-          <div style={{ fontSize: "0.85rem", fontWeight: "800", color: selectedCharacter.color, marginTop: "2px" }}>
-            {selectedCharacter.label}
+          <div style={{ fontSize: "7px", color: "#8b8680", fontWeight: "800", letterSpacing: "1px" }}>NIỀM TIN</div>
+          <div style={{ fontSize: "0.85rem", fontWeight: "800", color: "var(--neon-gold)", marginTop: "2px" }}>
+            {Number.isFinite(gameState.publicTrust) ? gameState.publicTrust : 70}%
           </div>
         </div>
       </div>
 
-      {/* Thông báo phí sàn */}
-      {phaseConfig.platformFeeInterval > 0 && (
+      {/* Thông báo áp lực */}
+      {phaseConfig.pressureLabel && (
         <div style={{ width: "100%", background: "rgba(197,39,45,0.08)", border: "1px solid rgba(197,39,45,0.15)", borderRadius: "10px", padding: "8px 12px", marginBottom: "10px", fontSize: "0.75rem", color: "#ff6b35", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
-          <IconSkull className="w-4 h-4 text-red-500 animate-pulse" />
-          <span>Hệ quả Độc quyền (Phí sàn): <b>-{(phaseConfig.platformFeeAmount / 1000000).toFixed(0)} triệu</b> vốn mỗi <b>{phaseConfig.platformFeeInterval / 1000}s</b></span>
+          <IconWarning className="w-4 h-4 text-red-500 animate-pulse" />
+          <span>{phaseConfig.pressureLabel}: quyền lực đi kèm trách nhiệm, minh bạch và sức ép lựa chọn.</span>
         </div>
       )}
 
@@ -304,7 +297,7 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
         </div>
       )}
 
-      {/* Countdown Phase 2 - 60 giây */}
+      {/* Countdown phase có giới hạn */}
       {phaseCountdown !== null && gameState.status === "phase_2" && (
         <div style={{ width: "100%", background: phaseCountdown <= 10 ? "rgba(197,39,45,0.15)" : "rgba(0,137,123,0.08)", border: `2px solid ${phaseCountdown <= 10 ? "rgba(197,39,45,0.4)" : "rgba(0,137,123,0.2)"}`, borderRadius: "12px", padding: "10px 16px", marginBottom: "10px", textAlign: "center" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
@@ -312,15 +305,15 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
             <span style={{ fontSize: "1.2rem", fontWeight: "800", fontFamily: "var(--font-mono)", color: phaseCountdown <= 10 ? "#c5272d" : "#00897b" }}>
               {phaseCountdown > 0 ? `${phaseCountdown}s` : "HẾT GIỜ!"}
             </span>
-            <span style={{ fontSize: "0.75rem", color: "#8b8680" }}>Tìm Khách Ruột</span>
+            <span style={{ fontSize: "0.75rem", color: "#8b8680" }}>Liêm chính & Minh bạch</span>
           </div>
           <div style={{ width: "100%", height: "4px", background: "rgba(0,0,0,0.2)", borderRadius: "2px", marginTop: "6px", overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${Math.min(100, (phaseCountdown / 60) * 100)}%`, background: phaseCountdown <= 10 ? "#c5272d" : "#00897b", transition: "width 1s linear", borderRadius: "2px" }} />
+            <div style={{ height: "100%", width: `${Math.min(100, (phaseCountdown / Math.ceil((phaseConfig.durationMs || 90000) / 1000)) * 100)}%`, background: phaseCountdown <= 10 ? "#c5272d" : "#00897b", transition: "width 1s linear", borderRadius: "2px" }} />
           </div>
         </div>
       )}
 
-      {/* Hint Khách Ruột từ Host */}
+      {/* Manh mối từ Host */}
       {gameState.phase2Hint && gameState.status === "phase_2" && (
         <div style={{ width: "100%", background: "rgba(0,137,123,0.06)", border: "1px solid rgba(0,137,123,0.15)", borderRadius: "10px", padding: "8px 14px", marginBottom: "10px", fontSize: "0.82rem", color: "#00897b", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
           <IconBulb className="w-4 h-4 text-teal-500" />
@@ -380,9 +373,9 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
       <div style={{ color: "#8b8680", fontSize: "0.75rem", marginTop: "10px", textAlign: "center", display: "flex", alignItems: "center", gap: "8px", justifyContent: "center" }}>
         <span>Điều khiển: WASD / Mũi tên</span>
         <span>•</span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}><IconBook className="w-3.5 h-3.5 text-amber-500" /> Nhặt cơ hội</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}><IconBook className="w-3.5 h-3.5 text-amber-500" /> Nhặt nhiệm vụ tốt</span>
         <span>•</span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}><IconBolt className="w-3.5 h-3.5 text-red-500" /> Né rủi ro nền tảng</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}><IconBolt className="w-3.5 h-3.5 text-red-500" /> Né rủi ro công vụ</span>
       </div>
 
       {/* D-pad */}

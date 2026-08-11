@@ -1,43 +1,43 @@
 export const CHARACTER_OPTIONS = [
   {
-    id: "default",
-    label: "Misa",
-    icon: "🎮",
+    id: "reception_officer",
+    label: "Cán bộ tiếp nhận",
+    icon: "📄",
     spriteClass: "sprite-default",
-    color: "#ffe082",
-    description: "Nhân vật Misa gốc"
+    color: "#4fc3f7",
+    description: "Tiếp xúc trực tiếp với người dân và xử lý hồ sơ."
   },
   {
-    id: "shipper",
-    label: "Shipper",
-    icon: "🛵",
-    spriteClass: "sprite-shipper",
-    color: "#00bcd4",
-    description: "Nhanh nhẹn, giao đơn khắp bản đồ"
-  },
-  {
-    id: "student",
-    label: "Sinh viên",
-    icon: "🎓",
+    id: "digital_service_officer",
+    label: "Cán bộ dịch vụ công số",
+    icon: "💻",
     spriteClass: "sprite-student",
-    color: "#8bc34a",
-    description: "Ham học, săn sách tri thức"
+    color: "#26c6da",
+    description: "Hỗ trợ người dân sử dụng dịch vụ công."
   },
   {
-    id: "entrepreneur",
-    label: "Doanh nhân",
-    icon: "💼",
-    spriteClass: "sprite-entrepreneur",
-    color: "#ffc107",
-    description: "Tập trung vốn và chiến lược"
-  },
-  {
-    id: "seller",
-    label: "Nhân viên bán hàng",
-    icon: "🛍️",
+    id: "administrative_officer",
+    label: "Cán bộ hành chính",
+    icon: "🏢",
     spriteClass: "sprite-seller",
-    color: "#e91e63",
-    description: "Linh hoạt, bám sát khách hàng"
+    color: "#ffca28",
+    description: "Điều phối và giải quyết công việc."
+  },
+  {
+    id: "inspection_officer",
+    label: "Cán bộ kiểm tra",
+    icon: "🛡️",
+    spriteClass: "sprite-entrepreneur",
+    color: "#66bb6a",
+    description: "Chú trọng kỷ luật và trách nhiệm."
+  },
+  {
+    id: "young_officer",
+    label: "Cán bộ trẻ",
+    icon: "🌱",
+    spriteClass: "sprite-shipper",
+    color: "#ab47bc",
+    description: "Đại diện thế hệ mới trong bộ máy nhà nước."
   }
 ];
 

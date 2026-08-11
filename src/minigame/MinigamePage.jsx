@@ -31,6 +31,7 @@ export const MinigamePage = () => {
   const [dbConnected, setDbConnected] = useState(false);
   const [gameState, setGameState] = useState({
     status: "waiting", // waiting | phase_1 | situation_1 | phase_2 | situation_2 | phase_3 | finished
+    publicTrust: 70,
   });
 
   // Kiểm tra kết nối Firebase Realtime Database
@@ -60,7 +61,7 @@ export const MinigamePage = () => {
         }
       } else {
         // Khởi tạo trạng thái mặc định nếu database trống
-        set(gameStateRef, { status: "waiting" });
+        set(gameStateRef, { status: "waiting", publicTrust: 70 });
       }
     });
 
@@ -75,7 +76,7 @@ export const MinigamePage = () => {
     if (selectedRole === "host") {
       try {
         // 1. Đưa trạng thái game về waiting trước để tất cả client unmount game ngay lập tức
-        await set(ref(db, "gameState"), { status: "waiting" });
+        await set(ref(db, "gameState"), { status: "waiting", publicTrust: 70 });
         
         // 2. Chờ một khoảng trễ ngắn (100ms) để các client kịp nhận tin, unmount và dừng ghi dữ liệu vị trí
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -102,8 +103,8 @@ export const MinigamePage = () => {
     return (
       <div className="minigame-container">
         <div className="minigame-panel role-selection">
-          <h1 className="minigame-title">SINH TỒN TRÊN SÀN SỐ</h1>
-          <p className="minigame-subtitle">Sự vận động của Cạnh tranh & Độc quyền trong Nền kinh tế số</p>
+          <h1 className="minigame-title">SỨ MỆNH LIÊM CHÍNH</h1>
+          <p className="minigame-subtitle">Hành trình xây dựng Nhà nước trong sạch, vững mạnh</p>
           
           <div className="role-buttons">
             <div className="role-card role-player group" onClick={() => handleSelectRole("player")}>
@@ -111,7 +112,7 @@ export const MinigamePage = () => {
                 <IconPhone className="w-16 h-16" />
               </div>
               <div className="role-name">Người Chơi</div>
-              <div className="role-desc">Dành cho sinh viên cả lớp. Quét mã QR, nhập vai chủ shop handmade, di chuyển nhặt sách và né bẫy trên điện thoại.</div>
+              <div className="role-desc">Dành cho sinh viên cả lớp. Quét mã QR, nhập vai cán bộ trẻ, xử lý hồ sơ, giữ uy tín và né các rủi ro công vụ.</div>
             </div>
 
             <div className="role-card role-host group" onClick={() => handleSelectRole("host")}>
@@ -119,7 +120,7 @@ export const MinigamePage = () => {
                 <IconDesktop className="w-16 h-16" />
               </div>
               <div className="role-name">Ban Tổ Chức (Host/MC)</div>
-              <div className="role-desc">Dành cho nhóm thuyết trình. Quản lý trạng thái game, trình chiếu câu hỏi và bảng xếp hạng realtime lên máy chiếu.</div>
+              <div className="role-desc">Dành cho nhóm thuyết trình. Quản lý phase, mở tình huống, theo dõi uy tín, niềm tin nhân dân và bảng xếp hạng realtime.</div>
             </div>
           </div>
 
