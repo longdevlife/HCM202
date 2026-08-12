@@ -3,10 +3,10 @@ export default function CoSoLyThuyet() {
   const f2 = "'Inter', sans-serif";
 
   const characteristics = [
-    { t: "500 Đại biểu", i: "Quốc hội" },
-    { t: "180 Phiếu", i: "LHQ" },
-    { t: "304.000 Tỷ", i: "Vạn Thịnh Phát" },
-    { t: "Giảm 46.5%", i: "Nồng độ cồn" },
+    { t: "Dịch vụ công trực tuyến", i: "100%" },
+    { t: "Tài khoản VNeID", i: ">70 Triệu" },
+    { t: "Xử lý phản ánh minh bạch", i: "100%" },
+    { t: "Xác minh dư luận MXH", i: "24H" },
   ];
 
   return (
@@ -31,16 +31,14 @@ export default function CoSoLyThuyet() {
         >
           <span className="gsap-text-reveal block pb-2 md:pb-3">Liên Hệ</span>
           <span className="gsap-text-reveal block italic font-light text-[#7A6040] pt-1">
-            Thực Tiễn
+            Thực Tiễn Kỷ Nguyên Số
           </span>
         </h2>
         <p
           className="gsap-reveal text-lg text-[#7A6040] max-w-2xl leading-relaxed font-light"
           style={{ fontFamily: f2 }}
         >
-          Việc xây dựng Nhà nước pháp quyền XHCN tại Việt Nam trong bối cảnh hội
-          nhập đạt nhiều thành tựu nhưng cũng đối mặt với không ít thách thức
-          hiện hữu.
+          Lắng nghe dư luận, thực hành dân chủ trực tiếp và nâng cao hiệu quả quản trị quốc gia hiện đại theo Tinh thần Hồ Chí Minh trong môi trường số hóa.
         </p>
       </div>
 
@@ -51,48 +49,44 @@ export default function CoSoLyThuyet() {
             className="text-sm tracking-[0.25em] text-[#7A6040]/60 uppercase font-semibold"
             style={{ fontFamily: f2 }}
           >
-            Thực Trạng Hiện Nay
+            Thực Trạng Kỷ Nguyên Số
           </span>
           <div className="h-[1px] flex-1 bg-[#3D3529]/10 gsap-line-draw" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-          {/* Card 1: Hợp Hiến, Hợp Pháp */}
+          {/* Card 1 */}
           <div className="gsap-slide-left card-tilt group">
             <div className="h-full p-8 md:p-10 bg-white/50 rounded-[20px] border border-[#3D3529]/5 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(61,53,41,0.08)]">
               <span
                 className="text-[10px] uppercase tracking-[0.2em] text-[#7A6040]/50 mb-6 block font-semibold"
                 style={{ fontFamily: f2 }}
               >
-                Nhà nước hợp hiến, hợp pháp
+                Block 01
               </span>
               <h3
                 className="text-3xl font-bold text-[#3D3529] mb-3"
                 style={{ fontFamily: f1 }}
               >
-                Tính Hợp Hiến & Hợp Pháp
+                Dân Chủ Trực Tiếp Qua App Công Dân
               </h3>
               <span
                 className="text-[#C5A028] text-sm font-medium mb-6 block italic"
                 style={{ fontFamily: f1 }}
               >
-                Bầu cử QH khóa XVI & HĐ Nhân quyền
+                Ứng dụng Phản ánh Hiện trường (Huế-S, 1022, VNeID)
               </span>
               <p
                 className="text-[#7A6040] text-base leading-relaxed font-light mb-8"
                 style={{ fontFamily: f2 }}
               >
-                Bầu cử Quốc hội khóa XVI có 864 người ứng cử, xác nhận 500 đại
-                biểu (27/3/2026). Việt Nam tái đắc cử Hội đồng Nhân quyền LHQ
-                (2026–2028) với 180 phiếu ủng hộ, khẳng định tư cách pháp lý
-                vững chắc trên trường quốc tế.
+                Người dân trực tiếp gửi phản ánh, góp ý chính sách real-time đến chính quyền. Quy trình xử lý được công khai, minh bạch và dân được trực tiếp đánh giá mức độ hài lòng đối với cán bộ, công chức.
               </p>
               <div className="flex flex-wrap gap-2">
                 {[
-                  "500 Đại biểu",
-                  "180 Phiếu LHQ",
-                  "Bầu cử 2026",
-                  "Hợp hiến",
+                  "Phản ánh hiện trường",
+                  "Đánh giá cán bộ",
+                  "Minh bạch xử lý",
                 ].map((tag) => (
                   <span
                     key={tag}
@@ -106,38 +100,38 @@ export default function CoSoLyThuyet() {
             </div>
           </div>
 
-          {/* Card 2: Pháp quyền nhân nghĩa */}
+          {/* Card 2 */}
           <div className="gsap-slide-right card-tilt group">
             <div className="h-full p-8 md:p-10 bg-[#3D3529] rounded-[20px] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(61,53,41,0.2)]">
               <span
                 className="text-[10px] uppercase tracking-[0.2em] text-[#C5A028]/80 mb-6 block font-semibold"
                 style={{ fontFamily: f2 }}
               >
-                Pháp quyền nhân nghĩa
+                Block 02
               </span>
               <h3
                 className="text-3xl font-bold text-[#EDE8E1] mb-3"
                 style={{ fontFamily: f1 }}
               >
-                Đặc Xá & Khoan Hồng Nhân Đạo
+                Chính Phủ Số - Bỏ "Xin Cho"
               </h3>
               <span
                 className="text-[#C5A028] text-sm font-medium mb-6 block italic"
                 style={{ fontFamily: f1 }}
               >
-                Chính sách Đặc xá 2025 & Chuyến bay giải cứu
+                Cổng Dịch vụ công Trực tuyến toàn trình & Đề án 06
               </span>
               <p
                 className="text-[#EDE8E1]/70 text-base leading-relaxed font-light mb-8"
                 style={{ fontFamily: f2 }}
               >
-                Thể hiện tinh thần nhân văn sâu sắc qua đợt đặc xá Quốc khánh 2/9/2025 với hơn 10.000 hồ sơ được xem xét nghiêm ngặt. Đồng thời, vụ án phúc thẩm “Chuyến bay giải cứu” (2023) giảm án cho các bị cáo thành khẩn khắc phục hậu quả là minh chứng sinh động cho pháp luật nghiêm minh nhưng đầy tính cảm hóa.
+                Hiện thực hóa Nhà nước "Vì Dân". Thực hiện thủ tục trực tuyến giúp triệt tiêu nhũng nhiễu vặt, giảm chi phí và thời gian cho dân, lấy sự tiện lợi của nhân dân làm thước đo đánh giá hiệu quả phục vụ.
               </p>
               <div className="flex flex-wrap gap-2">
                 {[
-                  "Đặc xá 2/9/2025",
-                  "Khoan hồng nhân đạo",
-                  "Khắc phục hậu quả",
+                  "Dịch vụ công",
+                  "Không nhũng nhiễu",
+                  "Lấy dân làm trung tâm",
                 ].map((tag) => (
                   <span
                     key={tag}
@@ -149,22 +143,20 @@ export default function CoSoLyThuyet() {
               </div>
             </div>
           </div>
-          {/* Card 3: Đại án Vạn Thịnh Phát */}
+          {/* Card 3 */}
           <div className="gsap-slide-left card-tilt group">
             <div className="h-full p-8 md:p-10 bg-white/50 rounded-[20px] border border-[#3D3529]/5 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(61,53,41,0.08)]">
               <h3
                 className="text-3xl font-bold text-[#3D3529] mb-6"
                 style={{ fontFamily: f1 }}
               >
-                Đại án Vạn Thịnh Phát
+                Giám Sát Công Quyền MXH
               </h3>
               <p
                 className="text-[#7A6040] text-base leading-relaxed font-light mb-8"
                 style={{ fontFamily: f2 }}
               >
-                Cho thấy người có tiềm lực kinh tế lớn vẫn phải chịu trách nhiệm
-                trước pháp luật: 86 bị can truy tố, bà Trương Mỹ Lan chiếm đoạt
-                hơn 304.000 tỷ đồng, tuyên án tử hình phúc thẩm.
+                Mạng xã hội trở thành công cụ giám sát đắc lực. Dân phản ánh thái độ hạch dịch của cán bộ, buộc cơ quan phải xác minh, xử lý nghiêm minh, khẳng định cán bộ là "đầy tớ" của dân, giám sát "không vùng cấm".
               </p>
               <div className="pl-6 border-l-2 border-[#C5A028]">
                 <p
@@ -179,29 +171,26 @@ export default function CoSoLyThuyet() {
                     padding: "0.2em 0",
                   }}
                 >
-                  "Thượng tôn pháp luật không chỉ để xử phạt mà còn bảo vệ lợi
-                  ích nhân dân."
+                  "Việc gì có hại cho dân, ta phải hết sức tránh. Cán bộ là công bộc của dân."
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Card 4: Nghị định 168 */}
+          {/* Card 4 */}
           <div className="gsap-slide-right card-tilt group">
             <div className="h-full p-8 md:p-10 bg-[#C5A028] rounded-[20px] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(197,160,40,0.3)]">
               <h3
                 className="text-3xl font-bold text-white mb-6"
                 style={{ fontFamily: f1 }}
               >
-                Nghị định 168 (Nồng độ cồn)
+                Quốc Hội Số (Trực Tuyến)
               </h3>
               <p
                 className="text-white/90 text-base leading-relaxed font-light"
                 style={{ fontFamily: f2 }}
               >
-                Sau 3 tháng thực hiện, số vi phạm giảm 46,5%. Trong 4 ngày nghỉ
-                lễ 30/4–3/5/2026, phát hiện 11.411 trường hợp vi phạm, xử lý
-                theo phương châm "không có vùng cấm, không có ngoại lệ".
+                Tiếp xúc cử tri trực tuyến và công khai minh bạch các kỳ họp Quốc hội trên nền tảng số giúp người dân dễ dàng theo dõi, chất vấn và thực thi quyền làm chủ một cách nhanh chóng, hiệu quả nhất.
               </p>
             </div>
           </div>

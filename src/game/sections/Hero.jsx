@@ -62,7 +62,7 @@ export default function Hero() {
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               <span className="w-2 h-2 rounded-full bg-[#C5A028]" />
-              GROUP 2
+              GROUP 5
             </span>
           </div>
 
@@ -78,74 +78,56 @@ export default function Hero() {
           </h1>
 
           <p
-            className="gsap-reveal text-sm md:text-base text-[#C5A028] font-semibold tracking-[0.15em] uppercase mb-8"
+            className="gsap-reveal text-sm md:text-base text-[#C5A028] font-semibold tracking-[0.15em] uppercase mb-6"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
-            Về Nhà Nước Pháp Quyền
+            Về Nhà Nước Dân Chủ
           </p>
 
           <p
-            className="gsap-reveal text-base md:text-lg text-[#7A6040] max-w-xl leading-relaxed font-light mb-12 drop-shadow-sm"
+            className="gsap-reveal text-base md:text-lg text-[#7A6040] max-w-xl leading-relaxed font-light mb-8 drop-shadow-sm"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
-            Một nhà nước thực sự "của nhân dân, do nhân dân và vì nhân dân". Sự
-            kết hợp hài hoà giữa tính hợp pháp, tính thượng tôn pháp luật và
-            pháp quyền nhân nghĩa trong hệ thống chính trị Việt Nam.
+            Xây dựng mô hình quản trị quốc gia "Của dân, Do dân, Vì dân" – Sự kết hợp hài hòa giữa bản chất giai cấp công nhân và sức mạnh đại đoàn kết toàn dân tộc.
           </p>
+
+          <div className="gsap-reveal mb-10 pl-6 border-l-2 border-[#C5A028] italic max-w-2xl">
+            <p className="text-lg md:text-xl text-[#3D3529] font-medium leading-relaxed" style={{ fontFamily: "'EB Garamond', serif" }}>
+              "Nước ta là nước dân chủ. Bao nhiêu lợi ích đều vì dân. Bao nhiêu quyền hạn đều của dân... Chính quyền từ xã đến Chính phủ trung ương do dân cử ra."
+            </p>
+            <p className="text-sm mt-3 text-[#7A6040] font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>
+              — Chủ tịch Hồ Chí Minh (1949)
+            </p>
+          </div>
 
           <div className="gsap-reveal flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <a
-              href="#dat-van-de"
-              className="magnetic-btn group/btn flex items-center gap-4 px-6 py-3 bg-[#3D3529] text-[#EDE8E1] rounded-full transition-all duration-500 hover:bg-[#C5A028] hover:-translate-y-0.5 shadow-[0_8px_24px_-8px_rgba(61,53,41,0.3)]"
+              href="#phan-1"
+              className="magnetic-btn group/btn flex items-center justify-center px-8 py-3.5 bg-[#3D3529] text-[#EDE8E1] rounded-full transition-all duration-500 hover:bg-[#C5A028] hover:-translate-y-0.5 shadow-[0_8px_24px_-8px_rgba(61,53,41,0.3)]"
             >
               <span
                 className="font-semibold tracking-[0.08em] text-xs uppercase"
                 style={{ fontFamily: "'Inter', sans-serif" }}
               >
-                Bắt Đầu Hành Trình
-              </span>
-              <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center">
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-              </div>
-            </a>
-            <a
-              href="#co-so-ly-thuyet"
-              className="magnetic-btn group flex items-center gap-3 px-6 py-3 rounded-full border border-[#3D3529]/20 text-[#3D3529] bg-[#EDE8E1]/50 backdrop-blur-sm transition-all duration-500 hover:border-[#C5A028] hover:text-[#C5A028] hover:-translate-y-0.5"
-            >
-              <span
-                className="font-semibold text-xs tracking-[0.08em] uppercase"
-                style={{ fontFamily: "'Inter', sans-serif" }}
-              >
-                Khám Phá Lý Thuyết
+                Bắt Đầu Khám Phá
               </span>
             </a>
           </div>
 
           <div className="mt-14 flex flex-wrap gap-3">
             {[
-              "Hợp Hiến Hợp Pháp",
-              "Thượng Tôn Pháp Luật",
-              "Pháp Quyền Nhân Nghĩa",
+              { label: "01. Cơ Sở Lý Luận", link: "#phan-1" },
+              { label: "02. Liên Hệ Thực Tiễn", link: "#phan-2" },
+              { label: "03. Giải Pháp Quản Trị", link: "#phan-3" },
             ].map((tag) => (
-              <span
-                key={tag}
-                className={`gsap-reveal px-4 py-2 rounded-full border border-[#3D3529]/10 bg-[#EDE8E1]/30 backdrop-blur-sm text-[10px] uppercase font-semibold tracking-[0.1em] text-[#7A6040]/80 cursor-default transition-colors duration-300 hover:border-[#C5A028]/40 hover:text-[#C5A028]`}
+              <a
+                key={tag.label}
+                href={tag.link}
+                className="gsap-reveal px-5 py-2.5 rounded-full border border-[#3D3529]/10 bg-[#EDE8E1]/30 backdrop-blur-sm text-[11px] uppercase font-semibold tracking-[0.05em] text-[#7A6040]/90 transition-colors duration-300 hover:border-[#C5A028]/40 hover:text-[#C5A028] hover:bg-white"
                 style={{ fontFamily: "'Inter', sans-serif" }}
               >
-                {tag}
-              </span>
+                {tag.label}
+              </a>
             ))}
           </div>
         </div>
