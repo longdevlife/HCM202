@@ -492,14 +492,7 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
         </div>
       )}
 
-      {activeMission && (
-        <div className="mission-card">
-          <div className="mission-label">NHIỆM VỤ PHASE</div>
-          <div className="mission-text">{activeMission}</div>
-          {progressText && <div className="mission-progress pix-num">{progressText}</div>}
-          {activeMeaning && <div className="mission-meaning">{activeMeaning}</div>}
-        </div>
-      )}
+
 
       {/* Countdown phase có giới hạn */}
       {phaseCountdown !== null && gameState.status === "phase_2" && (
@@ -547,6 +540,18 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
             style={{ width: "100%", height: "100%", border: "none", display: "block" }}
             title="Phaser RPG"
           />
+
+          {/* Mission HUD Overlay inside Game Canvas */}
+          {activeMission && (
+            <div style={{ position: "absolute", bottom: "16px", left: "16px", zIndex: 10, pointerEvents: "none", maxWidth: "calc(100% - 32px)", width: "320px" }}>
+              <div className="mission-card" style={{ margin: 0, boxShadow: "0 6px 20px rgba(0,0,0,0.6)", pointerEvents: "auto", background: "rgba(15, 23, 42, 0.85)", backdropFilter: "blur(6px)" }}>
+                <div className="mission-label">NHIỆM VỤ PHASE</div>
+                <div className="mission-text">{activeMission}</div>
+                {progressText && <div className="mission-progress pix-num">{progressText}</div>}
+                {activeMeaning && <div className="mission-meaning">{activeMeaning}</div>}
+              </div>
+            </div>
+          )}
 
           {/* Modal Câu hỏi Tình huống Công vụ khi va chạm Bẫy/Rủi ro */}
           {activeHazardQuiz && (
