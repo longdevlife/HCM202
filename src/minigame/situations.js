@@ -141,7 +141,7 @@ export const PHASE_CONFIGS = {
     description: "Khi có quyền lực, cán bộ phải đối mặt với nhiều cám dỗ hơn.",
     mcNarration:
       "Công việc đã đi vào guồng, nhưng quyền lực luôn đi kèm thử thách. Các bạn sẽ gặp áp lực thành tích, quan hệ nội bộ và những lời mời tưởng như vô hại. Hãy giữ liêm chính, công khai và trách nhiệm trong từng lựa chọn.",
-    mission: "Trong 90 giây, thu thập 2 Liêm chính và 1 Minh bạch.",
+    mission: "Trong 5 phút, thu thập 2 Liêm chính và 1 Minh bạch.",
     learningMeaning:
       "Liêm chính không phải khẩu hiệu. Nó được kiểm chứng khi cán bộ có quyền xử lý công việc và gặp cám dỗ.",
     recap:
@@ -170,7 +170,7 @@ export const PHASE_CONFIGS = {
     ],
     pressureInterval: 20000,
     pressureLabel: "Áp lực thành tích",
-    durationMs: 90000,
+    durationMs: 300000,
   },
   phase_3: {
     name: "Giữ Vững Liêm Chính",
