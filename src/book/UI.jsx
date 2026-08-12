@@ -7,7 +7,7 @@ export const viewModeAtom = atom("showcase"); // "showcase" | "reading"
 
 export const pages = [
   {
-    front: "/textures/bìa đầu.png",
+    front: "/magazines/first_page.png",
     back: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_07 PM (1).png",
   },
   {
@@ -20,7 +20,7 @@ export const pages = [
   },
   {
     front: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_11 PM (6).png",
-    back: "/textures/bìa cuối.png",
+    back: "/magazines/last_page.png",
   },
 ];
 

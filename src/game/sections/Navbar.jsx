@@ -5,7 +5,6 @@ const NAV_LINKS = [
   { href: '#book', label: 'Tạp chí' },
   { href: '#museum', label: 'Bảo tàng' },
   { href: '#minigame', label: 'Mini Game' },
-  { href: '#ai', label: 'AI Usage' },
 ];
 
 export default function Navbar({ activeTab, onTabChange }) {
@@ -22,10 +21,6 @@ export default function Navbar({ activeTab, onTabChange }) {
     }
     if (activeTab === 'minigame') {
       setActive('#minigame');
-      return;
-    }
-    if (activeTab === 'ai') {
-      setActive('#ai');
       return;
     }
     
@@ -56,14 +51,6 @@ export default function Navbar({ activeTab, onTabChange }) {
     if (id === 'minigame') {
       if (activeTab !== 'minigame' && onTabChange) {
         onTabChange('minigame');
-      }
-      return;
-    }
-
-    // Switch to AI Usage Tab
-    if (id === 'ai') {
-      if (activeTab !== 'ai' && onTabChange) {
-        onTabChange('ai');
       }
       return;
     }
