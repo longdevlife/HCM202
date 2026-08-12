@@ -463,7 +463,7 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
     .sort((a, b) => (b.score || 0) - (a.score || 0));
 
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "flex-start", gap: "20px", width: "100%", maxWidth: "1600px", margin: "0 auto" }}>
+    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "flex-start", gap: "20px", width: "100%", maxWidth: "1920px", margin: "0 auto" }}>
       
       {/* CỘT TRÁI: Bảng xếp hạng (Chỉ hiện trên PC/Tablet) */}
       <div className="hidden lg:flex" style={{ width: "260px", flexDirection: "column", gap: "16px", background: "rgba(15, 23, 42, 0.6)", borderRadius: "16px", padding: "16px", border: "1px solid rgba(255,255,255,0.05)" }}>
@@ -482,7 +482,7 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
       </div>
 
       {/* CỘT GIỮA: Màn hình game */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: "320px", maxWidth: "1200px" }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: "1 1 auto", minWidth: "320px", maxWidth: "1400px" }}>
 
       {/* Phase indicator + HUD - (Chỉ hiện trên mobile, PC sẽ ẩn để xem ở 2 cột) */}
       <div className="flex lg:hidden" style={{ justifyContent: "space-between", alignItems: "center", width: "100%", background: "#fff6d7", border: "3px solid #000", borderRadius: "0px", padding: "12px 20px", marginBottom: "12px", boxShadow: "5px 5px 0 rgba(0,0,0,0.5)", color: "#2c1a0e" }}>
