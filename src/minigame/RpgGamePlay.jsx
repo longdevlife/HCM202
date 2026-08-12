@@ -507,21 +507,7 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
 
 
 
-      {/* Countdown phase có giới hạn */}
-      {phaseCountdown !== null && gameState.status === "phase_2" && (
-        <div style={{ width: "100%", background: phaseCountdown <= 10 ? "rgba(197,39,45,0.15)" : "rgba(0,137,123,0.08)", border: `2px solid ${phaseCountdown <= 10 ? "rgba(197,39,45,0.4)" : "rgba(0,137,123,0.2)"}`, borderRadius: "12px", padding: "10px 16px", marginBottom: "10px", textAlign: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-            <IconTimer className={`w-5 h-5 ${phaseCountdown <= 10 ? "text-red-500 animate-pulse" : "text-teal-500"}`} />
-            <span style={{ fontSize: "1.2rem", fontWeight: "800", fontFamily: "var(--font-mono)", color: phaseCountdown <= 10 ? "#c5272d" : "#00897b" }}>
-              {phaseCountdown > 0 ? `${phaseCountdown}s` : "HẾT GIỜ!"}
-            </span>
-            <span style={{ fontSize: "0.75rem", color: "#8b8680" }}>Liêm chính & Minh bạch</span>
-          </div>
-          <div style={{ width: "100%", height: "4px", background: "rgba(0,0,0,0.2)", borderRadius: "2px", marginTop: "6px", overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${Math.min(100, (phaseCountdown / Math.ceil((phaseConfig.durationMs || 90000) / 1000)) * 100)}%`, background: phaseCountdown <= 10 ? "#c5272d" : "#00897b", transition: "width 1s linear", borderRadius: "2px" }} />
-          </div>
-        </div>
-      )}
+
 
       {/* Manh mối từ Host */}
       {gameState.phase2Hint && gameState.status === "phase_2" && (
@@ -561,6 +547,23 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
                 <div style={{ fontSize: "0.65rem", color: "#38bdf8", fontWeight: "900", letterSpacing: "1px", textTransform: "uppercase" }}>MỤC TIÊU PHASE</div>
                 <div style={{ fontSize: "0.85rem", color: "#f8fafc", fontWeight: "700", lineHeight: "1.3", textShadow: "1px 1px 0 rgba(0,0,0,0.8)" }}>{activeMission}</div>
                 {progressText && <div style={{ fontSize: "0.95rem", color: "#facc15", fontFamily: "var(--font-mono)", fontWeight: "bold", marginTop: "2px" }}>{progressText}</div>}
+              </div>
+            </div>
+          )}
+
+          {/* Countdown HUD Overlay inside Game Canvas (Compact, Top-Right) */}
+          {phaseCountdown !== null && gameState.status === "phase_2" && (
+            <div style={{ position: "absolute", top: "12px", right: "12px", zIndex: 10, pointerEvents: "none" }}>
+              <div style={{ background: phaseCountdown <= 10 ? "rgba(185, 28, 28, 0.9)" : "rgba(15, 23, 42, 0.85)", backdropFilter: "blur(6px)", border: `1px solid ${phaseCountdown <= 10 ? "#fca5a5" : "rgba(56, 189, 248, 0.4)"}`, borderRadius: "8px", padding: "6px 12px", boxShadow: "0 4px 12px rgba(0,0,0,0.5)", display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-end", pointerEvents: "auto" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <IconTimer className={`w-4 h-4 ${phaseCountdown <= 10 ? "text-white animate-pulse" : "text-teal-400"}`} />
+                  <span style={{ fontSize: "1.2rem", fontWeight: "800", fontFamily: "var(--font-mono)", color: phaseCountdown <= 10 ? "#fff" : "#38bdf8", textShadow: "1px 1px 0 rgba(0,0,0,0.8)" }}>
+                    {phaseCountdown > 0 ? `${Math.floor(phaseCountdown / 60)}:${String(phaseCountdown % 60).padStart(2, "0")}` : "HẾT GIỜ!"}
+                  </span>
+                </div>
+                <div style={{ width: "100%", height: "4px", background: "rgba(0,0,0,0.4)", borderRadius: "2px", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${Math.min(100, (phaseCountdown / Math.ceil((phaseConfig.durationMs || 300000) / 1000)) * 100)}%`, background: phaseCountdown <= 10 ? "#fff" : "#10b981", transition: "width 1s linear" }} />
+                </div>
               </div>
             </div>
           )}
