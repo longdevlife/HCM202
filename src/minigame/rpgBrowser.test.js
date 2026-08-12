@@ -12,6 +12,9 @@ async function withBrowser(run) {
 }
 
 async function openScene(page, role = "player") {
+  await page.addInitScript(() => {
+    window.__RPG_TEST_HOOK__ = true;
+  });
   await page.goto(`http://127.0.0.1:5173/rpg/index.html?role=${role}&id=tester&name=Lan`, { waitUntil: "domcontentloaded" });
   await page.waitForSelector("canvas[data-rendered='true']");
 }
@@ -35,8 +38,8 @@ const collisionSnapshot = (kind, id) => ({
   players: {},
   items: {},
   hazards: {},
-  npcs: kind === "npc" ? { [id]: { id, kind, x: 480, y: 270 } } : {},
-  gates: kind === "gate" ? { [id]: { id, kind, x: 480, y: 270 } } : {},
+  npcs: kind === "npc" ? { [id]: { id, kind, x: 480, y: 293 } } : {},
+  gates: kind === "gate" ? { [id]: { id, kind, x: 480, y: 293 } } : {},
 });
 
 test("standalone player and host scenes render without a black fallback", async () => {
@@ -97,6 +100,34 @@ test("scene ignores a snapshot that does not originate from its parent", async (
       items: { book_1: { id: "book_1", kind: "item", x: 480, y: 270 } },
     }, "other");
     assert.deepEqual(messages, []);
+  });
+});
+
+test("player applies position deltas without emitting gameplay mutations", async () => {
+  await withBrowser(async (page) => {
+    await openScene(page);
+    const result = await page.evaluate(async () => {
+      const sent = [];
+      window.parent.postMessage = (message) => sent.push(message);
+      const canvas = document.querySelector("#game-canvas");
+      const dispatch = (position) => window.dispatchEvent(new MessageEvent("message", {
+        data: { type: "PLAYER_POSITION", playerId: "remote_1", position },
+        source: window.parent,
+      }));
+
+      dispatch({ x: 420, y: 230, direction: "right" });
+      dispatch(null);
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      return {
+        updates: canvas.dataset.positionUpdates,
+        mutations: sent.filter((message) => [
+          "NHAT_SACH", "DINH_BAY", "FOUND_LOYAL_CUSTOMER", "ESCAPED_GATE",
+        ].includes(message.type)),
+      };
+    });
+
+    assert.equal(result.updates, "2");
+    assert.deepEqual(result.mutations, []);
   });
 });
 

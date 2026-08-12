@@ -87,6 +87,7 @@ export const MinigamePage = () => {
         await remove(ref(db, "traps"));
         await remove(ref(db, "marketEvents"));
         await remove(ref(db, "players"));
+        await remove(ref(db, "positions"));
       } catch (err) {
         console.error("Lỗi reset database khi chọn vai trò Host:", err);
       }

@@ -5,6 +5,7 @@ import {
   createMarketEventEntities,
   createPhaseWorld,
   isRpgMessage,
+  mergePlayerPositions,
   normalizePlayerMove,
   resolveCanonicalHazard,
 } from "./rpgBridge.js";
@@ -124,6 +125,28 @@ test("buildRpgSnapshot exposes persisted player positions to the canvas", () => 
   );
   assert.equal(snapshot.players.p1.x, 10);
   assert.equal(snapshot.players.p1.y, 20);
+});
+
+test("buildRpgSnapshot overlays valid positions over legacy player coordinates", () => {
+  const snapshot = buildRpgSnapshot(
+    { status: "phase_1" },
+    { players: { p1: { name: "Lan", position: { x: 100, y: 100 } } } },
+    { p1: { x: 200, y: 220, direction: "right" } },
+  );
+
+  assert.equal(snapshot.players.p1.x, 200);
+  assert.equal(snapshot.players.p1.y, 220);
+  assert.equal(snapshot.players.p1.direction, "right");
+});
+
+test("mergePlayerPositions ignores malformed position overrides", () => {
+  const merged = mergePlayerPositions(
+    { p1: { position: { x: 100, y: 100 } } },
+    { p1: { x: "bad", y: 220 }, p2: { x: 20, y: 30 } },
+  );
+
+  assert.deepEqual(merged.p1.position, { x: 100, y: 100 });
+  assert.equal(merged.p2, undefined);
 });
 
 test("movement messages require finite coordinates and a cardinal direction", () => {

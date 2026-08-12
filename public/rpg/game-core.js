@@ -56,6 +56,21 @@ export function movePlayer(player, input = {}, deltaSeconds = 0, bounds = {}) {
   };
 }
 
+export function interpolatePosition(current, target, alpha = 0.2) {
+  const hasCurrent = finiteCoordinate(current?.x) && finiteCoordinate(current?.y);
+  const hasTarget = finiteCoordinate(target?.x) && finiteCoordinate(target?.y);
+  if (!hasTarget) return hasCurrent ? { ...current } : {};
+  if (!hasCurrent) return { ...target };
+
+  const factor = Number.isFinite(alpha) ? Math.max(0, Math.min(1, alpha)) : 0.2;
+  return {
+    ...current,
+    x: current.x + (target.x - current.x) * factor,
+    y: current.y + (target.y - current.y) * factor,
+    ...(typeof target.direction === "string" ? { direction: target.direction } : {}),
+  };
+}
+
 export function circlesOverlap(a, b) {
   if (!a || !b || !finiteCoordinate(a.x) || !finiteCoordinate(a.y) || !finiteCoordinate(b.x) || !finiteCoordinate(b.y)) return false;
   const radiusA = finiteCoordinate(a.radius) ? a.radius : 0;

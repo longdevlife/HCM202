@@ -4,6 +4,7 @@ import { db } from "./firebaseConfig";
 import { situations, PHASE_CONFIGS } from "./situations";
 import { applyPhaseOneGate, applyPhaseTwoGate, applyVoteOutcome, calculateFinalScore } from "./gameStateUtils";
 import { buildRpgSnapshot, createMarketEventEntities, createPhaseWorld } from "./rpgBridge";
+import { subscribeToPlayerPositions } from "./playerPositionSync";
 import {
   IconPhone,
   IconDesktop,
@@ -45,11 +46,25 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
   const [votes, setVotes] = useState({});
   const [qrUrl, setQrUrl] = useState("");
   const [rpgWorld, setRpgWorld] = useState(EMPTY_RPG_WORLD);
+  const positionsRef = useRef({});
 
   useEffect(() => {
     const url = window.location.origin + window.location.pathname + "#minigame";
     setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?size=250x250&color=c5272d&data=${encodeURIComponent(url)}`);
   }, []);
+
+  useEffect(() => subscribeToPlayerPositions(db, ({ playerId, position }) => {
+    if (position) positionsRef.current[playerId] = position;
+    else delete positionsRef.current[playerId];
+
+    if (iframeReadyRef.current) {
+      iframeRef.current?.contentWindow?.postMessage({
+        type: "PLAYER_POSITION",
+        playerId,
+        position,
+      }, "*");
+    }
+  }), []);
 
   useEffect(() => {
     const unsubPlayers = onValue(ref(db, "players"), (s) => setPlayers(s.val() || {}));
@@ -120,7 +135,7 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
   const postRpgSnapshot = useCallback((force = false) => {
     const iframeWindow = iframeRef.current?.contentWindow;
     if (!iframeWindow || (!iframeReadyRef.current && !force)) return;
-    iframeWindow.postMessage(buildRpgSnapshot(gameState, rpgCollections), "*");
+    iframeWindow.postMessage(buildRpgSnapshot(gameState, rpgCollections, positionsRef.current), "*");
   }, [gameState, rpgCollections]);
 
   const handleIframeLoad = useCallback(() => {
@@ -158,6 +173,7 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
       await remove(ref(db, "marketEvents"));
       await remove(ref(db, "npcs"));
       await remove(ref(db, "gates"));
+      await remove(ref(db, "positions"));
     }
 
     const world = createPhaseWorld(phaseKey, config, Date.now());
@@ -275,6 +291,7 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
     await remove(ref(db, "traps"));
     await remove(ref(db, "marketEvents"));
     await remove(ref(db, "players"));
+    await remove(ref(db, "positions"));
     await remove(ref(db, "npcs"));
     await remove(ref(db, "gates"));
   };
@@ -378,7 +395,7 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
       )}
 
       {isRpgPhase && currentConfig && (
-        <div className="host-dashboard-grid" style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: "20px", marginTop: "15px", textAlign: "left" }}>
+        <div className="host-dashboard-grid" style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: "20px", marginTop: "15px", textAlign: "left" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
               <div className="kpi-card-flat"><span className="kpi-label">Cán Bộ Đang Hoạt Động</span><span className="kpi-val pix-num" style={{ color: "var(--neon-blue)" }}>{activePlayersCount}<span style={{ fontSize: "0.85rem", color: "#8b8680", fontWeight: "normal" }}>/{totalPlayers}</span></span></div>
@@ -408,12 +425,58 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
             </div>
             <Leaderboard />
             <div className="dashboard-widget" style={{ background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.04)", borderRadius: "14px", padding: "16px" }}>
-              <h4 style={{ fontSize: "0.8rem", color: "var(--neon-blue)", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 10px 0" }}>Kích Hoạt Sự Kiện</h4>
+              <h4 style={{ fontSize: "0.8rem", color: "var(--neon-blue)", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 10px 0", display: "flex", alignItems: "center", gap: "6px" }}>
+                <IconBolt className="w-3.5 h-3.5 text-yellow-400" /> Kích Hoạt Sự Kiện (Spam Item)
+              </h4>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {currentConfig.hostEvents?.map((event) => (
-                  <button key={event.type} className="btn-market-flat" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", padding: "10px 14px", borderRadius: "8px", cursor: "pointer", border: "1px solid rgba(255,255,255,0.03)", background: "rgba(255,255,255,0.02)", width: "100%" }} onClick={() => handleMarketEvent(event.type)}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontWeight: "bold", fontSize: "0.8rem", color: "#fff" }}><IconBook className="w-4 h-4 text-amber-500" /> {event.label}</span>
-                    <span style={{ color: "#8b8680", fontSize: "0.7rem" }}>{event.hint}</span>
+                  <button
+                    key={event.type}
+                    className="btn-market-flat"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "8px",
+                      padding: "8px 12px",
+                      borderRadius: "0px",
+                      cursor: "pointer",
+                      width: "100%",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                    }}
+                    onClick={() => handleMarketEvent(event.type)}
+                  >
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        fontWeight: "bold",
+                        fontSize: "0.88rem",
+                        color: "#fff",
+                        whiteSpace: "nowrap",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <IconBook className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                      <span style={{ whiteSpace: "nowrap" }}>{event.label}</span>
+                    </span>
+                    <span
+                      style={{
+                        color: "#fef08a",
+                        background: "rgba(0,0,0,0.35)",
+                        border: "1px solid rgba(255,255,255,0.2)",
+                        padding: "2px 8px",
+                        fontSize: "0.72rem",
+                        fontWeight: "bold",
+                        whiteSpace: "nowrap",
+                        flexShrink: 0,
+                        borderRadius: "3px",
+                      }}
+                    >
+                      {event.hint}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -426,9 +489,9 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
                 <span style={{ color: "var(--neon-gold)", fontWeight: "bold", display: "block", marginBottom: "3px" }}>MC CHỐT Ý:</span>
                 <span style={{ color: "#a8a29a", lineHeight: "1.4" }}>{currentConfig.recap}</span>
               </div>
-              {gameState.status === "phase_1" && <button className="btn-cyber" style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "12px", fontSize: "0.95rem" }} onClick={() => handleTriggerSituation(1)}><IconBolt className="w-4 h-4 text-yellow-500 animate-pulse" /> Chốt Phase 1 & Tình huống 1</button>}
-              {gameState.status === "phase_2" && <button className="btn-cyber" style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "12px", fontSize: "0.95rem" }} onClick={() => handleTriggerSituation(2)}><IconBolt className="w-4 h-4 text-yellow-500 animate-pulse" /> Chốt Phase 2 & Tình huống 2</button>}
-              {gameState.status === "phase_3" && <button className="btn-cyber btn-cyber-blue" style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "12px", fontSize: "0.95rem" }} onClick={handleFinishGame}><IconTrophy className="w-4 h-4 text-yellow-500 animate-bounce" /> Kết thúc & Tổng kết</button>}
+              {gameState.status === "phase_1" && <button className="btn-cyber" style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "12px", fontSize: "0.95rem", whiteSpace: "nowrap" }} onClick={() => handleTriggerSituation(1)}><IconBolt className="w-4 h-4 text-yellow-500 animate-pulse flex-shrink-0" /> <span style={{ whiteSpace: "nowrap" }}>Chốt Phase 1 & Tình huống 1</span></button>}
+              {gameState.status === "phase_2" && <button className="btn-cyber" style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "12px", fontSize: "0.95rem", whiteSpace: "nowrap" }} onClick={() => handleTriggerSituation(2)}><IconBolt className="w-4 h-4 text-yellow-500 animate-pulse flex-shrink-0" /> <span style={{ whiteSpace: "nowrap" }}>Chốt Phase 2 & Tình huống 2</span></button>}
+              {gameState.status === "phase_3" && <button className="btn-cyber btn-cyber-blue" style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "12px", fontSize: "0.95rem", whiteSpace: "nowrap" }} onClick={handleFinishGame}><IconTrophy className="w-4 h-4 text-yellow-500 animate-bounce flex-shrink-0" /> <span style={{ whiteSpace: "nowrap" }}>Kết thúc & Tổng kết</span></button>}
             </div>
           </div>
         </div>

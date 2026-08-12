@@ -6,6 +6,7 @@ import {
   movePlayer,
   circlesOverlap,
   collisionMessage,
+  interpolatePosition,
   isEntityResolvedForPlayer,
 } from "../../public/rpg/game-core.js";
 
@@ -27,6 +28,14 @@ test("movePlayer is frame-rate independent and stays inside bounds", () => {
   assert.equal(moved.x, 80);
   assert.equal(moved.y, 20);
   assert.equal(movePlayer({ x: 90, y: 20 }, { right: true }, 1, { width: 100, height: 80 }).x, 88);
+});
+
+test("interpolatePosition moves toward a target and clamps alpha", () => {
+  assert.deepEqual(
+    interpolatePosition({ x: 0, y: 0 }, { x: 100, y: 40, direction: "right" }, 0.25),
+    { x: 25, y: 10, direction: "right" },
+  );
+  assert.equal(interpolatePosition({ x: 0, y: 0 }, { x: 100, y: 40 }, 2).x, 100);
 });
 
 test("circlesOverlap detects contact", () => {

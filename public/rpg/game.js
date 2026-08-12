@@ -1,6 +1,7 @@
 import {
   circlesOverlap,
   collisionMessage,
+  interpolatePosition,
   isEntityResolvedForPlayer,
   movePlayer,
   normalizeSnapshot,
@@ -568,6 +569,7 @@ const state = {
     radius: 14,
     direction: "down",
     walking: false,
+    localPositionInitialized: false,
   },
   activeQuest: null,
   collectedIds: new Set(),
@@ -582,9 +584,18 @@ const state = {
   justTriggeredGate: false,
 };
 
+const remotePlayerRenderState = new Map();
+
 const postToParent = (message) => window.parent?.postMessage(message, "*");
 const activeInput = () => input.up || input.down || input.left || input.right;
 const activeDirection = () => ["up", "down", "left", "right"].find((direction) => input[direction]) || "down";
+const hasFinitePosition = (value) => (
+  value
+  && typeof value.x === "number"
+  && Number.isFinite(value.x)
+  && typeof value.y === "number"
+  && Number.isFinite(value.y)
+);
 
 function setStatus(message) {
   if (status) status.textContent = message;
@@ -592,17 +603,116 @@ function setStatus(message) {
 
 function updatePlayerFromSnapshot() {
   const remote = state.snapshot.players[options.playerId];
-  if (remote) {
-    state.player = {
-      ...state.player,
-      ...remote,
-      x: typeof remote.x === "number" ? toWorldX(remote.x) : state.player.x,
-      y: typeof remote.y === "number" ? toWorldY(remote.y) : state.player.y,
-      id: options.playerId,
-      characterId: remote.character || state.player.characterId,
-      gender: remote.gender || (remote.character?.startsWith("female") ? "female" : state.player.gender),
-      radius: 14,
+  if (!remote) return;
+
+  const shouldAnchorPosition = !state.player.localPositionInitialized && hasFinitePosition(remote);
+  state.player = {
+    ...state.player,
+    ...remote,
+    x: shouldAnchorPosition ? toWorldX(remote.x) : state.player.x,
+    y: shouldAnchorPosition ? toWorldY(remote.y) : state.player.y,
+    id: options.playerId,
+    characterId: remote.character || state.player.characterId,
+    gender: remote.gender || (remote.character?.startsWith("female") ? "female" : state.player.gender),
+    radius: 14,
+    localPositionInitialized: state.player.localPositionInitialized || shouldAnchorPosition,
+  };
+}
+
+function syncRemotePlayerTarget(id, remote) {
+  if (options.role === "player" && id === options.playerId) return;
+  if (!hasFinitePosition(remote)) {
+    remotePlayerRenderState.delete(id);
+    return;
+  }
+
+  const targetX = toWorldX(remote.x);
+  const targetY = toWorldY(remote.y);
+  const targetDirection = typeof remote.direction === "string" ? remote.direction : "down";
+  const current = remotePlayerRenderState.get(id);
+
+  if (!current) {
+    remotePlayerRenderState.set(id, {
+      x: targetX,
+      y: targetY,
+      targetX,
+      targetY,
+      direction: targetDirection,
+      targetDirection,
+      name: remote.name,
+      color: remote.color,
+      character: remote.character,
+      gender: remote.gender,
+    });
+    return;
+  }
+
+  current.targetX = targetX;
+  current.targetY = targetY;
+  current.targetDirection = targetDirection;
+  current.name = remote.name;
+  current.color = remote.color;
+  current.character = remote.character;
+  current.gender = remote.gender;
+}
+
+function syncRemotePlayerTargets(players = {}) {
+  const seen = new Set();
+  for (const [id, remote] of Object.entries(players)) {
+    if (options.role === "player" && id === options.playerId) continue;
+    if (!hasFinitePosition(remote)) continue;
+    seen.add(id);
+    syncRemotePlayerTarget(id, remote);
+  }
+
+  for (const id of remotePlayerRenderState.keys()) {
+    if (!seen.has(id)) remotePlayerRenderState.delete(id);
+  }
+}
+
+function advanceRemotePlayers(deltaSeconds) {
+  const alpha = 1 - Math.exp(-12 * Math.max(0, deltaSeconds));
+  for (const remote of remotePlayerRenderState.values()) {
+    const next = interpolatePosition(remote, {
+      x: remote.targetX,
+      y: remote.targetY,
+      direction: remote.targetDirection,
+    }, alpha);
+    remote.x = next.x;
+    remote.y = next.y;
+    remote.direction = next.direction;
+
+    if (Math.hypot(remote.targetX - remote.x, remote.targetY - remote.y) < 0.25) {
+      remote.x = remote.targetX;
+      remote.y = remote.targetY;
+    }
+  }
+}
+
+function applyPlayerPositionDelta(message) {
+  const playerId = typeof message.playerId === "string" ? message.playerId : "";
+  if (!playerId) return;
+
+  if (message.position === null) {
+    delete state.snapshot.players[playerId];
+    remotePlayerRenderState.delete(playerId);
+  } else if (hasFinitePosition(message.position)) {
+    const current = state.snapshot.players[playerId] || { id: playerId, kind: "player" };
+    state.snapshot.players[playerId] = {
+      ...current,
+      ...message.position,
+      id: playerId,
+      kind: "player",
     };
+    if (playerId === options.playerId) updatePlayerFromSnapshot();
+    syncRemotePlayerTarget(playerId, state.snapshot.players[playerId]);
+  } else {
+    return;
+  }
+
+  if (window.__RPG_TEST_HOOK__) {
+    const updateCount = Number(canvas.dataset.positionUpdates) || 0;
+    canvas.dataset.positionUpdates = String(updateCount + 1);
   }
 }
 
@@ -2782,13 +2892,14 @@ function drawScene() {
   // 6. Remote Players
   for (const [id, remote] of Object.entries(state.snapshot.players)) {
     if (options.role !== "player" || id !== options.playerId) {
-      drawPixelCharacter(context, toWorldX(remote.x), toWorldY(remote.y), {
+      const rendered = remotePlayerRenderState.get(id);
+      drawPixelCharacter(context, rendered?.x ?? toWorldX(remote.x), rendered?.y ?? toWorldY(remote.y), {
         name: remote.name || remote.id || "Cán bộ",
-        color: remote.color || "#64748b",
-        characterId: remote.character || "male_reception",
-        gender: remote.gender || (remote.character?.startsWith("female") ? "female" : "male"),
+        color: rendered?.color || remote.color || "#64748b",
+        characterId: rendered?.character || remote.character || "male_reception",
+        gender: rendered?.gender || remote.gender || (remote.character?.startsWith("female") ? "female" : "male"),
         isLocal: false,
-        isMoving: false,
+        isMoving: Boolean(rendered && Math.hypot(rendered.targetX - rendered.x, rendered.targetY - rendered.y) > 1),
       });
     }
   }
@@ -2959,6 +3070,7 @@ function frame(now) {
   }
 
   updateMovingHazards(deltaSeconds);
+  advanceRemotePlayers(deltaSeconds);
 
   // Move player with SOLID BUILDING COLLISION BLOCKING
   if (!state.frozen && state.freezeTimer <= 0 && options.role === "player" && activeInput()) {
@@ -2970,7 +3082,7 @@ function frame(now) {
       y: blockedPos.y,
     };
 
-    if (now - state.lastMovePostedAt >= 100) {
+    if (now - state.lastMovePostedAt >= 125) {
       state.lastMovePostedAt = now;
       postToParent({
         type: "PLAYER_MOVE",
@@ -3053,12 +3165,23 @@ window.addEventListener("message", (event) => {
   if (!message || typeof message !== "object") return;
 
   if (message.type === "GAME_SNAPSHOT") {
+    const nextPhase = typeof message.phase === "string" ? message.phase : state.phase;
+    const phaseChanged = nextPhase !== state.phase
+      && nextPhase !== "waiting"
+      && nextPhase !== "finished";
+    if (phaseChanged) {
+      state.player.localPositionInitialized = false;
+      remotePlayerRenderState.clear();
+    }
     state.snapshot = normalizeSnapshot(message);
-    if (typeof message.phase === "string" && message.phase !== "waiting" && message.phase !== "finished") {
-      state.phase = message.phase;
+    if (nextPhase !== "waiting" && nextPhase !== "finished") {
+      state.phase = nextPhase;
     }
     updatePlayerFromSnapshot();
+    syncRemotePlayerTargets(state.snapshot.players);
     setStatus(`${options.role === "host" ? "Chế độ Ban Tổ Chức (Host)" : "Người chơi"}: ${state.phase}`);
+  } else if (message.type === "PLAYER_POSITION") {
+    applyPlayerPositionDelta(message);
   } else if (message.type === "DPAD_MOVE") {
     getAudioContext();
     if (!state.frozen && state.freezeTimer <= 0) {

@@ -5,6 +5,7 @@ import { PHASE_CONFIGS } from "./situations";
 import { applyEntityRewardClaim, applyFinalGateCompletion, applyPlayerDelta } from "./gameStateUtils";
 import { getCharacterOption } from "./characterOptions";
 import { buildRpgSnapshot, isRpgMessage, normalizePlayerMove, resolveCanonicalHazard } from "./rpgBridge";
+import { subscribeToPlayerPositions } from "./playerPositionSync";
 import { getHazardQuestion } from "./hazardQuestions";
 import {
   IconPhone,
@@ -34,12 +35,14 @@ const getPhaseIcon = (status, className = "w-5 h-5") => {
   return null;
 };
 
-const EMPTY_WORLD = { players: {}, books: {}, traps: {}, npcs: {}, gates: {} };
+const EMPTY_WORLD = { books: {}, traps: {}, npcs: {}, gates: {} };
+const POSITION_UPDATE_INTERVAL_MS = 125;
 
-const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState }) => {
+const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, gameState }) => {
   const iframeRef = useRef(null);
   const iframeReadyRef = useRef(false);
   const lastPlayerMoveAtRef = useRef(0);
+  const positionsRef = useRef({});
   const selectedCharacter = getCharacterOption(playerInfo.character);
   const [world, setWorld] = useState(EMPTY_WORLD);
 
@@ -109,7 +112,7 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
   }, []);
 
   useEffect(() => {
-    const collections = ["players", "books", "traps", "npcs", "gates"];
+    const collections = ["books", "traps", "npcs", "gates"];
     const unsubscribes = collections.map((collection) => onValue(ref(db, collection), (snapshot) => {
       setWorld((currentWorld) => ({
         ...currentWorld,
@@ -119,11 +122,27 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
     return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
   }, []);
 
+  useEffect(() => subscribeToPlayerPositions(db, ({ playerId: incomingPlayerId, position }) => {
+    if (position) positionsRef.current[incomingPlayerId] = position;
+    else delete positionsRef.current[incomingPlayerId];
+
+    if (iframeReadyRef.current) {
+      iframeRef.current?.contentWindow?.postMessage({
+        type: "PLAYER_POSITION",
+        playerId: incomingPlayerId,
+        position,
+      }, "*");
+    }
+  }), []);
+
   const postRpgSnapshot = useCallback((force = false) => {
     const iframeWindow = iframeRef.current?.contentWindow;
     if (!iframeWindow || (!iframeReadyRef.current && !force)) return;
-    iframeWindow.postMessage(buildRpgSnapshot(gameState, world), "*");
-  }, [gameState, world]);
+    iframeWindow.postMessage(
+      buildRpgSnapshot(gameState, { ...world, players }, positionsRef.current),
+      "*",
+    );
+  }, [gameState, players, world]);
 
   const handleIframeLoad = useCallback(() => {
     iframeReadyRef.current = true;
@@ -294,10 +313,11 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
       if (e.data.type === "PLAYER_MOVE") {
         const move = normalizePlayerMove(e.data);
         const now = Date.now();
-        if (!move || !["up", "down", "left", "right"].includes(move.direction) || now - lastPlayerMoveAtRef.current < 100) return;
+        if (!move || !["up", "down", "left", "right"].includes(move.direction) || now - lastPlayerMoveAtRef.current < POSITION_UPDATE_INTERVAL_MS) return;
         lastPlayerMoveAtRef.current = now;
-        await update(ref(db, `players/${playerId}`), {
-          position: { x: move.x, y: move.y },
+        await update(ref(db, `positions/${playerId}`), {
+          x: move.x,
+          y: move.y,
           direction: move.direction,
         });
         return;
