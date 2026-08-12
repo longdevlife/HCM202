@@ -2968,31 +2968,7 @@ function drawScene() {
 
   drawMiniMapRadar();
 
-  if (options.role === "player" && state.activeQuest) {
-    const quest = state.activeQuest;
-    const currentStep = quest.steps[quest.currentStepIndex];
-    const targetBldg = getBuildingById(currentStep.bldgId);
-
-    const bannerW = 480;
-    const bannerH = 46;
-    const bx = 16;
-    const by = 14;
-
-    context.fillStyle = "rgba(15, 23, 42, 0.95)";
-    context.fillRect(bx, by, bannerW, bannerH);
-    context.strokeStyle = quest.color || "#38bdf8";
-    context.lineWidth = 2;
-    context.strokeRect(bx, by, bannerW, bannerH);
-
-    context.fillStyle = "#facc15";
-    context.font = "bold 10px 'Silkscreen', 'VT323', monospace, sans-serif";
-    context.textAlign = "left";
-    context.fillText(`📋 ${quest.title} (BƯỚC ${quest.currentStepIndex + 1}/${quest.totalSteps})`, bx + 10, by + 16);
-
-    context.fillStyle = "#ffffff";
-    context.font = "11px 'VT323', monospace, sans-serif";
-    context.fillText(`➔ Đến: ${targetBldg.name} (${currentStep.actionText})`, bx + 10, by + 34);
-  }
+  // (Đã xoá banner nhiệm vụ lớn ở góc trên trái màn hình)
 
   if (options.role === "player") {
     let promptText = null;

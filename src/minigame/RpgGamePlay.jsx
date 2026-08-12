@@ -545,7 +545,7 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
         </div>
 
         {/* Iframe Phaser RPG */}
-        <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", overflow: "hidden", background: "#000", boxShadow: "0 10px 30px rgba(0,0,0,0.5)" }}>
+        <div style={{ position: "relative", width: "100%", aspectRatio: "auto", minHeight: "65vh", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", overflow: "hidden", background: "#000", boxShadow: "0 10px 30px rgba(0,0,0,0.5)" }}>
           <iframe
             ref={iframeRef}
             src={`/rpg/index.html?role=player&id=${playerId}&name=${encodeURIComponent(playerName)}&character=${encodeURIComponent(selectedCharacter.id)}&color=${encodeURIComponent(selectedCharacter.color)}&phase=${encodeURIComponent(gameState.status || "phase_1")}`}
@@ -554,14 +554,13 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
             title="Phaser RPG"
           />
 
-          {/* Mission HUD Overlay inside Game Canvas */}
+          {/* Mission HUD Overlay inside Game Canvas (Compact, Top-Left) */}
           {activeMission && (
-            <div style={{ position: "absolute", bottom: "16px", left: "16px", zIndex: 10, pointerEvents: "none", maxWidth: "calc(100% - 32px)", width: "320px" }}>
-              <div className="mission-card" style={{ margin: 0, boxShadow: "0 6px 20px rgba(0,0,0,0.6)", pointerEvents: "auto", background: "rgba(15, 23, 42, 0.85)", backdropFilter: "blur(6px)" }}>
-                <div className="mission-label">NHIỆM VỤ PHASE</div>
-                <div className="mission-text">{activeMission}</div>
-                {progressText && <div className="mission-progress pix-num">{progressText}</div>}
-                {activeMeaning && <div className="mission-meaning">{activeMeaning}</div>}
+            <div style={{ position: "absolute", top: "12px", left: "12px", zIndex: 10, pointerEvents: "none", maxWidth: "calc(100% - 24px)" }}>
+              <div style={{ background: "rgba(15, 23, 42, 0.85)", backdropFilter: "blur(6px)", border: "1px solid rgba(56, 189, 248, 0.4)", borderRadius: "8px", padding: "8px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.5)", pointerEvents: "auto", display: "flex", flexDirection: "column", gap: "2px" }}>
+                <div style={{ fontSize: "0.65rem", color: "#38bdf8", fontWeight: "900", letterSpacing: "1px", textTransform: "uppercase" }}>MỤC TIÊU PHASE</div>
+                <div style={{ fontSize: "0.85rem", color: "#f8fafc", fontWeight: "700", lineHeight: "1.3", textShadow: "1px 1px 0 rgba(0,0,0,0.8)" }}>{activeMission}</div>
+                {progressText && <div style={{ fontSize: "0.95rem", color: "#facc15", fontFamily: "var(--font-mono)", fontWeight: "bold", marginTop: "2px" }}>{progressText}</div>}
               </div>
             </div>
           )}
