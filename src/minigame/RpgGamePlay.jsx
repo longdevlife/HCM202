@@ -545,12 +545,12 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
         </div>
 
         {/* Iframe Phaser RPG */}
-        <div style={{ position: "relative", width: "100%", aspectRatio: "auto", minHeight: "65vh", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", overflow: "hidden", background: "#000", boxShadow: "0 10px 30px rgba(0,0,0,0.5)" }}>
+        <div style={{ position: "relative", width: "100%", height: "70vh", minHeight: "450px", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", overflow: "hidden", background: "#000", boxShadow: "0 10px 30px rgba(0,0,0,0.5)", display: "flex", flexDirection: "column" }}>
           <iframe
             ref={iframeRef}
             src={`/rpg/index.html?role=player&id=${playerId}&name=${encodeURIComponent(playerName)}&character=${encodeURIComponent(selectedCharacter.id)}&color=${encodeURIComponent(selectedCharacter.color)}&phase=${encodeURIComponent(gameState.status || "phase_1")}`}
             onLoad={handleIframeLoad}
-            style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+            style={{ width: "100%", flex: 1, border: "none", display: "block" }}
             title="Phaser RPG"
           />
 
