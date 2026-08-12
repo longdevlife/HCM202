@@ -144,13 +144,13 @@ export const applyPhaseOneGate = (player) => {
 
   const caseFiles = Number(player.progress?.phase_1?.case_file) || 0;
   const positiveFeedback = Number(player.progress?.phase_1?.positive_feedback) || 0;
-  const qualified = caseFiles >= 5 && positiveFeedback >= 2;
+  const qualified = caseFiles >= 2 && positiveFeedback >= 1;
 
   if (!qualified) {
     return {
       ...applyPlayerDelta(player, { integrity: -10 }),
       status: "needs_recovery",
-      phaseOneMessage: "Chưa đạt 5 hồ sơ đúng hạn và 2 phản hồi tích cực ở Phase 1",
+      phaseOneMessage: "Chưa đạt 2 hồ sơ đúng hạn và 1 phản hồi tích cực ở Phase 1",
       phaseOneQualified: false,
     };
   }
@@ -166,13 +166,13 @@ export const applyPhaseTwoGate = (player) => {
   if (!player) return player;
   const integrityItems = Number(player.progress?.phase_2?.integrity_item) || 0;
   const transparency = Number(player.progress?.phase_2?.transparency) || 0;
-  const qualified = integrityItems >= 3 && transparency >= 2;
+  const qualified = integrityItems >= 2 && transparency >= 1;
 
   if (!qualified) {
     return {
       ...applyPlayerDelta(player, { integrity: -10 }),
       status: "needs_recovery",
-      phaseTwoMessage: "Chưa đạt 3 Liêm chính và 2 Minh bạch ở Phase 2",
+      phaseTwoMessage: "Chưa đạt 2 Liêm chính và 1 Minh bạch ở Phase 2",
       phaseTwoQualified: false,
     };
   }

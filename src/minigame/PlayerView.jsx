@@ -4,6 +4,7 @@ import { db } from "./firebaseConfig";
 import { situations, PHASE_CONFIGS } from "./situations";
 import RpgGamePlay from "./RpgGamePlay";
 import { CHARACTER_OPTIONS, getCharacterOption } from "./characterOptions";
+import { PixelAvatarPreview } from "./PixelAvatarPreview";
 import { applyDecisionEffects, calculateFinalScore } from "./gameStateUtils";
 import {
   IconPhone,
@@ -140,17 +141,43 @@ const PlayerView = ({ playerId, playerName, setPlayerName, gameState, dbConnecte
             <input type="text" className="game-input" value={tempName} onChange={(e) => setTempName(e.target.value)} placeholder="Ví dụ: Minh Anh" maxLength={15} required />
           </div>
           <div className="input-group" style={{ marginTop: "20px" }}>
-            <label className="input-label">Chọn vai trò cán bộ:</label>
-            <div className="character-grid">
+            <label className="input-label">Chọn hình tượng cán bộ (Nam & Nữ):</label>
+            <div className="character-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(135px, 1fr))", gap: "12px" }}>
               {CHARACTER_OPTIONS.map((char) => {
                 const isSelected = selectedCharacterId === char.id;
                 return (
-                  <div key={char.id} className={`character-option ${isSelected ? "selected" : ""}`} style={{ "--character-color": char.color }} onClick={() => setSelectedCharacterId(char.id)}>
-                    <div className={`pixel-character ${char.spriteClass}`}>
-                      <span className="pixel-hat"></span><span className="pixel-hair"></span><span className="pixel-head"></span><span className="pixel-body"></span><span className="pixel-arm pixel-arm-left"></span><span className="pixel-arm pixel-arm-right"></span><span className="pixel-leg pixel-leg-left"></span><span className="pixel-leg pixel-leg-right"></span><span className="pixel-pack"></span><span className="pixel-accessory"></span>
+                  <div
+                    key={char.id}
+                    className={`character-option ${isSelected ? "selected" : ""}`}
+                    style={{
+                      "--character-color": char.color,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      padding: "12px 8px",
+                      cursor: "pointer",
+                      border: isSelected ? `2px solid ${char.color}` : "1px solid rgba(255,255,255,0.1)",
+                      background: isSelected ? "rgba(255,255,255,0.06)" : "rgba(15,23,42,0.6)",
+                      borderRadius: "12px",
+                      transition: "all 0.2s ease",
+                    }}
+                    onClick={() => setSelectedCharacterId(char.id)}
+                  >
+                    <PixelAvatarPreview character={char} size={56} />
+                    <div style={{ display: "flex", alignItems: "center", gap: "4px", marginTop: "6px" }}>
+                      <span style={{ fontSize: "0.7rem", padding: "1px 5px", borderRadius: "4px", background: char.gender === "female" ? "rgba(236,72,153,0.2)" : "rgba(2,132,199,0.2)", color: char.gender === "female" ? "#f472b6" : "#38bdf8", fontWeight: "700" }}>
+                        {char.genderLabel}
+                      </span>
+                      <span className="character-name" style={{ fontSize: "0.82rem", fontWeight: "700", color: "#fff" }}>
+                        {char.label}
+                      </span>
                     </div>
-                    <div className="character-name">{char.label}</div>
-                    <div className="character-desc">{char.description}</div>
+                    <div style={{ fontSize: "0.72rem", color: "var(--neon-gold)", fontWeight: "600", marginTop: "2px", textAlign: "center" }}>
+                      {char.title}
+                    </div>
+                    <div className="character-desc" style={{ fontSize: "0.68rem", color: "#94a3b8", textAlign: "center", marginTop: "4px", lineHeight: "1.3" }}>
+                      {char.description}
+                    </div>
                   </div>
                 );
               })}
@@ -166,14 +193,16 @@ const PlayerView = ({ playerId, playerName, setPlayerName, gameState, dbConnecte
   if (gameState.status === "waiting") {
     return (
       <div className="minigame-panel player-panel-sm" style={{ textAlign: "center" }}>
-        <IconPhone className="w-16 h-16 mx-auto text-cyan-400 animate-bounce" />
-        <h2 className="minigame-title" style={{ fontSize: "1.8rem" }}>ĐÃ VÀO CƠ QUAN</h2>
-        <p style={{ color: "var(--neon-gold)", fontWeight: "600", fontSize: "1.1rem", margin: "10px 0" }}>Xin chào, {playerName}!</p>
-        <div className="selected-character-badge" style={{ "--character-color": currentCharacter.color }}>
-          <span>Vai trò: {currentCharacter.label}</span>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
+          <PixelAvatarPreview character={currentCharacter} size={72} />
         </div>
-        <p style={{ color: "#8b8680", fontSize: "0.95rem", lineHeight: "1.6" }}>Bạn đã sẵn sàng nhận nhiệm vụ. Nhìn lên màn hình máy chiếu để nghe MC bắt đầu.</p>
-        <div style={{ background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "16px", padding: "20px", margin: "30px 0", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.02)" }}>
+        <h2 className="minigame-title" style={{ fontSize: "1.8rem" }}>ĐÃ VÀO CƠ QUAN</h2>
+        <p style={{ color: "var(--neon-gold)", fontWeight: "600", fontSize: "1.1rem", margin: "8px 0" }}>Xin chào, {playerName}!</p>
+        <div className="selected-character-badge" style={{ "--character-color": currentCharacter.color, display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 14px", borderRadius: "20px", background: "rgba(255,255,255,0.05)", border: `1px solid ${currentCharacter.color}` }}>
+          <span>{currentCharacter.icon} {currentCharacter.label} - {currentCharacter.title}</span>
+        </div>
+        <p style={{ color: "#8b8680", fontSize: "0.95rem", lineHeight: "1.6", marginTop: "12px" }}>Bạn đã sẵn sàng nhận nhiệm vụ. Nhìn lên màn hình máy chiếu để nghe MC bắt đầu.</p>
+        <div style={{ background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "16px", padding: "20px", margin: "24px 0", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.02)" }}>
           <div style={{ fontSize: "0.85rem", color: "var(--neon-blue)", textTransform: "uppercase", fontWeight: "bold", letterSpacing: "0.5px" }}>Tổng số cán bộ:</div>
           <div style={{ fontSize: "2.2rem", fontWeight: "bold", margin: "5px 0", fontFamily: "var(--font-mono)", color: "#fff" }}>{totalPlayersCount}</div>
         </div>
@@ -182,16 +211,59 @@ const PlayerView = ({ playerId, playerName, setPlayerName, gameState, dbConnecte
     );
   }
 
+  const handleSelfRecovery = async () => {
+    try {
+      await runTransaction(
+        ref(db, `players/${playerId}`),
+        (player) => {
+          if (!player) return player;
+          return applyPlayerDelta(player, { integrity: 20, score: 0 });
+        },
+        { applyLocally: false }
+      );
+    } catch (err) {
+      console.error("Error self recovery:", err);
+    }
+  };
+
   if (isRpgPhase) {
     if (playerInfo.status === "suspended") {
       return (
         <div className="minigame-panel player-panel-sm" style={{ textAlign: "center" }}>
           <IconWarning className="w-16 h-16 mx-auto text-red-500 animate-pulse" />
-          <h2 className="minigame-title" style={{ fontSize: "1.6rem" }}>TẠM ĐÌNH CHỈ TÍN NHIỆM</h2>
-          <p className="minigame-subtitle" style={{ lineHeight: "1.6" }}>Uy tín của bạn đã về 0. Hãy hoàn thành nhiệm vụ khắc phục để quay lại trạng thái hoạt động.</p>
-          <div className="mission-card" style={{ textAlign: "left", marginTop: "20px" }}>
-            <div className="mission-label">BÀI HỌC NHANH</div>
-            <div className="mission-text">Liêm chính không chỉ là tránh sai phạm lớn. Những lựa chọn nhỏ lặp lại cũng có thể làm mất niềm tin rất nhanh.</div>
+          <h2 className="minigame-title" style={{ fontSize: "1.6rem", color: "var(--neon-red)" }}>TẠM ĐÌNH CHỈ TÍN NHIỆM</h2>
+          <p className="minigame-subtitle" style={{ lineHeight: "1.6" }}>
+            Uy tín công vụ của bạn đã về 0 do gặp rủi ro hoặc vi phạm quy chế. Hãy thực hiện tự kiểm điểm để ngay lập tức khôi phục liêm chính và trở lại công việc!
+          </p>
+
+          <button
+            className="minigame-primary-btn"
+            onClick={handleSelfRecovery}
+            style={{
+              marginTop: "24px",
+              padding: "16px 28px",
+              fontSize: "1.05rem",
+              fontWeight: "800",
+              background: "linear-gradient(135deg, #16a34a, #15803d)",
+              boxShadow: "0 6px 20px rgba(22, 163, 74, 0.5)",
+              cursor: "pointer",
+              borderRadius: "12px",
+              border: "2px solid #86efac",
+              color: "#ffffff",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <span>⚡</span>
+            <span>TỰ KIỂM ĐIỂM & TIẾP TỤC CÔNG VỤ (+20 LIÊM CHÍNH)</span>
+          </button>
+
+          <div className="mission-card" style={{ textAlign: "left", marginTop: "24px" }}>
+            <div className="mission-label">BÀI HỌC CÔNG VỤ</div>
+            <div className="mission-text">
+              Liêm chính không chỉ là tránh sai phạm lớn. Mọi cán bộ khi gặp rủi ro đều có cơ hội nhận thức khuyết điểm, giải trình minh bạch để tái lập niềm tin nhân dân.
+            </div>
           </div>
         </div>
       );
@@ -218,26 +290,88 @@ const PlayerView = ({ playerId, playerName, setPlayerName, gameState, dbConnecte
     const sitIdx = gameState.status === "situation_1" ? 0 : 1;
     const sit = situations[sitIdx];
     return (
-      <div className="minigame-panel player-panel-md">
-        <div style={{ textAlign: "center", marginBottom: "15px" }}>
-          <IconBolt className="w-12 h-12 mx-auto text-red-500 animate-pulse" />
-          <h2 style={{ color: "var(--neon-red)", fontSize: "1.3rem", fontWeight: "bold", margin: "8px 0" }}>TÌNH HUỐNG {sitIdx + 1}</h2>
-          <p style={{ color: "var(--neon-gold)", fontSize: "0.9rem" }}>{sit.title}</p>
+      <div className="minigame-panel player-panel-md" style={{ maxWidth: "680px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "16px" }}>
+          <IconBolt className="w-10 h-10 mx-auto text-red-500 animate-pulse" />
+          <h2 style={{ color: "var(--neon-red)", fontSize: "1.35rem", fontFamily: "var(--font-heading)", fontWeight: "bold", margin: "6px 0 2px" }}>
+            TÌNH HUỐNG {sitIdx + 1}: {sit.title.toUpperCase()}
+          </h2>
+          <p style={{ color: "var(--neon-gold)", fontSize: "0.85rem", fontStyle: "italic" }}>{sit.subtitle}</p>
         </div>
-        <div className="situation-box" style={{ fontSize: "1.05rem", lineHeight: "1.7" }}>{sit.story}</div>
+
+        <div className="situation-box" style={{ fontSize: "0.98rem", lineHeight: "1.7", padding: "16px 20px", background: "rgba(15,23,42,0.6)", borderRadius: "14px", border: "1px solid rgba(255,255,255,0.08)" }}>
+          {sit.story}
+        </div>
+
         {!hasVoted ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "25px" }}>
-            <button className="option-button" onClick={() => handleVote("A")} style={{ padding: "16px 20px", fontSize: "1rem", textAlign: "left", cursor: "pointer", border: "1px solid rgba(21, 101, 192, 0.3)" }}><span className="option-prefix" style={{ color: "var(--neon-blue)" }}>A.</span> {sit.optionA.label}</button>
-            <button className="option-button" onClick={() => handleVote("B")} style={{ padding: "16px 20px", fontSize: "1rem", textAlign: "left", cursor: "pointer", border: "1px solid rgba(46, 125, 50, 0.3)" }}><span className="option-prefix" style={{ color: "var(--neon-green)" }}>B.</span> {sit.optionB.label}</button>
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: "22px" }}>
+            {/* LỰA CHỌN A */}
+            <button
+              className="option-button"
+              onClick={() => handleVote("A")}
+              style={{
+                padding: "16px 20px",
+                textAlign: "left",
+                cursor: "pointer",
+                border: "2px solid rgba(56, 189, 248, 0.4)",
+                background: "rgba(12, 74, 110, 0.25)",
+                borderRadius: "14px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+                transition: "all 0.2s",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ color: "#38bdf8", fontWeight: "800", fontSize: "1.05rem" }}>A. {sit.optionA.label}</span>
+              </div>
+              <p style={{ fontSize: "0.85rem", color: "#cbd5e1", margin: 0, lineHeight: "1.4" }}>{sit.optionA.meaning}</p>
+            </button>
+
+            {/* LỰA CHỌN B */}
+            <button
+              className="option-button"
+              onClick={() => handleVote("B")}
+              style={{
+                padding: "16px 20px",
+                textAlign: "left",
+                cursor: "pointer",
+                border: "2px solid rgba(16, 185, 129, 0.4)",
+                background: "rgba(6, 78, 59, 0.25)",
+                borderRadius: "14px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+                transition: "all 0.2s",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ color: "#34d399", fontWeight: "800", fontSize: "1.05rem" }}>B. {sit.optionB.label}</span>
+              </div>
+              <p style={{ fontSize: "0.85rem", color: "#cbd5e1", margin: 0, lineHeight: "1.4" }}>{sit.optionB.meaning}</p>
+            </button>
           </div>
         ) : (
-          <div style={{ textAlign: "center", padding: "30px 20px", background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "16px", marginTop: "25px", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.02)" }}>
-            <IconCheck className="w-12 h-12 mx-auto text-emerald-500 mb-3" />
-            <div style={{ fontSize: "1.1rem", fontWeight: "bold", color: selectedVote === "A" ? "var(--neon-blue)" : "var(--neon-green)" }}>Bạn đã chọn: {selectedVote}</div>
-            <p style={{ color: "#8b8680", fontSize: "0.85rem", marginTop: "10px" }}>Nhìn lên máy chiếu để xem kết quả biểu quyết của cả lớp...</p>
+          <div style={{ textAlign: "center", padding: "24px 20px", background: "rgba(15,23,42,0.8)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", marginTop: "22px" }}>
+            <IconCheck className="w-10 h-10 mx-auto text-emerald-400 mb-2" />
+            <div style={{ fontSize: "1.15rem", fontWeight: "bold", color: selectedVote === "A" ? "#38bdf8" : "#34d399" }}>
+              Bạn đã chọn: Đáp án {selectedVote} - {selectedVote === "A" ? sit.optionA.shortLabel : sit.optionB.shortLabel}
+            </div>
+            <div style={{ margin: "14px 0", padding: "12px", background: "rgba(0,0,0,0.3)", borderRadius: "10px", textAlign: "left", fontSize: "0.85rem", color: "#e2e8f0" }}>
+              <div style={{ fontWeight: "bold", color: selectedVote === "A" ? "#f87171" : "#34d399", marginBottom: "4px" }}>
+                {selectedVote === "A" ? sit.optionA.ethicalEvaluation : sit.optionB.ethicalEvaluation}
+              </div>
+              <p style={{ margin: 0, color: "#94a3b8", lineHeight: "1.4" }}>
+                {selectedVote === "A" ? sit.optionA.consequence : sit.optionB.consequence}
+              </p>
+            </div>
+            <p style={{ color: "#facc15", fontSize: "0.85rem", margin: 0 }}>
+              💡 Hãy nhìn lên màn hình máy chiếu của Host để theo dõi kết quả biểu quyết của cả lớp & bài học chuyên sâu!
+            </p>
           </div>
         )}
-        <div style={{ marginTop: "20px", display: "flex", justifyContent: "space-between", color: "#8b8680", fontSize: "0.85rem", padding: "10px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "12px", fontVariantNumeric: "tabular-nums" }}>
+
+        <div style={{ marginTop: "20px", display: "flex", justifyContent: "space-between", color: "#8b8680", fontSize: "0.85rem", padding: "10px 16px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "12px", fontVariantNumeric: "tabular-nums" }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}><IconUser className="w-4 h-4 text-slate-400" /> {playerName}</span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}><IconLeaf className="w-4 h-4 text-emerald-500" /> <span className="pix-num">UT {integrity}</span></span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}><IconTrophy className="w-4 h-4 text-yellow-500" /> <span className="pix-num">{playerInfo.score || 0}</span></span>

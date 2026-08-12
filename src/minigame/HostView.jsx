@@ -393,7 +393,7 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
               </div>
             )}
             <div style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", overflow: "hidden", background: "#000", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
-              <iframe ref={iframeRef} src="/rpg/index.html?role=host" onLoad={handleIframeLoad} style={{ width: "100%", aspectRatio: "16/9", border: "none", display: "block" }} title="RPG Spectator" />
+              <iframe ref={iframeRef} src={`/rpg/index.html?role=host&phase=${encodeURIComponent(gameState.status || "phase_1")}`} onLoad={handleIframeLoad} style={{ width: "100%", aspectRatio: "16/9", border: "none", display: "block" }} title="RPG Spectator" />
             </div>
             <div style={{ color: "#8b8680", fontSize: "0.78rem", display: "flex", alignItems: "center", gap: "4px" }}>
               <IconBulb className="w-3.5 h-3.5 text-yellow-500" /> Kéo chuột hoặc phím mũi tên để quan sát bản đồ
@@ -441,36 +441,101 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
         const nextPhase = gameState.status === "situation_1" ? "phase_2" : "phase_3";
         return (
           <div>
-            <h2 style={{ color: "var(--neon-red)", fontSize: "1.4rem", fontWeight: "bold", textAlign: "center", marginBottom: "5px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-              <IconBolt className="w-5 h-5 text-red-500 animate-pulse" /> TÌNH HUỐNG {sitIdx + 1}: {sit.title.toUpperCase()}
-            </h2>
-            <div className="situation-box" style={{ fontSize: "1.15rem", lineHeight: "1.7", marginBottom: "25px" }}>{sit.story}</div>
+            <div style={{ textAlign: "center", marginBottom: "16px" }}>
+              <span style={{ background: "rgba(239, 68, 68, 0.15)", color: "var(--neon-red)", border: "1px solid rgba(239, 68, 68, 0.3)", padding: "4px 14px", borderRadius: "20px", fontSize: "0.85rem", fontWeight: "bold", letterSpacing: "1px" }}>
+                BIỂU QUYẾT ĐẠO ĐỨC CÔNG VỤ
+              </span>
+              <h2 style={{ color: "#ffffff", fontSize: "1.6rem", fontWeight: "800", marginTop: "10px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                <IconBolt className="w-6 h-6 text-red-500 animate-pulse" /> TÌNH HUỐNG {sitIdx + 1}: {sit.title.toUpperCase()}
+              </h2>
+              <p style={{ color: "var(--neon-gold)", fontSize: "0.95rem", fontStyle: "italic", margin: "4px 0 0" }}>{sit.subtitle}</p>
+            </div>
+
+            <div className="situation-box" style={{ fontSize: "1.12rem", lineHeight: "1.8", marginBottom: "25px", background: "rgba(15,23,42,0.8)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", padding: "20px 24px" }}>
+              {sit.story}
+            </div>
+
+            {/* BẢNG KẾT QUẢ BIỂU QUYẾT VÀ SO SÁNH 2 ĐÁP ÁN A & B */}
             <div style={{ margin: "25px 0" }}>
-              <h3 style={{ fontSize: "1rem", color: "var(--neon-blue)", textTransform: "uppercase", marginBottom: "15px", display: "flex", alignItems: "center", gap: "6px" }}>
-                <IconUser className="w-4 h-4 text-cyan-400" /> Kết quả biểu quyết cả lớp: ({stats.total}/{totalPlayers} đã bầu)
-              </h3>
-              <div style={{ marginBottom: "15px" }}>
-                <div style={{ fontWeight: "bold", marginBottom: "5px" }}>A. {sit.optionA.label}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}><div style={{ flex: 1, height: "28px", background: "rgba(0,0,0,0.3)", borderRadius: "14px", overflow: "hidden" }}><div style={{ height: "100%", width: `${stats.aPercent}%`, background: "var(--neon-blue)", transition: "width 0.8s", borderRadius: "14px" }} /></div><span style={{ width: "85px", textAlign: "right", fontWeight: "bold", fontFamily: "var(--font-mono)" }}>{stats.aCount} ({stats.aPercent}%)</span></div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+                <h3 style={{ fontSize: "1.05rem", color: "#38bdf8", textTransform: "uppercase", fontWeight: "800", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
+                  <IconUser className="w-5 h-5 text-cyan-400" /> KẾT QUẢ BIỂU QUYẾT CẢ LỚP: ({stats.total}/{totalPlayers} Cán bộ đã bầu)
+                </h3>
               </div>
-              <div>
-                <div style={{ fontWeight: "bold", marginBottom: "5px" }}>B. {sit.optionB.label}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}><div style={{ flex: 1, height: "28px", background: "rgba(0,0,0,0.3)", borderRadius: "14px", overflow: "hidden" }}><div style={{ height: "100%", width: `${stats.bPercent}%`, background: "var(--neon-green)", transition: "width 0.8s", borderRadius: "14px" }} /></div><span style={{ width: "85px", textAlign: "right", fontWeight: "bold", fontFamily: "var(--font-mono)" }}>{stats.bCount} ({stats.bPercent}%)</span></div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+                {/* CỘT ĐÁP ÁN A */}
+                <div style={{ background: "rgba(12, 74, 110, 0.2)", border: "2px solid rgba(56, 189, 248, 0.4)", borderRadius: "16px", padding: "18px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                    <div style={{ fontWeight: "800", fontSize: "1.05rem", color: "#38bdf8" }}>A. {sit.optionA.label}</div>
+                  </div>
+                  <div style={{ fontSize: "0.82rem", color: "#f87171", fontWeight: "bold", marginBottom: "10px" }}>
+                    {sit.optionA.ethicalEvaluation}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+                    <div style={{ flex: 1, height: "24px", background: "rgba(0,0,0,0.4)", borderRadius: "12px", overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${stats.aPercent}%`, background: "linear-gradient(90deg, #0284c7, #38bdf8)", transition: "width 0.8s", borderRadius: "12px" }} />
+                    </div>
+                    <span style={{ fontWeight: "800", fontFamily: "var(--font-mono)", fontSize: "1rem", color: "#38bdf8" }}>{stats.aCount} ({stats.aPercent}%)</span>
+                  </div>
+                  <div style={{ fontSize: "0.85rem", color: "#cbd5e1", lineHeight: "1.5", background: "rgba(0,0,0,0.25)", padding: "10px", borderRadius: "10px" }}>
+                    <b>Hệ quả:</b> {sit.optionA.consequence}
+                  </div>
+                </div>
+
+                {/* CỘT ĐÁP ÁN B */}
+                <div style={{ background: "rgba(6, 78, 59, 0.2)", border: "2px solid rgba(16, 185, 129, 0.4)", borderRadius: "16px", padding: "18px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                    <div style={{ fontWeight: "800", fontSize: "1.05rem", color: "#34d399" }}>B. {sit.optionB.label}</div>
+                  </div>
+                  <div style={{ fontSize: "0.82rem", color: "#34d399", fontWeight: "bold", marginBottom: "10px" }}>
+                    {sit.optionB.ethicalEvaluation}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+                    <div style={{ flex: 1, height: "24px", background: "rgba(0,0,0,0.4)", borderRadius: "12px", overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${stats.bPercent}%`, background: "linear-gradient(90deg, #059669, #34d399)", transition: "width 0.8s", borderRadius: "12px" }} />
+                    </div>
+                    <span style={{ fontWeight: "800", fontFamily: "var(--font-mono)", fontSize: "1rem", color: "#34d399" }}>{stats.bCount} ({stats.bPercent}%)</span>
+                  </div>
+                  <div style={{ fontSize: "0.85rem", color: "#cbd5e1", lineHeight: "1.5", background: "rgba(0,0,0,0.25)", padding: "10px", borderRadius: "10px" }}>
+                    <b>Hệ quả:</b> {sit.optionB.consequence}
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="explanation-section">
-              <div className="explanation-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}><IconPin className="w-4 h-4 text-yellow-500" /> Hệ quả lựa chọn A:</div>
-              <p className="explanation-text">{sit.optionA.consequence}</p>
-              <div className="explanation-title" style={{ marginTop: "15px", display: "flex", alignItems: "center", gap: "6px" }}><IconPin className="w-4 h-4 text-yellow-500" /> Hệ quả lựa chọn B:</div>
-              <p className="explanation-text">{sit.optionB.consequence}</p>
-              <div className="marx-section">
-                <div className="marx-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}><IconMarxTheory className="w-4 h-4 text-red-500" /> MC thảo luận:</div>
-                <p className="marx-text">"{sit.discussionQuestion}"</p>
-                <p className="marx-text">"{sit.marxLenin}"</p>
+
+            {/* BÌNH LUẬN & BÀI HỌC TƯ TƯỞNG HỒ CHÍ MINH */}
+            <div className="explanation-section" style={{ background: "rgba(15,23,42,0.9)", border: "1px solid rgba(250, 204, 21, 0.3)", borderRadius: "18px", padding: "22px", marginTop: "25px" }}>
+              <div style={{ color: "#facc15", fontWeight: "800", fontSize: "1.1rem", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <IconBulb className="w-5 h-5 text-yellow-400" /> BÀI HỌC TƯ TƯỞNG HỒ CHÍ MINH & ĐẠO ĐỨC CÔNG VỤ:
+              </div>
+              <p style={{ color: "#fef08a", fontSize: "0.95rem", lineHeight: "1.6", fontStyle: "italic", background: "rgba(250,204,21,0.06)", padding: "12px 16px", borderRadius: "10px", borderLeft: "4px solid #facc15", margin: "0 0 14px" }}>
+                {sit.hoChiMinhThought}
+              </p>
+              
+              <div style={{ color: "#e2e8f0", fontSize: "0.9rem", lineHeight: "1.6", margin: "0 0 14px" }}>
+                <span style={{ color: "#38bdf8", fontWeight: "bold" }}>Ý nghĩa cốt lõi: </span>
+                {sit.explanationSummary}
+              </div>
+
+              <div style={{ background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "12px", padding: "14px 18px" }}>
+                <div style={{ color: "#f87171", fontWeight: "800", fontSize: "0.92rem", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <IconMarxTheory className="w-4 h-4 text-red-500" /> MC GỢI Ý THẢO LUẬN VỚI HỘI TRƯỜNG:
+                </div>
+                <p style={{ color: "#ffffff", fontWeight: "bold", fontSize: "0.95rem", margin: "0 0 6px" }}>
+                  "{sit.discussionQuestion}"
+                </p>
+                <p style={{ color: "#94a3b8", fontSize: "0.85rem", margin: 0, lineHeight: "1.5" }}>
+                  {sit.marxLenin}
+                </p>
               </div>
             </div>
-            <Leaderboard max={5} title="BẢNG XẾP HẠNG TẠM THỜI" />
-            <button className="btn-cyber btn-cyber-blue" style={{ width: "100%", marginTop: "25px", padding: "16px", fontSize: "1.1rem", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }} onClick={() => handleStartNextPhaseFromSituation(nextPhase, sitIdx + 1)}>
+
+            <div style={{ marginTop: "25px" }}>
+              <Leaderboard max={5} title="BẢNG XẾP HẠNG TẠM THỜI" />
+            </div>
+
+            <button className="btn-cyber btn-cyber-blue" style={{ width: "100%", marginTop: "25px", padding: "16px", fontSize: "1.15rem", fontWeight: "800", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "10px" }} onClick={() => handleStartNextPhaseFromSituation(nextPhase, sitIdx + 1)}>
               {getPhaseIcon(nextPhase, "w-5 h-5")} Bắt đầu Phase {nextPhase.replace("phase_", "")}: {PHASE_CONFIGS[nextPhase].name} <IconArrowRight className="w-4 h-4" />
             </button>
           </div>

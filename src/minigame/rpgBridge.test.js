@@ -27,8 +27,8 @@ test("phase one world makes every configured progress goal reachable", () => {
   const counts = itemTypeCounts(world);
 
   assert.equal(Object.keys(world.books).length, PHASE_CONFIGS.phase_1.maxBooks);
-  assert.ok(counts.case_file >= 5);
-  assert.ok(counts.positive_feedback >= 2);
+  assert.ok(counts.case_file >= 2);
+  assert.ok(counts.positive_feedback >= 1);
 });
 
 test("phase two world makes every configured progress goal reachable", () => {
@@ -36,8 +36,8 @@ test("phase two world makes every configured progress goal reachable", () => {
   const counts = itemTypeCounts(world);
 
   assert.equal(Object.keys(world.books).length, PHASE_CONFIGS.phase_2.maxBooks);
-  assert.ok(counts.integrity_item >= 3);
-  assert.ok(counts.transparency >= 2);
+  assert.ok(counts.integrity_item >= 2);
+  assert.ok(counts.transparency >= 1);
 });
 
 test("phase three world makes all item prerequisites and its gate reachable", () => {

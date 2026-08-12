@@ -48,14 +48,14 @@ test("applyPlayerDelta lets suspended players recover through integrity gains", 
   });
 });
 
-// === Phase 1 hard gate: require 5 case files AND 2 positive feedback ===
+// === Phase 1 hard gate: require 2 case files AND 1 positive feedback ===
 
 test("applyPhaseOneGate flags players missing feedback without permanently eliminating them", () => {
   const player = {
     name: "An",
     score: 100,
     integrity: 100,
-    progress: { phase_1: { case_file: 5, positive_feedback: 1 } },
+    progress: { phase_1: { case_file: 2, positive_feedback: 0 } },
     status: "active",
   };
 
@@ -64,7 +64,7 @@ test("applyPhaseOneGate flags players missing feedback without permanently elimi
   assert.equal(result.integrity, 90);
   assert.equal(result.eliminatedReason, undefined);
   assert.equal(result.phaseOneQualified, false);
-  assert.equal(result.phaseOneMessage, "Chưa đạt 5 hồ sơ đúng hạn và 2 phản hồi tích cực ở Phase 1");
+  assert.equal(result.phaseOneMessage, "Chưa đạt 2 hồ sơ đúng hạn và 1 phản hồi tích cực ở Phase 1");
 });
 
 test("applyPhaseOneGate flags players missing case files even with enough feedback", () => {
@@ -72,7 +72,7 @@ test("applyPhaseOneGate flags players missing case files even with enough feedba
     name: "Binh",
     score: 100,
     integrity: 100,
-    progress: { phase_1: { case_file: 4, positive_feedback: 3 } },
+    progress: { phase_1: { case_file: 1, positive_feedback: 2 } },
     status: "active",
   };
 
@@ -81,12 +81,12 @@ test("applyPhaseOneGate flags players missing case files even with enough feedba
   assert.equal(result.phaseOneQualified, false);
 });
 
-test("applyPhaseOneGate qualifies players with 5 case files and 2 feedback", () => {
+test("applyPhaseOneGate qualifies players with 2 case files and 1 feedback", () => {
   const player = {
     name: "Chi",
     score: 120,
     integrity: 95,
-    progress: { phase_1: { case_file: 5, positive_feedback: 2 } },
+    progress: { phase_1: { case_file: 2, positive_feedback: 1 } },
     status: "active",
   };
 
@@ -117,22 +117,22 @@ test("applyPhaseTwoGate flags players missing integrity/transparency tasks", () 
     name: "Em",
     score: 80,
     integrity: 85,
-    progress: { phase_2: { integrity_item: 2, transparency: 2 } },
+    progress: { phase_2: { integrity_item: 1, transparency: 1 } },
     status: "active",
   };
 
   const result = applyPhaseTwoGate(player);
   assert.equal(result.status, "needs_recovery");
-  assert.equal(result.phaseTwoMessage, "Chưa đạt 3 Liêm chính và 2 Minh bạch ở Phase 2");
+  assert.equal(result.phaseTwoMessage, "Chưa đạt 2 Liêm chính và 1 Minh bạch ở Phase 2");
   assert.equal(result.phaseTwoQualified, false);
 });
 
-test("applyPhaseTwoGate qualifies players with 3 integrity and 2 transparency", () => {
+test("applyPhaseTwoGate qualifies players with 2 integrity and 1 transparency", () => {
   const player = {
     name: "Phuc",
     score: 90,
     integrity: 88,
-    progress: { phase_2: { integrity_item: 3, transparency: 2 } },
+    progress: { phase_2: { integrity_item: 2, transparency: 1 } },
     status: "active",
   };
 

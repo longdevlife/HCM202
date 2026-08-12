@@ -21,6 +21,53 @@ const coordinate = (random, lower, upper) => Math.floor(random() * (upper - lowe
 const entityKey = (phaseKey, seed, index) => `${phaseKey}_${seed}_${index}`;
 const eventEntityKey = (phaseKey, eventType, seed, index) => `${phaseKey}_${eventType}_${seed}_${index}`;
 
+// Building footprints per phase in 960x540 space (with buffer padding to prevent spawning on roofs)
+const BUILDING_EXCLUSION_ZONES = {
+  phase_1: [
+    { minX: 190, maxX: 460, minY: 20, maxY: 180 },
+    { minX: 20, maxX: 160, minY: 20, maxY: 170 },
+    { minX: 800, maxX: 940, minY: 20, maxY: 170 },
+    { minX: 20, maxX: 160, minY: 360, maxY: 520 },
+    { minX: 510, maxX: 760, minY: 360, maxY: 520 },
+    { minX: 800, maxX: 940, minY: 360, maxY: 520 },
+  ],
+  phase_2: [
+    { minX: 340, maxX: 620, minY: 190, maxY: 350 },
+    { minX: 350, maxX: 610, minY: 10, maxY: 150 },
+    { minX: 30, maxX: 210, minY: 10, maxY: 150 },
+    { minX: 750, maxX: 930, minY: 10, maxY: 150 },
+    { minX: 30, maxX: 210, minY: 390, maxY: 530 },
+    { minX: 750, maxX: 930, minY: 390, maxY: 530 },
+  ],
+  phase_3: [
+    { minX: 320, maxX: 640, minY: 10, maxY: 180 },
+    { minX: 340, maxX: 620, minY: 380, maxY: 530 },
+    { minX: 70, maxX: 290, minY: 10, maxY: 170 },
+    { minX: 670, maxX: 890, minY: 10, maxY: 170 },
+    { minX: 70, maxX: 290, minY: 380, maxY: 530 },
+    { minX: 670, maxX: 890, minY: 380, maxY: 530 },
+  ],
+};
+
+const isInsideExclusionZone = (x, y, phaseKey) => {
+  const zones = BUILDING_EXCLUSION_ZONES[phaseKey] || BUILDING_EXCLUSION_ZONES.phase_1;
+  return zones.some((z) => x >= z.minX && x <= z.maxX && y >= z.minY && y <= z.maxY);
+};
+
+const safeCoordinate = (random, phaseKey) => {
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const x = coordinate(random, SPAWN_MARGIN, WORLD_WIDTH - SPAWN_MARGIN);
+    const y = coordinate(random, SPAWN_MARGIN, WORLD_HEIGHT - SPAWN_MARGIN);
+    if (!isInsideExclusionZone(x, y, phaseKey)) {
+      return { x, y };
+    }
+  }
+  return {
+    x: coordinate(random, 140, 820),
+    y: coordinate(random, 240, 300),
+  };
+};
+
 const createRewardSchedule = (phaseConfig, maxBooks) => {
   const rewardOptions = [
     phaseConfig.bookReward,
@@ -32,14 +79,25 @@ const createRewardSchedule = (phaseConfig, maxBooks) => {
     .map((reward) => [reward.type, reward]));
   const schedule = [];
 
-  if (Array.isArray(phaseConfig.progressGoals)) {
-    for (const goal of phaseConfig.progressGoals) {
-      const reward = isObject(goal) ? rewardsByType.get(goal.type) : null;
-      const target = isObject(goal) ? nonNegativeCount(goal.target) : 0;
-      for (let count = 0; reward && count < target && schedule.length < maxBooks; count += 1) {
-        schedule.push(reward);
-      }
-    }
+  const goalTypes = Array.isArray(phaseConfig.progressGoals)
+    ? phaseConfig.progressGoals.filter(isObject).map((g) => g.type)
+    : [];
+
+  const availableRewards = goalTypes
+    .map((t) => rewardsByType.get(t))
+    .filter(isObject);
+
+  if (availableRewards.length === 0) {
+    availableRewards.push(...rewardOptions);
+  }
+  if (availableRewards.length === 0 && isObject(phaseConfig.bookReward)) {
+    availableRewards.push(phaseConfig.bookReward);
+  }
+
+  let idx = 0;
+  while (schedule.length < maxBooks && availableRewards.length > 0) {
+    schedule.push(availableRewards[idx % availableRewards.length]);
+    idx += 1;
   }
 
   const fallbackReward = isObject(phaseConfig.bookReward) ? phaseConfig.bookReward : {};
@@ -77,17 +135,19 @@ export function createPhaseWorld(phaseKey, config = {}, seed = 0) {
 
   for (let index = 0; index < maxBooks; index += 1) {
     const id = entityKey(phase, numericSeed, index);
+    const pos = safeCoordinate(random, phase);
     books[id] = {
       ...rewardSchedule[index],
       id,
       kind: "item",
-      x: coordinate(random, SPAWN_MARGIN, WORLD_WIDTH - SPAWN_MARGIN),
-      y: coordinate(random, SPAWN_MARGIN, WORLD_HEIGHT - SPAWN_MARGIN),
+      x: pos.x,
+      y: pos.y,
     };
   }
 
   for (let index = 0; index < trapCount; index += 1) {
     const id = entityKey(phase, numericSeed, index);
+    const pos = safeCoordinate(random, phase);
     const hazard = hazards.length > 0 && isObject(hazards[index % hazards.length])
       ? hazards[index % hazards.length]
       : {};
@@ -95,8 +155,8 @@ export function createPhaseWorld(phaseKey, config = {}, seed = 0) {
       ...hazard,
       id,
       kind: "hazard",
-      x: coordinate(random, SPAWN_MARGIN, WORLD_WIDTH - SPAWN_MARGIN),
-      y: coordinate(random, SPAWN_MARGIN, WORLD_HEIGHT - SPAWN_MARGIN),
+      x: pos.x,
+      y: pos.y,
     };
   }
 
@@ -108,8 +168,8 @@ export function createPhaseWorld(phaseKey, config = {}, seed = 0) {
       type: "public_center",
       label: "Trung tâm Công khai & Giải trình",
       message: "Đã đến Trung tâm Công khai!",
-      x: WORLD_WIDTH - SPAWN_MARGIN,
-      y: WORLD_HEIGHT - SPAWN_MARGIN,
+      x: Math.round((1200 / 2400) * WORLD_WIDTH),
+      y: Math.round((900 / 1400) * WORLD_HEIGHT),
     };
   }
 
@@ -143,12 +203,13 @@ export function createMarketEventEntities(eventType, phaseKey, config = {}, seed
   if (eventConfig && isObject(eventConfig.reward)) {
     for (let index = 0; index < eventConfig.count; index += 1) {
       const id = eventEntityKey(phase, eventType, numericSeed, index);
+      const pos = safeCoordinate(random, phase);
       result[eventConfig.collection][id] = {
         ...eventConfig.reward,
         id,
         kind: eventConfig.kind,
-        x: coordinate(random, SPAWN_MARGIN, WORLD_WIDTH - SPAWN_MARGIN),
-        y: coordinate(random, SPAWN_MARGIN, WORLD_HEIGHT - SPAWN_MARGIN),
+        x: pos.x,
+        y: pos.y,
       };
     }
   }
@@ -157,12 +218,13 @@ export function createMarketEventEntities(eventType, phaseKey, config = {}, seed
     const hazards = Array.isArray(phaseConfig.hazards) ? phaseConfig.hazards.filter(isObject) : [];
     for (let index = 0; index < Math.min(2, hazards.length); index += 1) {
       const id = eventEntityKey(phase, eventType, numericSeed, index);
+      const pos = safeCoordinate(random, phase);
       result.traps[id] = {
         ...hazards[index],
         id,
         kind: "hazard",
-        x: coordinate(random, SPAWN_MARGIN, WORLD_WIDTH - SPAWN_MARGIN),
-        y: coordinate(random, SPAWN_MARGIN, WORLD_HEIGHT - SPAWN_MARGIN),
+        x: pos.x,
+        y: pos.y,
       };
     }
   }
