@@ -3,16 +3,14 @@ import { getDatabase } from "firebase/database";
 
 // Cấu hình Firebase Realtime Database thực tế của bạn
 const firebaseConfig = {
-  apiKey: "AIzaSyBCwUrtaYUmQecaQpghFNt3l0nEwnKwjcE",
-  authDomain: "mln122-game.firebaseapp.com",
-  projectId: "mln122-game",
-  storageBucket: "mln122-game.firebasestorage.app",
-  messagingSenderId: "400918566706",
-  appId: "1:400918566706:web:c771b3d67496eeb8eca92b",
-  measurementId: "G-3LMZ0J3MCG",
-  // URL Database Singapore mặc định. 
-  // Nếu bạn chọn server Mỹ hoặc Châu Âu khi tạo Realtime Database, hãy thay thế URL này bằng URL hiển thị trên Firebase Console của bạn.
-  databaseURL: "https://mln122-game-default-rtdb.asia-southeast1.firebasedatabase.app"
+  apiKey: "AIzaSyAnFuQqmtO8KimZhmVWxoBx3kSsCravBDw",
+  authDomain: "minigamehcm202.firebaseapp.com",
+  databaseURL: "https://minigamehcm202-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "minigamehcm202",
+  storageBucket: "minigamehcm202.firebasestorage.app",
+  messagingSenderId: "599249144434",
+  appId: "1:599249144434:web:4b07539d341d67800b90eb",
+  measurementId: "G-G3W6M79B5N"
 };
 
 // Khởi tạo Firebase App
