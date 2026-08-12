@@ -159,6 +159,10 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
   const handleIframeLoad = useCallback(() => {
     iframeReadyRef.current = true;
     postRpgSnapshot(true);
+    // Tự động focus để người chơi có thể điều khiển được ngay khi tải xong
+    setTimeout(() => {
+      iframeRef.current?.focus();
+    }, 100);
   }, [postRpgSnapshot]);
 
   useEffect(() => {
@@ -417,6 +421,15 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
     iframeRef.current?.contentWindow?.postMessage({ type: "UNFREEZE" }, "*");
   }, [gameState.status]);
 
+  // Tự động focus lại iframe khi hết đóng băng để người chơi có thể di chuyển bằng bàn phím ngay
+  useEffect(() => {
+    if (!isFrozen && iframeRef.current) {
+      setTimeout(() => {
+        iframeRef.current.focus();
+      }, 50);
+    }
+  }, [isFrozen]);
+
   // 3. Hiện thông báo khi uy tín thay đổi mạnh.
   const lastIntegrityRef = useRef(playerInfo.integrity);
   useEffect(() => {
@@ -443,11 +456,36 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
     iframeRef.current?.contentWindow?.postMessage({ type: "ACTION_INTERACT" }, "*");
   };
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", maxWidth: "1400px", margin: "0 auto" }}>
+  // Lấy danh sách xếp hạng
+  const sortedPlayers = Object.entries(players || {})
+    .filter(([id, p]) => p && p.character)
+    .map(([id, p]) => ({ id, ...p }))
+    .sort((a, b) => (b.score || 0) - (a.score || 0));
 
-      {/* Phase indicator + HUD - Pixel UI/UX 8-bit styling */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", background: "#fff6d7", border: "3px solid #000", borderRadius: "0px", padding: "12px 20px", marginBottom: "12px", boxShadow: "5px 5px 0 rgba(0,0,0,0.5)", color: "#2c1a0e" }}>
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "flex-start", gap: "20px", width: "100%", maxWidth: "1920px", margin: "0 auto" }}>
+      
+      {/* CỘT TRÁI: Bảng xếp hạng (Chỉ hiện trên PC/Tablet) */}
+      <div className="hidden lg:flex" style={{ width: "260px", flexDirection: "column", gap: "16px", background: "rgba(15, 23, 42, 0.6)", borderRadius: "16px", padding: "16px", border: "1px solid rgba(255,255,255,0.05)" }}>
+        <h3 style={{ margin: 0, color: "#facc15", fontSize: "1rem", fontFamily: "var(--font-mono)", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "8px" }}>BẢNG XẾP HẠNG</h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {sortedPlayers.slice(0, 10).map((p, idx) => (
+            <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(0,0,0,0.3)", padding: "8px 12px", borderRadius: "8px", border: p.id === playerId ? "1px solid rgba(56, 189, 248, 0.5)" : "1px solid transparent" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ color: idx === 0 ? "#facc15" : idx === 1 ? "#94a3b8" : idx === 2 ? "#b45309" : "#64748b", fontWeight: "bold", fontSize: "1.1rem", fontFamily: "var(--font-mono)" }}>#{idx + 1}</span>
+                <span style={{ fontSize: "0.85rem", color: p.id === playerId ? "#38bdf8" : "#f8fafc", maxWidth: "110px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: p.id === playerId ? "bold" : "normal" }}>{p.name || p.id}</span>
+              </div>
+              <span className="pix-num" style={{ color: "var(--neon-blue)", fontSize: "1rem" }}>{p.score || 0}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CỘT GIỮA: Màn hình game */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: "1 1 auto", minWidth: "320px", maxWidth: "1400px" }}>
+
+      {/* Phase indicator + HUD - (Chỉ hiện trên mobile, PC sẽ ẩn để xem ở 2 cột) */}
+      <div className="flex lg:hidden" style={{ justifyContent: "space-between", alignItems: "center", width: "100%", background: "#fff6d7", border: "3px solid #000", borderRadius: "0px", padding: "12px 20px", marginBottom: "12px", boxShadow: "5px 5px 0 rgba(0,0,0,0.5)", color: "#2c1a0e" }}>
         {/* Phase badge */}
         <div style={{ textAlign: "center", minWidth: "90px" }}>
           <div style={{ fontSize: "7px", color: "var(--neon-gold)", fontWeight: "800", textTransform: "uppercase", letterSpacing: "1px" }}>Giai đoạn</div>
@@ -492,30 +530,9 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
         </div>
       )}
 
-      {activeMission && (
-        <div className="mission-card">
-          <div className="mission-label">NHIỆM VỤ PHASE</div>
-          <div className="mission-text">{activeMission}</div>
-          {progressText && <div className="mission-progress pix-num">{progressText}</div>}
-          {activeMeaning && <div className="mission-meaning">{activeMeaning}</div>}
-        </div>
-      )}
 
-      {/* Countdown phase có giới hạn */}
-      {phaseCountdown !== null && gameState.status === "phase_2" && (
-        <div style={{ width: "100%", background: phaseCountdown <= 10 ? "rgba(197,39,45,0.15)" : "rgba(0,137,123,0.08)", border: `2px solid ${phaseCountdown <= 10 ? "rgba(197,39,45,0.4)" : "rgba(0,137,123,0.2)"}`, borderRadius: "12px", padding: "10px 16px", marginBottom: "10px", textAlign: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-            <IconTimer className={`w-5 h-5 ${phaseCountdown <= 10 ? "text-red-500 animate-pulse" : "text-teal-500"}`} />
-            <span style={{ fontSize: "1.2rem", fontWeight: "800", fontFamily: "var(--font-mono)", color: phaseCountdown <= 10 ? "#c5272d" : "#00897b" }}>
-              {phaseCountdown > 0 ? `${phaseCountdown}s` : "HẾT GIỜ!"}
-            </span>
-            <span style={{ fontSize: "0.75rem", color: "#8b8680" }}>Liêm chính & Minh bạch</span>
-          </div>
-          <div style={{ width: "100%", height: "4px", background: "rgba(0,0,0,0.2)", borderRadius: "2px", marginTop: "6px", overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${Math.min(100, (phaseCountdown / Math.ceil((phaseConfig.durationMs || 90000) / 1000)) * 100)}%`, background: phaseCountdown <= 10 ? "#c5272d" : "#00897b", transition: "width 1s linear", borderRadius: "2px" }} />
-          </div>
-        </div>
-      )}
+
+
 
       {/* Manh mối từ Host */}
       {gameState.phase2Hint && gameState.status === "phase_2" && (
@@ -539,14 +556,42 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
         </div>
 
         {/* Iframe Phaser RPG */}
-        <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", overflow: "hidden", background: "#000", boxShadow: "0 10px 30px rgba(0,0,0,0.5)" }}>
+        <div style={{ position: "relative", width: "100%", height: "70vh", minHeight: "450px", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", overflow: "hidden", background: "#000", boxShadow: "0 10px 30px rgba(0,0,0,0.5)", display: "flex", flexDirection: "column" }}>
           <iframe
             ref={iframeRef}
             src={`/rpg/index.html?role=player&id=${playerId}&name=${encodeURIComponent(playerName)}&character=${encodeURIComponent(selectedCharacter.id)}&color=${encodeURIComponent(selectedCharacter.color)}&phase=${encodeURIComponent(gameState.status || "phase_1")}`}
             onLoad={handleIframeLoad}
-            style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+            style={{ width: "100%", flex: 1, border: "none", display: "block" }}
             title="Phaser RPG"
           />
+
+          {/* Mission HUD Overlay inside Game Canvas (Compact, Top-Left) */}
+          {activeMission && (
+            <div style={{ position: "absolute", top: "12px", left: "12px", zIndex: 10, pointerEvents: "none", maxWidth: "calc(100% - 24px)" }}>
+              <div style={{ background: "rgba(15, 23, 42, 0.85)", backdropFilter: "blur(6px)", border: "1px solid rgba(56, 189, 248, 0.4)", borderRadius: "8px", padding: "8px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.5)", pointerEvents: "auto", display: "flex", flexDirection: "column", gap: "2px" }}>
+                <div style={{ fontSize: "0.65rem", color: "#38bdf8", fontWeight: "900", letterSpacing: "1px", textTransform: "uppercase" }}>MỤC TIÊU PHASE</div>
+                <div style={{ fontSize: "0.85rem", color: "#f8fafc", fontWeight: "700", lineHeight: "1.3", textShadow: "1px 1px 0 rgba(0,0,0,0.8)" }}>{activeMission}</div>
+                {progressText && <div style={{ fontSize: "0.95rem", color: "#facc15", fontFamily: "var(--font-mono)", fontWeight: "bold", marginTop: "2px" }}>{progressText}</div>}
+              </div>
+            </div>
+          )}
+
+          {/* Countdown HUD Overlay inside Game Canvas (Compact, Top-Right) */}
+          {phaseCountdown !== null && gameState.status === "phase_2" && (
+            <div style={{ position: "absolute", top: "12px", right: "12px", zIndex: 10, pointerEvents: "none" }}>
+              <div style={{ background: phaseCountdown <= 10 ? "rgba(185, 28, 28, 0.9)" : "rgba(15, 23, 42, 0.85)", backdropFilter: "blur(6px)", border: `1px solid ${phaseCountdown <= 10 ? "#fca5a5" : "rgba(56, 189, 248, 0.4)"}`, borderRadius: "8px", padding: "6px 12px", boxShadow: "0 4px 12px rgba(0,0,0,0.5)", display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-end", pointerEvents: "auto" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <IconTimer className={`w-4 h-4 ${phaseCountdown <= 10 ? "text-white animate-pulse" : "text-teal-400"}`} />
+                  <span style={{ fontSize: "1.2rem", fontWeight: "800", fontFamily: "var(--font-mono)", color: phaseCountdown <= 10 ? "#fff" : "#38bdf8", textShadow: "1px 1px 0 rgba(0,0,0,0.8)" }}>
+                    {phaseCountdown > 0 ? `${Math.floor(phaseCountdown / 60)}:${String(phaseCountdown % 60).padStart(2, "0")}` : "HẾT GIỜ!"}
+                  </span>
+                </div>
+                <div style={{ width: "100%", height: "4px", background: "rgba(0,0,0,0.4)", borderRadius: "2px", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${Math.min(100, (phaseCountdown / Math.ceil((phaseConfig.durationMs || 300000) / 1000)) * 100)}%`, background: phaseCountdown <= 10 ? "#fff" : "#10b981", transition: "width 1s linear" }} />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Modal Câu hỏi Tình huống Công vụ khi va chạm Bẫy/Rủi ro */}
           {activeHazardQuiz && (
@@ -838,6 +883,40 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
           <span style={{ fontSize: "8px", color: "#fef08a" }}>[E / SPACE]</span>
         </button>
       </div>
+
+      </div> {/* Kết thúc cột giữa */}
+
+      {/* CỘT PHẢI: Trạng thái & Điểm số (Chỉ hiện trên PC/Tablet) */}
+      <div className="hidden lg:flex" style={{ width: "260px", flexDirection: "column", gap: "16px", background: "rgba(15, 23, 42, 0.6)", borderRadius: "16px", padding: "16px", border: "1px solid rgba(255,255,255,0.05)" }}>
+        <h3 style={{ margin: 0, color: "#38bdf8", fontSize: "1rem", fontFamily: "var(--font-mono)", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
+          <span>THÔNG TIN CÁN BỘ</span>
+          <span style={{ fontSize: "0.75rem", color: "#f8fafc", fontWeight: "normal" }}>{playerName}</span>
+        </h3>
+        
+        <div style={{ background: "rgba(0,0,0,0.4)", padding: "16px", borderRadius: "12px", textAlign: "center", border: "1px solid rgba(56, 189, 248, 0.2)" }}>
+          <div style={{ fontSize: "0.75rem", color: "#94a3b8", letterSpacing: "1px", marginBottom: "6px", fontWeight: "bold" }}>GIAI ĐOẠN</div>
+          <div style={{ fontSize: "1.1rem", color: "var(--neon-gold)", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+            {getPhaseIcon(gameState.status, "w-5 h-5")} 
+            <span>{phaseConfig.name.split(" ").slice(0, 2).join(" ")}</span>
+          </div>
+        </div>
+
+        <div style={{ background: "rgba(0,0,0,0.4)", padding: "16px", borderRadius: "12px", textAlign: "center", border: "1px solid rgba(56, 189, 248, 0.2)" }}>
+          <div style={{ fontSize: "0.75rem", color: "#94a3b8", letterSpacing: "1px", marginBottom: "6px", fontWeight: "bold" }}>ĐIỂM CÔNG VỤ</div>
+          <div className="pix-num" style={{ fontSize: "2rem", color: "var(--neon-blue)" }}>{playerInfo.score || 0}</div>
+        </div>
+
+        <div style={{ background: "rgba(0,0,0,0.4)", padding: "16px", borderRadius: "12px", textAlign: "center", border: "1px solid rgba(56, 189, 248, 0.2)" }}>
+          <div style={{ fontSize: "0.75rem", color: "#94a3b8", letterSpacing: "1px", marginBottom: "6px", fontWeight: "bold" }}>UY TÍN</div>
+          <div className="pix-num" style={{ fontSize: "2rem", color: (playerInfo.integrity ?? 100) >= 60 ? "var(--neon-green)" : "var(--neon-red)" }}>{playerInfo.integrity ?? 100}</div>
+        </div>
+
+        <div style={{ background: "rgba(0,0,0,0.4)", padding: "16px", borderRadius: "12px", textAlign: "center", border: "1px solid rgba(56, 189, 248, 0.2)" }}>
+          <div style={{ fontSize: "0.75rem", color: "#94a3b8", letterSpacing: "1px", marginBottom: "6px", fontWeight: "bold" }}>NIỀM TIN NHÂN DÂN</div>
+          <div className="pix-num" style={{ fontSize: "2rem", color: "var(--neon-gold)" }}>{Number.isFinite(gameState.publicTrust) ? gameState.publicTrust : 70}%</div>
+        </div>
+      </div>
+      
     </div>
   );
 };
