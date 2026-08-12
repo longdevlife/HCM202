@@ -3,16 +3,16 @@ export default function GiaiPhap() {
   const f2 = "'Inter', sans-serif";
 
   const features = [
-    { n: '01', t: 'Hợp hiến, Hợp pháp', s: 'Tạo nền tảng chính danh và ổn định chính trị qua bầu cử dân chủ; là cơ sở pháp lý để hội nhập quốc tế (CPTPP, EVFTA, FDI).' },
-    { n: '02', t: 'Thượng tôn pháp luật', s: 'Bảo đảm công bằng, bình đẳng không phân biệt địa vị; kiểm soát quyền lực, phòng chống tham nhũng với kỷ cương nghiêm minh.' },
-    { n: '03', t: 'Pháp quyền nhân nghĩa', s: 'Bảo đảm quyền con người, công bằng xã hội; lấy pháp luật làm công cụ phục vụ và phát triển con người toàn diện.' },
+    { n: '01', t: 'Thể chế hóa "Dân chủ số"', s: 'Bắt buộc công khai, minh bạch quy trình giải trình phản ánh của dân trên môi trường số; tạo hành lang pháp lý cho dân chủ trực tuyến.' },
+    { n: '02', t: 'Chuẩn hóa "Công bộc số"', s: 'Nâng cao đạo đức công vụ số, kỹ năng tương tác văn minh và tinh thần lắng nghe, phục vụ nhân dân trên không gian mạng.' },
+    { n: '03', t: 'Năng lực làm chủ số', s: 'Phổ cập kỹ năng số, văn hóa mạng để người dân nhận diện tin giả, thực hành quyền dân chủ một cách đúng đắn, trách nhiệm.' },
   ];
 
   const stats = [
-    { num: '3', label: 'Giá trị cốt lõi' },
-    { num: '1', label: 'Mục tiêu duy nhất' },
-    { num: '1946', label: 'Bản Hiến pháp đầu tiên' },
-    { num: '2', label: 'Ngày Độc Lập' },
+    { num: '3', label: 'Giải pháp cốt lõi' },
+    { num: '1', label: 'Mục tiêu tối thượng' },
+    { num: '1946', label: 'Tổng tuyển cử đầu tiên' },
+    { num: '100%', label: 'Vì lợi ích nhân dân' },
   ];
 
   return (
@@ -25,10 +25,10 @@ export default function GiaiPhap() {
         </div>
         <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-[#3D3529] mb-8 leading-snug" style={{ fontFamily: f1 }}>
           <span className="gsap-text-reveal block pb-2 md:pb-3">Giá Trị Vận Dụng &</span>
-          <span className="gsap-text-reveal block italic font-light text-[#7A6040] pt-1">Kết Luận</span>
+          <span className="gsap-text-reveal block italic font-light text-[#7A6040] pt-1">Giải Pháp Quản Trị</span>
         </h2>
         <p className="gsap-reveal text-lg text-[#7A6040] max-w-2xl leading-relaxed font-light" style={{ fontFamily: f2 }}>
-          Tư tưởng Hồ Chí Minh là kim chỉ nam cho công cuộc xây dựng Nhà nước pháp quyền Việt Nam hiện nay, đặc biệt trong việc bảo vệ quyền lợi của nhân dân.
+          Tư tưởng Hồ Chí Minh là kim chỉ nam cho công cuộc xây dựng Nhà nước dân chủ Việt Nam hiện nay, đặc biệt trong việc bảo đảm mọi quyền lực thuộc về nhân dân.
         </p>
       </div>
 
@@ -39,16 +39,16 @@ export default function GiaiPhap() {
           <div className="h-full p-8 md:p-12 bg-white/50 rounded-[20px] border border-[#3D3529]/5 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(61,53,41,0.08)]">
             <h3 className="text-3xl font-bold text-[#3D3529] mb-6" style={{ fontFamily: f1 }}>Thể Thống Nhất Trong Tư Tưởng HCM</h3>
             <p className="text-[#7A6040] text-base md:text-lg leading-relaxed font-light mb-8" style={{ fontFamily: f2 }}>
-              Ba nội dung — hợp hiến hợp pháp, thượng tôn pháp luật và pháp quyền nhân nghĩa — tạo nền tảng vững chắc để xây dựng nhà nước <strong>của nhân dân, do nhân dân, vì nhân dân</strong>.
+              Sự thống nhất giữa bản chất giai cấp công nhân với tính nhân dân và tính dân tộc tạo nền tảng vững chắc để xây dựng nhà nước <strong>của nhân dân, do nhân dân, vì nhân dân</strong>.
             </p>
             <div className="gsap-stagger-parent grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="gsap-stagger-child p-5 bg-[#EDE8E1] rounded-[16px]">
-                <h4 className="font-bold text-[#3D3529] mb-2" style={{ fontFamily: f1 }}>Chính danh</h4>
+                <h4 className="font-bold text-[#3D3529] mb-2" style={{ fontFamily: f1 }}>Phát huy quyền làm chủ</h4>
                 <p className="text-[#7A6040] text-sm font-light" style={{ fontFamily: f2 }}>Tạo sự ủng hộ và niềm tin tuyệt đối từ nhân dân trong nước.</p>
               </div>
               <div className="gsap-stagger-child p-5 bg-[#EDE8E1] rounded-[16px]">
-                <h4 className="font-bold text-[#3D3529] mb-2" style={{ fontFamily: f1 }}>Uy tín quốc tế</h4>
-                <p className="text-[#7A6040] text-sm font-light" style={{ fontFamily: f2 }}>Khẳng định vị thế, thu hút hợp tác bình đẳng trên thế giới.</p>
+                <h4 className="font-bold text-[#3D3529] mb-2" style={{ fontFamily: f1 }}>Đại đoàn kết toàn dân</h4>
+                <p className="text-[#7A6040] text-sm font-light" style={{ fontFamily: f2 }}>Khẳng định sức mạnh dân tộc, thu hút hợp tác và phát triển đất nước.</p>
               </div>
             </div>
           </div>
@@ -69,7 +69,7 @@ export default function GiaiPhap() {
       <div className="w-full max-w-7xl mx-auto mb-32">
         <div className="gsap-reveal flex items-center justify-center gap-4 mb-16">
           <div className="h-[1px] w-12 bg-[#3D3529]/15 gsap-line-draw" />
-          <span className="text-sm tracking-[0.25em] text-[#7A6040]/60 uppercase font-semibold" style={{ fontFamily: f2 }}>03 Giá Trị Trọng Tâm</span>
+          <span className="text-sm tracking-[0.25em] text-[#7A6040]/60 uppercase font-semibold" style={{ fontFamily: f2 }}>03 Giải Pháp Trọng Tâm</span>
           <div className="h-[1px] w-12 bg-[#3D3529]/15 gsap-line-draw" />
         </div>
         <div className="gsap-stagger-parent grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
@@ -93,10 +93,10 @@ export default function GiaiPhap() {
             <div className="gsap-slide-left flex flex-col justify-center">
               <h4 className="text-3xl font-bold text-[#3D3529] mb-6" style={{ fontFamily: f1 }}>Di Sản Hồ Chí Minh</h4>
               <p className="text-[#7A6040] text-base leading-relaxed font-light mb-8" style={{ fontFamily: f2 }}>
-                Tư tưởng của Người về nhà nước pháp quyền nhân nghĩa đã đi trước thời đại và đến nay vẫn còn nguyên giá trị định hướng.
+                Tư tưởng của Người về nhà nước dân chủ đã đi trước thời đại và đến nay vẫn còn nguyên giá trị định hướng trong việc xây dựng hệ thống chính trị vững mạnh.
               </p>
               <div className="space-y-4">
-                {['Lấy sự ủng hộ của nhân dân làm gốc.', 'Thượng tôn pháp luật, hiến pháp.', 'Kết hợp nhuần nhuyễn giữa pháp trị và đức trị.'].map(text => (
+                {['Dân là chủ, quyền lực tối cao thuộc về Dân.', 'Cán bộ là "công bộc", "đầy tớ" của nhân dân.', 'Mọi chính sách hướng tới mưu cầu hạnh phúc cho dân.'].map(text => (
                   <div key={text} className="gsap-reveal flex items-start gap-3 text-[#7A6040] font-light" style={{ fontFamily: f2 }}>
                     <div className="w-1.5 h-1.5 rounded-full bg-[#C5A028] mt-2 shrink-0" />
                     <span>{text}</span>

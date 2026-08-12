@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 const NAV_LINKS = [
-  { href: '#hero', label: 'Tổng Quan' },
+  { href: '#hero', label: 'Nhà nước dân chủ' },
   { href: '#book', label: 'Tạp chí' },
   { href: '#museum', label: 'Bảo tàng' },
   { href: '#minigame', label: 'Mini Game' },
