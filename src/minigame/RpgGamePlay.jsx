@@ -159,6 +159,10 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
   const handleIframeLoad = useCallback(() => {
     iframeReadyRef.current = true;
     postRpgSnapshot(true);
+    // Tự động focus để người chơi có thể điều khiển được ngay khi tải xong
+    setTimeout(() => {
+      iframeRef.current?.focus();
+    }, 100);
   }, [postRpgSnapshot]);
 
   useEffect(() => {
@@ -416,6 +420,15 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
     setIsFrozen(false);
     iframeRef.current?.contentWindow?.postMessage({ type: "UNFREEZE" }, "*");
   }, [gameState.status]);
+
+  // Tự động focus lại iframe khi hết đóng băng để người chơi có thể di chuyển bằng bàn phím ngay
+  useEffect(() => {
+    if (!isFrozen && iframeRef.current) {
+      setTimeout(() => {
+        iframeRef.current.focus();
+      }, 50);
+    }
+  }, [isFrozen]);
 
   // 3. Hiện thông báo khi uy tín thay đổi mạnh.
   const lastIntegrityRef = useRef(playerInfo.integrity);
