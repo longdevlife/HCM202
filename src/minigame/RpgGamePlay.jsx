@@ -1,9 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
-import { ref, remove, runTransaction } from "firebase/database";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { get, onValue, ref, runTransaction, update } from "firebase/database";
 import { db } from "./firebaseConfig";
 import { PHASE_CONFIGS } from "./situations";
-import { applyPlayerDelta } from "./gameStateUtils";
+import { applyEntityRewardClaim, applyFinalGateCompletion, applyPlayerDelta } from "./gameStateUtils";
 import { getCharacterOption } from "./characterOptions";
+import { buildRpgSnapshot, isRpgMessage, normalizePlayerMove, resolveCanonicalHazard } from "./rpgBridge";
+import { getHazardQuestion } from "./hazardQuestions";
 import {
   IconPhone,
   IconDesktop,
@@ -32,15 +34,18 @@ const getPhaseIcon = (status, className = "w-5 h-5") => {
   return null;
 };
 
+const EMPTY_WORLD = { players: {}, books: {}, traps: {}, npcs: {}, gates: {} };
 
 const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState }) => {
   const iframeRef = useRef(null);
+  const iframeReadyRef = useRef(false);
+  const lastPlayerMoveAtRef = useRef(0);
   const selectedCharacter = getCharacterOption(playerInfo.character);
+  const [world, setWorld] = useState(EMPTY_WORLD);
 
-  // Trạng thái đóng băng
+  // Trạng thái dừng khi trả lời câu hỏi tình huống
   const [isFrozen, setIsFrozen] = useState(false);
-  const [freezeTime, setFreezeTime] = useState(0);
-  const freezeTimeoutRef = useRef(null);
+  const [activeHazardQuiz, setActiveHazardQuiz] = useState(null);
 
   // Floating text
   const [floatingTexts, setFloatingTexts] = useState([]);
@@ -70,12 +75,25 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
     })
     .join(" | ");
 
-  const incrementProgress = (type) =>
-    runTransaction(
-      ref(db, `players/${playerId}/progress/${gameState.status}/${type}`),
-      (current) => (Number(current) || 0) + 1,
-      { applyLocally: false }
-    );
+  const incrementProgress = useCallback(
+    (type) =>
+      runTransaction(
+        ref(db, `players/${playerId}/progress/${gameState.status}/${type}`),
+        (current) => (Number(current) || 0) + 1,
+        { applyLocally: false }
+      ),
+    [gameState.status, playerId]
+  );
+
+  const applyScoreIntegrityDelta = useCallback(
+    (delta) =>
+      runTransaction(
+        ref(db, `players/${playerId}`),
+        (player) => applyPlayerDelta(player, delta),
+        { applyLocally: false }
+      ),
+    [playerId]
+  );
 
   const addFloatingText = (text, color) => {
     const id = Date.now() + Math.random();
@@ -90,154 +108,306 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
     return () => clearInterval(timer);
   }, []);
 
-  // 1. Lắng nghe postMessage từ Phaser
   useEffect(() => {
-    const applyScoreCapitalDelta = (delta) =>
+    const collections = ["players", "books", "traps", "npcs", "gates"];
+    const unsubscribes = collections.map((collection) => onValue(ref(db, collection), (snapshot) => {
+      setWorld((currentWorld) => ({
+        ...currentWorld,
+        [collection]: snapshot.val() || {},
+      }));
+    }));
+    return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
+  }, []);
+
+  const postRpgSnapshot = useCallback((force = false) => {
+    const iframeWindow = iframeRef.current?.contentWindow;
+    if (!iframeWindow || (!iframeReadyRef.current && !force)) return;
+    iframeWindow.postMessage(buildRpgSnapshot(gameState, world), "*");
+  }, [gameState, world]);
+
+  const handleIframeLoad = useCallback(() => {
+    iframeReadyRef.current = true;
+    postRpgSnapshot(true);
+  }, [postRpgSnapshot]);
+
+  useEffect(() => {
+    postRpgSnapshot();
+  }, [postRpgSnapshot]);
+
+  // Xử lý chọn đáp án câu hỏi tình huống bẫy/rủi ro
+  const handleSelectQuizAnswer = async (index) => {
+    if (!activeHazardQuiz || activeHazardQuiz.isAnswered) return;
+    const { hazard, question } = activeHazardQuiz;
+    const isCorrect = index === question.correctIndex;
+
+    const deltaScore = isCorrect ? (question.rewardScore || 40) : (question.penaltyScore || -30);
+    const deltaIntegrity = isCorrect ? (question.rewardIntegrity || 10) : (question.penaltyIntegrity || -15);
+
+    await applyScoreIntegrityDelta({ score: deltaScore, integrity: deltaIntegrity });
+    await incrementProgress(isCorrect ? `quiz_correct_${hazard.type || "hazard"}` : `quiz_wrong_${hazard.type || "hazard"}`);
+    await incrementProgress(`hit_${hazard.type || "hazard"}`);
+
+    if (isCorrect) {
+      addFloatingText(`+${deltaScore}đ | +${deltaIntegrity} Liêm chính (Chính xác!)`, "#4ade80");
+    } else {
+      addFloatingText(`${deltaScore}đ | ${deltaIntegrity} Liêm chính (Xử lý sai!)`, "#ef4444");
+    }
+
+    setActiveHazardQuiz((prev) => ({
+      ...prev,
+      selectedAnswer: index,
+      isAnswered: true,
+      isCorrect,
+    }));
+  };
+
+  // Đóng modal câu hỏi và tiếp tục chơi
+  const handleCloseQuiz = () => {
+    setActiveHazardQuiz(null);
+    setIsFrozen(false);
+    iframeRef.current?.contentWindow?.postMessage({ type: "UNFREEZE" }, "*");
+  };
+
+  // Lắng nghe phím tắt cho câu hỏi tình huống
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!activeHazardQuiz) return;
+
+      if (!activeHazardQuiz.isAnswered) {
+        if (e.key === "1" || e.code === "Digit1" || e.code === "KeyA") {
+          e.preventDefault();
+          handleSelectQuizAnswer(0);
+        } else if (e.key === "2" || e.code === "Digit2" || e.code === "KeyB") {
+          e.preventDefault();
+          handleSelectQuizAnswer(1);
+        } else if (e.key === "3" || e.code === "Digit3" || e.code === "KeyC") {
+          e.preventDefault();
+          handleSelectQuizAnswer(2);
+        } else if (e.key === "4" || e.code === "Digit4" || e.code === "KeyD") {
+          if (activeHazardQuiz.question.options.length >= 4) {
+            e.preventDefault();
+            handleSelectQuizAnswer(3);
+          }
+        }
+      } else {
+        if (e.code === "Space" || e.code === "Enter" || e.code === "KeyE") {
+          e.preventDefault();
+          handleCloseQuiz();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeHazardQuiz]);
+
+  // 1. Lắng nghe postMessage từ iframe RPG
+  useEffect(() => {
+    const recordEntityResolution = (collection, entityId, field, resolvedAt) =>
       runTransaction(
-        ref(db, `players/${playerId}`),
-        (player) => applyPlayerDelta(player, delta),
-        { applyLocally: false }
-      );
-
-    const claimBook = async (bookId) => {
-      if (!bookId) return false;
-
-      const result = await runTransaction(
-        ref(db, `books/${bookId}`),
-        (book) => {
-          if (!book || book.claimedBy) return book;
-          return { ...book, claimedBy: playerId, claimedAt: Date.now() };
+        ref(db, `${collection}/${entityId}`),
+        (entity) => {
+          if (!entity) return undefined;
+          const resolutionMap = entity[field] && typeof entity[field] === "object"
+            ? entity[field]
+            : {};
+          if (Object.prototype.hasOwnProperty.call(resolutionMap, playerId)) return entity;
+          return {
+            ...entity,
+            [field]: {
+              ...resolutionMap,
+              [playerId]: resolvedAt,
+            },
+          };
         },
         { applyLocally: false }
       );
 
-      const claimedBook = result.snapshot.val();
-      const didClaim = claimedBook?.claimedBy === playerId;
-      if (didClaim) {
-        await remove(ref(db, `books/${bookId}`));
+    const claimRewardEntity = async (collection, entityId, recoveryTask = false) => {
+      if (!entityId) return null;
+      const entitySnapshot = await get(ref(db, `${collection}/${entityId}`));
+      const entity = entitySnapshot.val();
+      if (!entity || typeof entity.type !== "string") return null;
+
+      const claimedAt = Date.now();
+      const result = await runTransaction(
+        ref(db, `players/${playerId}`),
+        (player) => applyEntityRewardClaim(player, {
+          phaseKey: gameState.status,
+          collection,
+          entityId,
+          entity,
+          claimedAt,
+          recoveryTask,
+        }) || undefined,
+        { applyLocally: false }
+      );
+
+      const recordedAt = result.snapshot.val()?.rpgClaims?.[gameState.status]?.[collection]?.[entityId];
+      if (Number.isFinite(recordedAt)) {
+        await recordEntityResolution(collection, entityId, "claimedBy", recordedAt);
       }
-      return didClaim ? claimedBook : null;
+      return result.committed ? entity : null;
+    };
+
+    const completeFinalGate = async (gateId) => {
+      let resolvedGateId = gateId;
+      let gateSnapshot = resolvedGateId ? await get(ref(db, `gates/${resolvedGateId}`)) : null;
+      if (!gateSnapshot || !gateSnapshot.exists()) {
+        const allGatesSnap = await get(ref(db, "gates"));
+        if (allGatesSnap.exists()) {
+          const gatesObj = allGatesSnap.val();
+          const firstKey = Object.keys(gatesObj)[0];
+          resolvedGateId = firstKey;
+          gateSnapshot = { val: () => gatesObj[firstKey], exists: () => true };
+        }
+      }
+
+      const completedAt = Date.now();
+      const result = await runTransaction(
+        ref(db, `players/${playerId}`),
+        (player) => applyFinalGateCompletion(player, {
+          phaseKey: gameState.status,
+          gateId: resolvedGateId || "public_center_1",
+          completedAt,
+        }) || undefined,
+        { applyLocally: false }
+      );
+      if (resolvedGateId) {
+        const recordedAt = result.snapshot.val()?.rpgClaims?.phase_3?.gates?.[resolvedGateId];
+        if (Number.isFinite(recordedAt)) {
+          await recordEntityResolution("gates", resolvedGateId, "completedBy", recordedAt);
+        }
+      }
+      return result.committed ? (gateSnapshot?.val() || { type: "public_center" }) : null;
     };
 
     const handleMessage = async (e) => {
-      if (!e.data) return;
+      if (e.source !== iframeRef.current?.contentWindow || !isRpgMessage(e.data)) return;
 
-      // A. Nhặt cơ hội kinh doanh → Bonus theo object type
+      if (e.data.type === "RPG_READY") {
+        iframeReadyRef.current = true;
+        postRpgSnapshot(true);
+        return;
+      }
+
+      if (e.data.type === "PLAYER_MOVE") {
+        const move = normalizePlayerMove(e.data);
+        const now = Date.now();
+        if (!move || !["up", "down", "left", "right"].includes(move.direction) || now - lastPlayerMoveAtRef.current < 100) return;
+        lastPlayerMoveAtRef.current = now;
+        await update(ref(db, `players/${playerId}`), {
+          position: { x: move.x, y: move.y },
+          direction: move.direction,
+        });
+        return;
+      }
+
+      // A. Nhặt vật phẩm tích cực -> điểm công vụ / uy tín theo phase
       if (e.data.type === "NHAT_SACH") {
-        const claimedBook = await claimBook(e.data.bookId);
+        const claimedBook = await claimRewardEntity("books", e.data.bookId);
         if (!claimedBook) return;
 
-        const bonusScore = Number.isFinite(claimedBook.score)
-          ? claimedBook.score
-          : phaseConfig.bookReward.score;
-        const bonusCapital = Number.isFinite(claimedBook.capital)
-          ? claimedBook.capital
-          : phaseConfig.bookReward.capital;
-
-        await applyScoreCapitalDelta({ score: bonusScore, capital: bonusCapital });
-        await incrementProgress(claimedBook.type || "opportunity");
-        addFloatingText(claimedBook.message || `+${bonusScore}đ Cơ hội`, claimedBook.color || "#2e7d32");
+        const bonusScore = Number.isFinite(claimedBook.score) ? claimedBook.score : 0;
+        addFloatingText(claimedBook.message || `+${bonusScore} Công vụ`, claimedBook.color || "#2e7d32");
       }
 
-      // B. Va chạm rủi ro nền tảng → Phạt theo hazard type
+      // B. Va chạm rủi ro công vụ -> Mở câu hỏi tình huống: Đúng cộng điểm, Sai trừ điểm
       if (e.data.type === "DINH_BAY") {
-        const hazard = e.data.hazard || {};
-        const shouldFreeze = hazard.effect === "freeze" || !hazard.effect;
-        const freezeSeconds = Math.ceil((hazard.durationMs || 3000) / 1000);
+        const hazardId = e.data.hazard?.id;
+        const hazardSnapshot = hazardId ? await get(ref(db, `traps/${hazardId}`)) : null;
+        const hazard = (hazardSnapshot && hazardSnapshot.exists())
+          ? resolveCanonicalHazard(e.data.hazard, hazardSnapshot.val())
+          : (e.data.hazard && typeof e.data.hazard === "object" ? e.data.hazard : null);
 
-        if (shouldFreeze) {
-          if (freezeTimeoutRef.current) clearTimeout(freezeTimeoutRef.current);
-          setIsFrozen(true);
-          setFreezeTime(freezeSeconds);
-          iframeRef.current?.contentWindow?.postMessage({ type: "FREEZE" }, "*");
-          freezeTimeoutRef.current = setTimeout(() => {
-            setIsFrozen(false);
-            setFreezeTime(0);
-            iframeRef.current?.contentWindow?.postMessage({ type: "UNFREEZE" }, "*");
-          }, hazard.durationMs || 3000);
+        if (!hazard) return;
+
+        // Đánh dấu bẫy/rủi ro đã xử lý để biến mất khỏi bản đồ
+        if (hazardId && hazardSnapshot && hazardSnapshot.exists()) {
+          await recordEntityResolution("traps", hazardId, "claimedBy", Date.now());
         }
 
-        const penScore = Number.isFinite(hazard.score)
-          ? hazard.score
-          : phaseConfig.trapPenalty.score;
-        const penCapital = Number.isFinite(hazard.capital)
-          ? hazard.capital
-          : phaseConfig.trapPenalty.capital;
+        // Lấy câu hỏi tương ứng với loại bẫy / rủi ro
+        const question = getHazardQuestion(hazard.type, Date.now());
 
-        await applyScoreCapitalDelta({ score: penScore, capital: penCapital });
-        await incrementProgress(`hit_${hazard.type || "hazard"}`);
-        addFloatingText(hazard.message || `${penScore}đ Rủi ro`, hazard.color || "#c5272d");
+        setIsFrozen(true);
+        iframeRef.current?.contentWindow?.postMessage({ type: "FREEZE" }, "*");
+
+        setActiveHazardQuiz({
+          hazard,
+          question,
+          selectedAnswer: null,
+          isAnswered: false,
+          isCorrect: null,
+        });
       }
 
-      // C. Tìm thấy Khách Ruột (Phase 2 NPC) — NPC vẫn ở đó cho người khác tìm
+      // C. Event NPC cũ được map thành hỗ trợ/phản ánh người dân.
       if (e.data.type === "FOUND_LOYAL_CUSTOMER") {
-        await incrementProgress("loyal_customer_found");
+        const reward = await claimRewardEntity("npcs", e.data.npcId, true);
+        if (!reward) return;
         await runTransaction(
-          ref(db, `players/${playerId}/progress/${gameState.status}/loyal_customer_found_at`),
+          ref(db, `players/${playerId}/progress/${gameState.status}/citizen_support_at`),
           (current) => current || Date.now(),
           { applyLocally: false }
         );
-        addFloatingText("🎉 Tìm thấy Khách Ruột!", "#00897b");
+        addFloatingText(reward.message || "Đã hỗ trợ người dân!", reward.color || "#00897b");
       }
 
-      // D. Thoát qua Cổng Thoát (Phase 3)
+      // D. Event cổng được map thành Trung tâm Công khai & Giải trình.
       if (e.data.type === "ESCAPED_GATE") {
-        await incrementProgress("escaped_gate");
-        await runTransaction(
-          ref(db, `players/${playerId}`),
-          (player) => ({
-            ...player,
-            escaped: true,
-            escapedAt: player?.escapedAt || Date.now(),
-          }),
-          { applyLocally: false }
-        );
-        addFloatingText("Đã thoát khỏi nền tảng!", "#c9922a");
+        const gate = await completeFinalGate(e.data.gateId);
+        if (!gate) {
+          addFloatingText("Cần đủ: 1 Minh bạch, 1 Trách nhiệm, 1 Phục vụ ND!", "#f59e0b");
+          return;
+        }
+        addFloatingText("⭐ ĐÃ VÀO TRUNG TÂM CÔNG KHAI! (+100 ĐIỂM) ⭐", "#22d3ee");
       }
     };
 
     window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [playerId, phaseConfig, gameState.status]);
-
-  // 2. Bộ đếm ngược đóng băng
-  useEffect(() => {
-    if (!isFrozen) return undefined;
-    const timer = setInterval(() => {
-      setFreezeTime((prev) => Math.max(0, prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [isFrozen]);
-
-  useEffect(() => {
     return () => {
-      if (freezeTimeoutRef.current) clearTimeout(freezeTimeoutRef.current);
-      iframeRef.current?.contentWindow?.postMessage({ type: "UNFREEZE" }, "*");
+      window.removeEventListener("message", handleMessage);
     };
+  }, [
+    gameState.status,
+    playerId,
+    postRpgSnapshot,
+    selectedCharacter.id,
+    selectedCharacter.color,
+  ]);
+
+  // 2. Unfreeze & đóng modal quiz khi chuyển phase
+  useEffect(() => {
+    setActiveHazardQuiz(null);
+    setIsFrozen(false);
+    iframeRef.current?.contentWindow?.postMessage({ type: "UNFREEZE" }, "*");
   }, [gameState.status]);
 
-  // 3. Hiện thông báo phí sàn khi bị trừ tự động (qua Firebase onValue)
-  const lastCapitalRef = useRef(playerInfo.capital);
+  // 3. Hiện thông báo khi uy tín thay đổi mạnh.
+  const lastIntegrityRef = useRef(playerInfo.integrity);
   useEffect(() => {
-    // Detect phí sàn bị trừ (capital giảm mà không phải do bẫy/sách)
-    if (phaseConfig.platformFeeInterval > 0 && playerInfo.capital < lastCapitalRef.current && !isFrozen) {
-      const diff = lastCapitalRef.current - playerInfo.capital;
-      // Chỉ hiện nếu đúng mức phí sàn (±20% tolerance)
-      if (Math.abs(diff - phaseConfig.platformFeeAmount) < phaseConfig.platformFeeAmount * 0.3) {
-        addFloatingText(`-${(phaseConfig.platformFeeAmount / 1000000).toFixed(0)}tr Phí sàn`, "#ff6b35");
-      }
+    const currentIntegrity = Number.isFinite(playerInfo.integrity) ? playerInfo.integrity : 100;
+    if (currentIntegrity < lastIntegrityRef.current && !isFrozen) {
+      addFloatingText(`-${lastIntegrityRef.current - currentIntegrity} Uy tín`, "#ff6b35");
     }
+    lastIntegrityRef.current = currentIntegrity;
+  }, [playerInfo.integrity, isFrozen]);
 
-    lastCapitalRef.current = playerInfo.capital;
-  }, [playerInfo.capital]);
-
-  // 4. D-pad
-  const handleDpadPress = (dir) => {
+  // 4. D-pad & Action Handlers
+  const handleDpadPress = (dir, e) => {
+    if (e && e.cancelable && e.type === "touchstart") e.preventDefault();
     if (isFrozen) return;
     iframeRef.current?.contentWindow?.postMessage({ type: "DPAD_MOVE", dir }, "*");
   };
-  const handleDpadRelease = () => {
+  const handleDpadRelease = (e) => {
+    if (e && e.cancelable && e.type === "touchend") e.preventDefault();
     iframeRef.current?.contentWindow?.postMessage({ type: "DPAD_MOVE", dir: "stop" }, "*");
+  };
+  const handleActionPress = (e) => {
+    if (e && e.cancelable && e.type === "touchstart") e.preventDefault();
+    if (isFrozen) return;
+    iframeRef.current?.contentWindow?.postMessage({ type: "ACTION_INTERACT" }, "*");
   };
 
   return (
@@ -254,44 +424,38 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
         </div>
         <div style={{ width: "2px", background: "#000", margin: "0 12px", height: "30px" }} />
 
-        {/* Vốn */}
+        {/* Uy tín */}
         <div style={{ textAlign: "center", flex: 1 }}>
-          <div style={{ fontSize: "7px", color: "#8b8680", fontWeight: "800", letterSpacing: "1px" }}>VỐN</div>
-          <div style={{ fontSize: "0.95rem", fontWeight: "800", color: playerInfo.isBankrupt ? "var(--neon-red)" : "var(--neon-green)", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", marginTop: "2px", fontFamily: "var(--font-mono)" }}>
-            {playerInfo.isBankrupt ? (
-              <>
-                <IconSkull className="w-4 h-4 text-red-500 animate-pulse" /> PHÁ SẢN
-              </>
-            ) : (
-              <span className="pix-num">{`${(playerInfo.capital || 0).toLocaleString()}đ`}</span>
-            )}
+          <div style={{ fontSize: "7px", color: "#8b8680", fontWeight: "800", letterSpacing: "1px" }}>UY TÍN</div>
+          <div style={{ fontSize: "0.95rem", fontWeight: "800", color: (playerInfo.integrity ?? 100) >= 60 ? "var(--neon-green)" : "var(--neon-red)", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", marginTop: "2px", fontFamily: "var(--font-mono)" }}>
+            <span className="pix-num">{playerInfo.integrity ?? 100}</span>
           </div>
         </div>
         <div style={{ width: "2px", background: "#000", margin: "0 12px", height: "30px" }} />
 
         {/* Điểm */}
         <div style={{ textAlign: "center", flex: 1 }}>
-          <div style={{ fontSize: "7px", color: "#8b8680", fontWeight: "800", letterSpacing: "1px" }}>ĐIỂM TÍCH LŨY</div>
+          <div style={{ fontSize: "7px", color: "#8b8680", fontWeight: "800", letterSpacing: "1px" }}>ĐIỂM CÔNG VỤ</div>
           <div style={{ fontSize: "0.95rem", fontWeight: "800", color: "var(--neon-blue)", marginTop: "2px", fontFamily: "var(--font-mono)" }}>
-            <span className="pix-num">{playerInfo.score || 0}đ</span>
+            <span className="pix-num">{playerInfo.score || 0}</span>
           </div>
         </div>
         <div style={{ width: "2px", background: "#000", margin: "0 12px", height: "30px" }} />
 
-        {/* Nhân vật */}
+        {/* Niềm tin */}
         <div style={{ textAlign: "center", flex: 1 }}>
-          <div style={{ fontSize: "7px", color: "#8b8680", fontWeight: "800", letterSpacing: "1px" }}>CHỦ SHOP</div>
-          <div style={{ fontSize: "0.85rem", fontWeight: "800", color: selectedCharacter.color, marginTop: "2px" }}>
-            {selectedCharacter.label}
+          <div style={{ fontSize: "7px", color: "#8b8680", fontWeight: "800", letterSpacing: "1px" }}>NIỀM TIN</div>
+          <div style={{ fontSize: "0.85rem", fontWeight: "800", color: "var(--neon-gold)", marginTop: "2px" }}>
+            {Number.isFinite(gameState.publicTrust) ? gameState.publicTrust : 70}%
           </div>
         </div>
       </div>
 
-      {/* Thông báo phí sàn */}
-      {phaseConfig.platformFeeInterval > 0 && (
+      {/* Thông báo áp lực */}
+      {phaseConfig.pressureLabel && (
         <div style={{ width: "100%", background: "rgba(197,39,45,0.08)", border: "1px solid rgba(197,39,45,0.15)", borderRadius: "10px", padding: "8px 12px", marginBottom: "10px", fontSize: "0.75rem", color: "#ff6b35", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
-          <IconSkull className="w-4 h-4 text-red-500 animate-pulse" />
-          <span>Hệ quả Độc quyền (Phí sàn): <b>-{(phaseConfig.platformFeeAmount / 1000000).toFixed(0)} triệu</b> vốn mỗi <b>{phaseConfig.platformFeeInterval / 1000}s</b></span>
+          <IconWarning className="w-4 h-4 text-red-500 animate-pulse" />
+          <span>{phaseConfig.pressureLabel}: quyền lực đi kèm trách nhiệm, minh bạch và sức ép lựa chọn.</span>
         </div>
       )}
 
@@ -304,7 +468,7 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
         </div>
       )}
 
-      {/* Countdown Phase 2 - 60 giây */}
+      {/* Countdown phase có giới hạn */}
       {phaseCountdown !== null && gameState.status === "phase_2" && (
         <div style={{ width: "100%", background: phaseCountdown <= 10 ? "rgba(197,39,45,0.15)" : "rgba(0,137,123,0.08)", border: `2px solid ${phaseCountdown <= 10 ? "rgba(197,39,45,0.4)" : "rgba(0,137,123,0.2)"}`, borderRadius: "12px", padding: "10px 16px", marginBottom: "10px", textAlign: "center" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
@@ -312,15 +476,15 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
             <span style={{ fontSize: "1.2rem", fontWeight: "800", fontFamily: "var(--font-mono)", color: phaseCountdown <= 10 ? "#c5272d" : "#00897b" }}>
               {phaseCountdown > 0 ? `${phaseCountdown}s` : "HẾT GIỜ!"}
             </span>
-            <span style={{ fontSize: "0.75rem", color: "#8b8680" }}>Tìm Khách Ruột</span>
+            <span style={{ fontSize: "0.75rem", color: "#8b8680" }}>Liêm chính & Minh bạch</span>
           </div>
           <div style={{ width: "100%", height: "4px", background: "rgba(0,0,0,0.2)", borderRadius: "2px", marginTop: "6px", overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${Math.min(100, (phaseCountdown / 60) * 100)}%`, background: phaseCountdown <= 10 ? "#c5272d" : "#00897b", transition: "width 1s linear", borderRadius: "2px" }} />
+            <div style={{ height: "100%", width: `${Math.min(100, (phaseCountdown / Math.ceil((phaseConfig.durationMs || 90000) / 1000)) * 100)}%`, background: phaseCountdown <= 10 ? "#c5272d" : "#00897b", transition: "width 1s linear", borderRadius: "2px" }} />
           </div>
         </div>
       )}
 
-      {/* Hint Khách Ruột từ Host */}
+      {/* Manh mối từ Host */}
       {gameState.phase2Hint && gameState.status === "phase_2" && (
         <div style={{ width: "100%", background: "rgba(0,137,123,0.06)", border: "1px solid rgba(0,137,123,0.15)", borderRadius: "10px", padding: "8px 14px", marginBottom: "10px", fontSize: "0.82rem", color: "#00897b", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
           <IconBulb className="w-4 h-4 text-teal-500" />
@@ -330,7 +494,6 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
 
       {/* Game console */}
       <div className="game-console-wrapper" style={{ width: "100%", background: "var(--panel-bg)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "24px", padding: "16px", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05), 0 20px 45px rgba(0,0,0,0.6)" }}>
-
         {/* LED & Phase name */}
         <div style={{ display: "flex", justifyContent: "space-between", padding: "0 10px 10px", alignItems: "center" }}>
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
@@ -346,17 +509,214 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
         <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", overflow: "hidden", background: "#000", boxShadow: "0 10px 30px rgba(0,0,0,0.5)" }}>
           <iframe
             ref={iframeRef}
-            src={`/rpg/index.html?role=player&id=${playerId}&name=${encodeURIComponent(playerName)}&character=${encodeURIComponent(selectedCharacter.id)}&color=${encodeURIComponent(selectedCharacter.color)}`}
+            src={`/rpg/index.html?role=player&id=${playerId}&name=${encodeURIComponent(playerName)}&character=${encodeURIComponent(selectedCharacter.id)}&color=${encodeURIComponent(selectedCharacter.color)}&phase=${encodeURIComponent(gameState.status || "phase_1")}`}
+            onLoad={handleIframeLoad}
             style={{ width: "100%", height: "100%", border: "none", display: "block" }}
             title="Phaser RPG"
           />
 
-          {/* Overlay đóng băng */}
-          {isFrozen && (
-            <div style={{ position: "absolute", inset: 0, background: "rgba(21, 101, 192, 0.25)", backdropFilter: "blur(6px)", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", pointerEvents: "all" }}>
-              <IconWarning className="w-12 h-12 text-cyan-400 animate-pulse" />
-              <h3 style={{ color: "#fff", fontWeight: "bold", fontSize: "1.4rem", textShadow: "0 2px 8px rgba(0,0,0,0.6)", marginTop: "12px", letterSpacing: "1px" }}>BỊ PHẠT ĐÓNG BĂNG!</h3>
-              <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.95rem" }}>Thời gian còn lại: {freezeTime} giây</p>
+          {/* Modal Câu hỏi Tình huống Công vụ khi va chạm Bẫy/Rủi ro */}
+          {activeHazardQuiz && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "rgba(10, 15, 29, 0.94)",
+                backdropFilter: "blur(8px)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 30,
+                pointerEvents: "all",
+                padding: "16px",
+                overflowY: "auto",
+              }}
+            >
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: "580px",
+                  background: "#161b26",
+                  border: `3px solid ${activeHazardQuiz.isAnswered ? (activeHazardQuiz.isCorrect ? "#10b981" : "#ef4444") : (activeHazardQuiz.question.metadata?.borderColor || "#f59e0b")}`,
+                  borderRadius: "12px",
+                  padding: "18px 22px",
+                  boxShadow: "0 12px 35px rgba(0,0,0,0.8), 0 0 20px rgba(245, 158, 11, 0.2)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "14px",
+                  animation: "fadeIn 0.25s ease-out",
+                }}
+              >
+                {/* Header: Hazard Tag & Theme */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "10px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ fontSize: "1.6rem" }}>{activeHazardQuiz.question.metadata?.icon || "⚠️"}</span>
+                    <div>
+                      <div style={{ fontSize: "0.95rem", fontWeight: "800", color: activeHazardQuiz.question.metadata?.badgeColor || "#f59e0b", fontFamily: "var(--font-heading)", letterSpacing: "0.5px" }}>
+                        {activeHazardQuiz.question.metadata?.label || "RỦI RO CÔNG VỤ"}
+                      </div>
+                      <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
+                        Chủ đề: <span style={{ color: "#fef08a" }}>{activeHazardQuiz.question.metadata?.theme || "Chuẩn mực liêm chính"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: "right" }}>
+                    <span style={{ fontSize: "0.75rem", fontWeight: "700", padding: "3px 8px", borderRadius: "4px", background: "rgba(255,255,255,0.08)", color: "#38bdf8", border: "1px solid rgba(56, 189, 248, 0.3)" }}>
+                      {activeHazardQuiz.isAnswered ? (activeHazardQuiz.isCorrect ? "✅ ĐÚNG" : "❌ SAI") : "⚡ THỬ THÁCH"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Question Box */}
+                <div
+                  style={{
+                    background: "rgba(0, 0, 0, 0.4)",
+                    border: "1px solid rgba(255, 255, 255, 0.12)",
+                    borderRadius: "8px",
+                    padding: "12px 14px",
+                  }}
+                >
+                  <p style={{ color: "#ffffff", fontSize: "0.98rem", fontWeight: "600", lineHeight: "1.5", margin: 0 }}>
+                    {activeHazardQuiz.question.question}
+                  </p>
+                </div>
+
+                {/* Options List */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
+                  {activeHazardQuiz.question.options.map((opt, idx) => {
+                    const isSelected = activeHazardQuiz.selectedAnswer === idx;
+                    const isCorrectOpt = activeHazardQuiz.question.correctIndex === idx;
+                    const answered = activeHazardQuiz.isAnswered;
+
+                    let btnBg = "rgba(30, 41, 59, 0.85)";
+                    let btnBorder = "1px solid rgba(255, 255, 255, 0.15)";
+                    let badgeBg = "#334155";
+                    let badgeColor = "#f8fafc";
+
+                    if (answered) {
+                      if (isCorrectOpt) {
+                        btnBg = "linear-gradient(135deg, rgba(6, 78, 59, 0.95), rgba(4, 120, 87, 0.95))";
+                        btnBorder = "2px solid #34d399";
+                        badgeBg = "#059669";
+                        badgeColor = "#ffffff";
+                      } else if (isSelected && !activeHazardQuiz.isCorrect) {
+                        btnBg = "linear-gradient(135deg, rgba(127, 29, 29, 0.95), rgba(153, 27, 27, 0.95))";
+                        btnBorder = "2px solid #f87171";
+                        badgeBg = "#dc2626";
+                        badgeColor = "#ffffff";
+                      } else {
+                        btnBg = "rgba(15, 23, 42, 0.5)";
+                        btnBorder = "1px solid rgba(255, 255, 255, 0.05)";
+                      }
+                    }
+
+                    return (
+                      <button
+                        key={opt.key || idx}
+                        disabled={answered}
+                        onClick={() => handleSelectQuizAnswer(idx)}
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "10px",
+                          padding: "10px 12px",
+                          borderRadius: "8px",
+                          background: btnBg,
+                          border: btnBorder,
+                          color: "#f8fafc",
+                          fontSize: "0.9rem",
+                          fontWeight: "500",
+                          lineHeight: "1.4",
+                          textAlign: "left",
+                          cursor: answered ? "default" : "pointer",
+                          transition: "all 0.15s ease",
+                          outline: "none",
+                        }}
+                      >
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            minWidth: "24px",
+                            height: "24px",
+                            borderRadius: "4px",
+                            background: badgeBg,
+                            color: badgeColor,
+                            fontWeight: "800",
+                            fontSize: "0.78rem",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {answered && isCorrectOpt ? "✓" : (answered && isSelected && !activeHazardQuiz.isCorrect ? "✕" : (opt.key || idx + 1))}
+                        </span>
+                        <span style={{ flex: 1 }}>{opt.text}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Feedback & Continue Area */}
+                {activeHazardQuiz.isAnswered ? (
+                  <div
+                    style={{
+                      background: activeHazardQuiz.isCorrect ? "rgba(6, 78, 59, 0.35)" : "rgba(127, 29, 29, 0.35)",
+                      border: `1px solid ${activeHazardQuiz.isCorrect ? "rgba(52, 211, 153, 0.5)" : "rgba(248, 113, 113, 0.5)"}`,
+                      borderRadius: "8px",
+                      padding: "12px 14px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ color: activeHazardQuiz.isCorrect ? "#4ade80" : "#f87171", fontWeight: "800", fontSize: "0.95rem" }}>
+                        {activeHazardQuiz.isCorrect ? "🎉 CHÍNH XÁC!" : "❌ CHƯA CHÍNH XÁC!"}
+                      </span>
+                      <span style={{ fontWeight: "800", fontSize: "0.9rem", color: activeHazardQuiz.isCorrect ? "#86efac" : "#fca5a5" }}>
+                        {activeHazardQuiz.isCorrect
+                          ? `+${activeHazardQuiz.question.rewardScore || 40}đ | +${activeHazardQuiz.question.rewardIntegrity || 10} Liêm chính`
+                          : `${activeHazardQuiz.question.penaltyScore || -30}đ | ${activeHazardQuiz.question.penaltyIntegrity || -15} Liêm chính`}
+                      </span>
+                    </div>
+
+                    <p style={{ margin: 0, fontSize: "0.82rem", color: "#e2e8f0", lineHeight: "1.45" }}>
+                      💡 {activeHazardQuiz.question.explanation}
+                    </p>
+
+                    <button
+                      onClick={handleCloseQuiz}
+                      style={{
+                        marginTop: "6px",
+                        padding: "11px 20px",
+                        borderRadius: "8px",
+                        background: activeHazardQuiz.isCorrect
+                          ? "linear-gradient(135deg, #10b981, #059669)"
+                          : "linear-gradient(135deg, #3b82f6, #2563eb)",
+                        border: "2px solid rgba(255,255,255,0.4)",
+                        color: "#ffffff",
+                        fontWeight: "800",
+                        fontSize: "0.95rem",
+                        cursor: "pointer",
+                        boxShadow: "0 4px 15px rgba(0,0,0,0.4)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <span>⚡ TIẾP TỤC NHIỆM VỤ</span>
+                      <span style={{ fontSize: "0.75rem", opacity: 0.85 }}>[SPACE / ENTER]</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ textAlign: "center", fontSize: "0.78rem", color: "#94a3b8" }}>
+                    Nhấn số [1, 2, 3] hoặc bấm trực tiếp vào đáp án để chọn
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -380,23 +740,73 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, dbConnected, gameState 
       <div style={{ color: "#8b8680", fontSize: "0.75rem", marginTop: "10px", textAlign: "center", display: "flex", alignItems: "center", gap: "8px", justifyContent: "center" }}>
         <span>Điều khiển: WASD / Mũi tên</span>
         <span>•</span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}><IconBook className="w-3.5 h-3.5 text-amber-500" /> Nhặt cơ hội</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}><IconBook className="w-3.5 h-3.5 text-amber-500" /> Đến các bàn làm việc / trạm để xử lý</span>
         <span>•</span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}><IconBolt className="w-3.5 h-3.5 text-red-500" /> Né rủi ro nền tảng</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}><IconBolt className="w-3.5 h-3.5 text-red-500" /> Bấm ⚡ / [E] để đóng dấu & nộp</span>
       </div>
 
-      {/* D-pad */}
-      <div className="dpad-container" style={{ userSelect: "none" }}>
-        <button className="dpad-btn" onMouseDown={() => handleDpadPress("up")} onMouseUp={handleDpadRelease} onTouchStart={() => handleDpadPress("up")} onTouchEnd={handleDpadRelease}>▲</button>
-        <div style={{ display: "flex", gap: "25px" }}>
-          <button className="dpad-btn" onMouseDown={() => handleDpadPress("left")} onMouseUp={handleDpadRelease} onTouchStart={() => handleDpadPress("left")} onTouchEnd={handleDpadRelease}>◀</button>
-          <button className="dpad-btn" onMouseDown={() => handleDpadPress("right")} onMouseUp={handleDpadRelease} onTouchStart={() => handleDpadPress("right")} onTouchEnd={handleDpadRelease}>▶</button>
+      {/* D-pad & Action Button Container */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "28px",
+          marginTop: "12px",
+          width: "100%",
+          maxWidth: "440px",
+          opacity: isFrozen ? 0.35 : 1,
+          filter: isFrozen ? "grayscale(0.85)" : "none",
+          pointerEvents: isFrozen ? "none" : "auto",
+          transition: "opacity 0.2s, filter 0.2s",
+        }}
+      >
+        {/* D-pad */}
+        <div className="dpad-container" style={{ userSelect: "none", margin: 0 }}>
+          <button className="dpad-btn" disabled={isFrozen} onMouseDown={(e) => handleDpadPress("up", e)} onMouseUp={(e) => handleDpadRelease(e)} onTouchStart={(e) => handleDpadPress("up", e)} onTouchEnd={(e) => handleDpadRelease(e)}>▲</button>
+          <div style={{ display: "flex", gap: "25px" }}>
+            <button className="dpad-btn" disabled={isFrozen} onMouseDown={(e) => handleDpadPress("left", e)} onMouseUp={(e) => handleDpadRelease(e)} onTouchStart={(e) => handleDpadPress("left", e)} onTouchEnd={(e) => handleDpadRelease(e)}>◀</button>
+            <button className="dpad-btn" disabled={isFrozen} onMouseDown={(e) => handleDpadPress("right", e)} onMouseUp={(e) => handleDpadRelease(e)} onTouchStart={(e) => handleDpadPress("right", e)} onTouchEnd={(e) => handleDpadRelease(e)}>▶</button>
+          </div>
+          <button className="dpad-btn" disabled={isFrozen} onMouseDown={(e) => handleDpadPress("down", e)} onMouseUp={(e) => handleDpadRelease(e)} onTouchStart={(e) => handleDpadPress("down", e)} onTouchEnd={(e) => handleDpadRelease(e)}>▼</button>
         </div>
-        <button className="dpad-btn" onMouseDown={() => handleDpadPress("down")} onMouseUp={handleDpadRelease} onTouchStart={() => handleDpadPress("down")} onTouchEnd={handleDpadRelease}>▼</button>
+
+        {/* Action Button: Xử lý / Đóng dấu */}
+        <button
+          className="action-stamp-btn"
+          disabled={isFrozen}
+          onClick={(e) => handleActionPress(e)}
+          onTouchStart={(e) => handleActionPress(e)}
+          style={{
+            width: "84px",
+            height: "84px",
+            borderRadius: "50%",
+            background: isFrozen
+              ? "radial-gradient(circle at 30% 30%, #64748b, #334155)"
+              : "radial-gradient(circle at 30% 30%, #ef4444, #991b1b)",
+            border: isFrozen ? "4px solid #64748b" : "4px solid #facc15",
+            boxShadow: isFrozen ? "none" : "0 6px 18px rgba(239, 68, 68, 0.45), 0 0 0 2px #000",
+            color: "#ffffff",
+            fontFamily: "var(--font-heading)",
+            fontSize: "0.78rem",
+            fontWeight: "800",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: isFrozen ? "not-allowed" : "pointer",
+            touchAction: "manipulation",
+            userSelect: "none",
+            gap: "2px",
+          }}
+        >
+          <span style={{ fontSize: "1.3rem" }}>⚡</span>
+          <span>XỬ LÝ</span>
+          <span style={{ fontSize: "8px", color: "#fef08a" }}>[E / SPACE]</span>
+        </button>
       </div>
     </div>
   );
 };
 
 export default RpgGamePlay;
-

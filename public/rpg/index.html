@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sứ Mệnh Liêm Chính - 8-Bit Pixel RPG</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=VT323&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./game.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="game-heading">
+        <h1 class="pixel-title"><span class="icon">🏛️</span> SỨ MỆNH LIÊM CHÍNH</h1>
+        <p id="game-status" role="status" aria-live="polite">Đang khởi tạo không gian công sở...</p>
+      </header>
+      <div class="canvas-wrapper">
+        <canvas id="game-canvas" width="960" height="540" aria-label="Bản đồ công sở hành chính công"></canvas>
+      </div>
+      <footer class="game-footer">
+        <p class="controls">🎮 Di chuyển: Phím Mũi Tên / WASD hoặc D-Pad trên điện thoại</p>
+      </footer>
+    </main>
+    <script type="module" src="./game.js"></script>
+  </body>
+</html>
