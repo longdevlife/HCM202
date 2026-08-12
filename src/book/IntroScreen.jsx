@@ -58,7 +58,7 @@ export const IntroScreen = ({ onEnter }) => {
           className="tracking-[0.15em] uppercase text-xs mb-3 opacity-0 animate-[fadeIn_1s_ease_1.1s_forwards]"
           style={{ fontFamily: "'Inter', sans-serif", color: '#8B7355' }}
         >
-          Tư tưởng Hồ Chí Minh về Nhà nước pháp quyền
+          Mục 3 · Nhà nước trong sạch, vững mạnh
         </p>
 
         {/* Tagline */}
@@ -66,7 +66,7 @@ export const IntroScreen = ({ onEnter }) => {
           className="text-sm md:text-base max-w-md mx-auto leading-relaxed mb-10 opacity-0 animate-[fadeIn_1s_ease_1.3s_forwards]"
           style={{ fontFamily: "'EB Garamond', serif", color: '#5C5044', fontStyle: 'italic' }}
         >
-          Hợp hiến, hợp pháp — Thượng tôn pháp luật — Pháp quyền nhân nghĩa
+          Kiểm soát quyền lực nhà nước — Phòng, chống tiêu cực — Vì nhân dân phục vụ
         </p>
 
         {/* CTA Button */}
