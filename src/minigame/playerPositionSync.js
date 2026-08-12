@@ -4,6 +4,37 @@ const isObject = (value) => value !== null && typeof value === "object" && !Arra
 const finiteCoordinate = (value) => typeof value === "number" && Number.isFinite(value);
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
+const errorText = (error) => [error?.code, error?.message, error]
+  .filter((value) => value !== undefined && value !== null)
+  .join(" ")
+  .toUpperCase();
+
+export function isPermissionDenied(error) {
+  const text = errorText(error);
+  return text.includes("PERMISSION_DENIED") || text.includes("PERMISSION-DENIED");
+}
+
+export function createPositionWriter({ writeModern, writeLegacy }) {
+  let useLegacyStorage = false;
+
+  return async (move) => {
+    if (useLegacyStorage) {
+      await writeLegacy(move);
+      return "legacy";
+    }
+
+    try {
+      await writeModern(move);
+      return "positions";
+    } catch (error) {
+      if (!isPermissionDenied(error)) throw error;
+      useLegacyStorage = true;
+      await writeLegacy(move);
+      return "legacy";
+    }
+  };
+}
+
 export function normalizePosition(value) {
   if (!isObject(value) || !finiteCoordinate(value.x) || !finiteCoordinate(value.y)) return null;
   return {

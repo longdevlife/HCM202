@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { get, onValue, ref, runTransaction, update } from "firebase/database";
 import { db } from "./firebaseConfig";
 import { PHASE_CONFIGS } from "./situations";
 import { applyEntityRewardClaim, applyFinalGateCompletion, applyPlayerDelta } from "./gameStateUtils";
 import { getCharacterOption } from "./characterOptions";
 import { buildRpgSnapshot, isRpgMessage, normalizePlayerMove, resolveCanonicalHazard } from "./rpgBridge";
-import { subscribeToPlayerPositions } from "./playerPositionSync";
+import { createPositionWriter, subscribeToPlayerPositions } from "./playerPositionSync";
 import { getHazardQuestion } from "./hazardQuestions";
 import {
   IconPhone,
@@ -45,6 +45,18 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
   const positionsRef = useRef({});
   const selectedCharacter = getCharacterOption(playerInfo.character);
   const [world, setWorld] = useState(EMPTY_WORLD);
+
+  const positionWriter = useMemo(() => createPositionWriter({
+    writeModern: (move) => update(ref(db, `positions/${playerId}`), {
+      x: move.x,
+      y: move.y,
+      direction: move.direction,
+    }),
+    writeLegacy: (move) => update(ref(db, `players/${playerId}`), {
+      position: { x: move.x, y: move.y },
+      direction: move.direction,
+    }),
+  }), [playerId]);
 
   // Trạng thái dừng khi trả lời câu hỏi tình huống
   const [isFrozen, setIsFrozen] = useState(false);
@@ -315,11 +327,11 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
         const now = Date.now();
         if (!move || !["up", "down", "left", "right"].includes(move.direction) || now - lastPlayerMoveAtRef.current < POSITION_UPDATE_INTERVAL_MS) return;
         lastPlayerMoveAtRef.current = now;
-        await update(ref(db, `positions/${playerId}`), {
-          x: move.x,
-          y: move.y,
-          direction: move.direction,
-        });
+        try {
+          await positionWriter(move);
+        } catch (error) {
+          console.error("Không thể đồng bộ vị trí người chơi:", error);
+        }
         return;
       }
 
@@ -392,6 +404,7 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
   }, [
     gameState.status,
     playerId,
+    positionWriter,
     postRpgSnapshot,
     selectedCharacter.id,
     selectedCharacter.color,
