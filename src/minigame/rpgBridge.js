@@ -118,6 +118,29 @@ const mapCollection = (collection, kind) => {
   }));
 };
 
+export function mergePlayerPositions(players = {}, positions = {}) {
+  if (!isObject(players)) return {};
+  const positionMap = isObject(positions) ? positions : {};
+
+  return Object.fromEntries(Object.entries(players).map(([id, player]) => {
+    if (!isObject(player)) return [id, player];
+    const position = positionMap[id];
+    if (!isObject(position) || !finiteCoordinate(position.x) || !finiteCoordinate(position.y)) {
+      return [id, player];
+    }
+
+    return [id, {
+      ...player,
+      position: {
+        x: position.x,
+        y: position.y,
+        ...(typeof position.direction === "string" ? { direction: position.direction } : {}),
+      },
+      ...(typeof position.direction === "string" ? { direction: position.direction } : {}),
+    }];
+  }));
+}
+
 /** Create the deterministic collections consumed by Firebase and the canvas iframe. */
 export function createPhaseWorld(phaseKey, config = {}, seed = 0) {
   const phase = typeof phaseKey === "string" && phaseKey ? phaseKey : "phase_1";
@@ -233,13 +256,13 @@ export function createMarketEventEntities(eventType, phaseKey, config = {}, seed
 }
 
 /** Convert Firebase's collection names into the groups expected by the canvas game. */
-export function buildRpgSnapshot(gameState = {}, collections = {}) {
+export function buildRpgSnapshot(gameState = {}, collections = {}, positions = {}) {
   const state = isObject(gameState) ? gameState : {};
   const source = isObject(collections) ? collections : {};
   return {
     type: "GAME_SNAPSHOT",
     phase: typeof state.status === "string" ? state.status : "waiting",
-    players: mapCollection(source.players, "player"),
+    players: mapCollection(mergePlayerPositions(source.players, positions), "player"),
     items: mapCollection(source.books, "item"),
     hazards: mapCollection(source.traps, "hazard"),
     npcs: mapCollection(source.npcs, "npc"),

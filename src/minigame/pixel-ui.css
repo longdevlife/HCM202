@@ -184,7 +184,6 @@
 /* 5. NÚT BẤM PIXEL 8-BIT LÚN CƠ HỌC (Tối ưu gọn) */
 .btn-cyber,
 .btn-cyber-blue,
-.btn-market-flat,
 .option-button {
   font-family: "VT323", monospace !important;
   font-size: 1.35rem !important; /* Thu nhỏ size chữ nút bấm */
@@ -202,12 +201,36 @@
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+  white-space: nowrap !important;
+  z-index: 3 !important;
+}
+
+/* Nút sự kiện MC (spam/kích hoạt item) - luôn trên 1 dòng, không xuống hàng */
+.btn-market-flat {
+  font-family: "VT323", monospace !important;
+  font-size: 1.15rem !important;
+  font-weight: bold !important;
+  color: #fff !important;
+  border: 2px solid #000 !important;
+  border-radius: 0px !important;
+  background: #0095ff !important;
+  box-shadow: 3px 3px 0 0 #000 !important;
+  transition: none !important;
+  cursor: pointer !important;
+  padding: 8px 12px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
   z-index: 3 !important;
 }
 
 /* Đổi màu theo loại nút */
-.btn-cyber-blue,
-.btn-market-flat {
+.btn-cyber-blue {
   background: #0095ff !important;
 }
 

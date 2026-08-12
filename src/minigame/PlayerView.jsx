@@ -283,7 +283,7 @@ const PlayerView = ({ playerId, playerName, setPlayerName, gameState, dbConnecte
       );
     }
 
-    return <RpgGamePlay playerId={playerId} playerName={playerName} playerInfo={playerInfo} dbConnected={dbConnected} gameState={gameState} />;
+    return <RpgGamePlay playerId={playerId} playerName={playerName} playerInfo={playerInfo} players={players} dbConnected={dbConnected} gameState={gameState} />;
   }
 
   if (isSituation) {
