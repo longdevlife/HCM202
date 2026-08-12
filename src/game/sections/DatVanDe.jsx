@@ -9,12 +9,7 @@ export default function DatVanDe() {
     { n: '02', t: 'Vị thế "Công bộc" cán bộ', s: 'Cán bộ từ Chủ tịch nước đến người quét rác đều là "đầy tớ" của nhân dân chứ không phải "quan cách mạng", phải "lo trước thiên hạ, vui sau thiên hạ".' },
     { n: '03', t: 'Năng lực làm chủ', s: 'Hồ Chí Minh nhấn mạnh "Muốn làm chủ tốt phải có năng lực làm chủ" – Nhà nước có trách nhiệm giáo dục và nâng cao dân trí, chuẩn bị điều kiện cho dân.' }
   ];
-  const solutions = [
-    { n: 'I', t: 'Giai Cấp', s: 'Đảng lãnh đạo, định hướng XHCN.' },
-    { n: 'II', t: 'Của Dân', s: 'Dân là chủ, quyền lực tối cao.' },
-    { n: 'III', t: 'Do Dân', s: 'Dân tự tổ chức và gánh vác.' },
-    { n: 'IV', t: 'Vì Dân', s: 'Phục vụ lợi ích nhân dân.' },
-  ];
+
 
   const f1 = "'Playfair Display', serif";
   const f2 = "'Inter', sans-serif";
@@ -69,23 +64,7 @@ export default function DatVanDe() {
         </div>
       </div>
 
-      {/* Bottom Summary */}
-      <div className="w-full max-w-7xl mx-auto">
-        <div className="gsap-scale-in bg-white/50 rounded-[20px] border border-[#3D3529]/5 p-10 md:p-16">
-          <h3 className="gsap-reveal text-center text-sm font-semibold tracking-[0.2em] uppercase text-[#7A6040]/50 mb-16" style={{ fontFamily: f2 }}>Giá Trị Cốt Lõi</h3>
-          <div className="gsap-stagger-parent grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
-            {solutions.map((item) => (
-              <div key={item.t} className="gsap-stagger-child flex flex-col items-center text-center group">
-                <div className="w-16 h-16 rounded-full bg-[#EDE8E1] flex items-center justify-center mb-6 border border-[#3D3529]/10 transition-all duration-500 group-hover:bg-[#C5A028] group-hover:border-[#C5A028]">
-                  <span className="text-[#C5A028] text-lg font-bold group-hover:text-white transition-colors duration-500" style={{ fontFamily: f1 }}>{item.n}</span>
-                </div>
-                <h4 className="text-lg font-bold text-[#3D3529] mb-3" style={{ fontFamily: f1 }}>{item.t}</h4>
-                <p className="text-[#7A6040] text-sm font-light leading-relaxed" style={{ fontFamily: f2 }}>{item.s}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Removed Bottom Summary to avoid redundancy */}
     </section>
   );
 }

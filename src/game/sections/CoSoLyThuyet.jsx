@@ -3,10 +3,10 @@ export default function CoSoLyThuyet() {
   const f2 = "'Inter', sans-serif";
 
   const characteristics = [
-    { t: "Dịch vụ công trực tuyến", i: "100%" },
-    { t: "Tài khoản VNeID", i: ">70 Triệu" },
-    { t: "Xử lý phản ánh minh bạch", i: "100%" },
-    { t: "Xác minh dư luận MXH", i: "24H" },
+    { t: "Dịch vụ công trực tuyến", i: "100%", src: "Cổng DVC Quốc gia" },
+    { t: "Tài khoản VNeID", i: ">70 Triệu", src: "Bộ Công an (Đề án 06)" },
+    { t: "Xử lý phản ánh minh bạch", i: "100%", src: "Hệ thống 1022 / Huế-S" },
+    { t: "Xác minh dư luận MXH", i: "24H", src: "Bộ TT&TT" },
   ];
 
   return (
@@ -216,16 +216,22 @@ export default function CoSoLyThuyet() {
               className="gsap-stagger-child card-tilt flex flex-col items-center justify-center p-6 bg-white/50 rounded-[16px] border border-[#3D3529]/5 hover:bg-white hover:shadow-sm transition-all duration-300 group"
             >
               <span
-                className="text-lg font-light text-[#C5A028] mb-2"
+                className="text-3xl font-light text-[#C5A028] mb-2"
                 style={{ fontFamily: f1 }}
               >
                 {item.i}
               </span>
               <span
-                className="text-[#3D3529] text-sm font-medium text-center"
+                className="text-[#3D3529] text-sm font-medium text-center mb-1"
                 style={{ fontFamily: f2 }}
               >
                 {item.t}
+              </span>
+              <span
+                className="text-[#7A6040]/50 text-[10px] font-semibold uppercase tracking-wider text-center mt-2"
+                style={{ fontFamily: f2 }}
+              >
+                Nguồn: {item.src}
               </span>
             </div>
           ))}
