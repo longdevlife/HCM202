@@ -6,46 +6,37 @@ export const pageAtom = atom(0);
 export const viewModeAtom = atom("showcase"); // "showcase" | "reading"
 
 export const pages = [
-  { front: "bìa đầu", back: "trang 1" },
-  { front: "trang 2", back: "trang 3" },
-  { front: "trang 4", back: "trang 5" },
-  { front: "trang 6", back: "trang 7" },
-  { front: "trang 8", back: "trang 9" },
-  { front: "trang 10", back: "trang 11" },
-  { front: "trang 12", back: "trang 13" },
-  { front: "trang 14", back: "trang 15" },
-  { front: "trang 16", back: "trang 17" },
-  { front: "trang 18", back: "trang 19" },
-  { front: "trang 20", back: "bìa cuối" },
+  {
+    front: "/textures/bìa đầu.png",
+    back: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_07 PM (1).png",
+  },
+  {
+    front: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_07 PM (2).png",
+    back: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_09 PM (3).png",
+  },
+  {
+    front: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_10 PM (4).png",
+    back: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_10 PM (5).png",
+  },
+  {
+    front: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_11 PM (6).png",
+    back: "/textures/bìa cuối.png",
+  },
 ];
 
 const pageLabels = [
   "Bìa",
-  "Trang 2",
-  "Trang 4",
-  "Trang 6",
-  "Trang 8",
-  "Trang 10",
-  "Trang 12",
-  "Trang 14",
-  "Trang 16",
-  "Trang 18",
-  "Trang 20",
+  "Trang 1–2",
+  "Trang 3–4",
+  "Trang 5–6",
   "Bìa sau",
 ];
 
 const pageTitles = [
   null,
-  "Trang 2",
-  "Trang 4",
-  "Trang 6",
-  "Trang 8",
-  "Trang 10",
-  "Trang 12",
-  "Trang 14",
-  "Trang 16",
-  "Trang 18",
-  "Trang 20",
+  "Trang 1–2",
+  "Trang 3–4",
+  "Trang 5–6",
   null,
 ];
 

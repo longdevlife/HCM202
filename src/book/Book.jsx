@@ -85,7 +85,8 @@ const pageMaterials = [
   }),
 ];
 
-const getPageTexturePath = (name) => `/textures/${name}.png`;
+const getPageTexturePath = (name) =>
+  name.startsWith("/") ? name : `/textures/${name}.png`;
 
 const Page = ({ number, front, back, page, opened, bookClosed, ...props }) => {
   const [picture, picture2] = useTexture([
