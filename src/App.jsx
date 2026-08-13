@@ -3,7 +3,6 @@ import Navbar from "./game/sections/Navbar";
 
 const BookPage = lazy(() => import("./book/BookPage").then((module) => ({ default: module.BookPage })));
 const TheoryPage = lazy(() => import("./game/TheoryPage").then((module) => ({ default: module.TheoryPage })));
-const AIUsagePage = lazy(() => import("./ai-usage/AIUsagePage").then((module) => ({ default: module.AIUsagePage })));
 const MuseumPage = lazy(() => import("./museum/MuseumPage").then((module) => ({ default: module.MuseumPage })));
 const MinigamePage = lazy(() => import("./minigame/MinigamePage").then((module) => ({ default: module.MinigamePage })));
 
@@ -12,7 +11,6 @@ const TABS = [
   { id: "book", label: "Tạp chí" },
   { id: "museum", label: "Bảo tàng" },
   { id: "minigame", label: "Mini Game" },
-  { id: "ai", label: "AI Usage" },
 ];
 
 function getActiveTab() {
@@ -69,7 +67,6 @@ function App() {
           {activeTab === "book" && <BookPage skipIntro={hasVisitedBook} onIntroFinish={() => setHasVisitedBook(true)} />}
           {activeTab === "museum" && <MuseumPage />}
           {activeTab === "minigame" && <MinigamePage />}
-          {activeTab === "ai" && <AIUsagePage />}
         </Suspense>
       </div>
     </div>

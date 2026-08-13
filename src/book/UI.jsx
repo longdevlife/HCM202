@@ -7,20 +7,20 @@ export const viewModeAtom = atom("showcase"); // "showcase" | "reading"
 
 export const pages = [
   {
-    front: "/textures/bìa đầu.png",
+    front: "/magazines/first_page.png",
     back: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_07 PM (1).png",
   },
   {
     front: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_07 PM (2).png",
-    back: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_09 PM (3).png",
+    back: "/magazines/page3.png",
   },
   {
-    front: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_10 PM (4).png",
+    front: "/magazines/page4.png",
     back: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_10 PM (5).png",
   },
   {
     front: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_11 PM (6).png",
-    back: "/textures/bìa cuối.png",
+    back: "/magazines/last_page.png",
   },
 ];
 
@@ -111,7 +111,7 @@ export const UI = () => {
           className="absolute right-6 top-1/2 -translate-y-1/2 rotate-90 origin-center text-[12px] tracking-[0.3em] font-light opacity-50 whitespace-nowrap uppercase"
           style={{ fontFamily: "'Inter', sans-serif", color: '#E5D5B5' }}
         >
-          Nhà Nước Pháp Quyền
+          Nhà Nước Trong Sạch, Vững Mạnh
         </div>
 
         {/* Top Left: Issue Stamp */}
@@ -127,8 +127,8 @@ export const UI = () => {
           <span className="text-[11px] tracking-[0.3em] uppercase text-[#E5D5B5] opacity-50 mb-2" style={{ fontFamily: "'Inter', sans-serif" }}>
             Tiêu Điểm
           </span>
-          <span className="text-[22px] max-w-[300px]" style={{ fontFamily: 'Playfair Display, serif', color: '#C5A028', fontStyle: 'italic', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
-            Tư tưởng Hồ Chí Minh
+          <span className="text-[22px] max-w-[300px]" style={{ fontFamily: 'Playfair Display, serif', color: '#C5A028', fontStyle: 'italic', lineHeight: 1.2, fontSize: 'clamp(16px, 4.6vw, 22px)', width: 'min(300px, calc(100vw - 6rem))', whiteSpace: 'normal', overflowWrap: 'break-word' }}>
+            Mục 3 · Nhà nước trong sạch, vững mạnh
           </span>
         </div>
 
