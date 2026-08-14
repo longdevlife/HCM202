@@ -2359,7 +2359,13 @@ function drawItemEntity(ctx, entity, time) {
   const x = entity.x;
   const floatY = entity.y + Math.sin(time * 3.5 + (entity.x % 10)) * 5;
   const type = entity.type || "case_file";
-  const label = entity.label || entity.name || (type === "case_file" ? "Hồ sơ" : "Liêm chính");
+  const label = entity.label || entity.name || (
+    type === "case_file" ? "Hồ sơ" : 
+    type === "transparency" ? "Minh bạch" : 
+    type === "accountability" ? "Trách nhiệm" :
+    type === "positive_feedback" || type === "review" ? "Phản hồi" :
+    type === "serve_people" ? "Phục vụ ND" : "Liêm chính"
+  );
 
   ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
   ctx.beginPath(); ctx.ellipse(x, entity.y + 14, 15, 5, 0, 0, Math.PI * 2); ctx.fill();
@@ -2834,10 +2840,23 @@ function drawMiniMapRadar() {
 function drawScene() {
   const time = state.gameTime;
 
-  const targetCamX = state.player.x - VIEW_WIDTH / 2;
-  const targetCamY = state.player.y - VIEW_HEIGHT / 2;
-  camera.x += (Math.max(0, Math.min(MAP_WIDTH - VIEW_WIDTH, targetCamX)) - camera.x) * 0.12;
-  camera.y += (Math.max(0, Math.min(MAP_HEIGHT - VIEW_HEIGHT, targetCamY)) - camera.y) * 0.12;
+  if (options.role === "host") {
+    const camSpeed = 12;
+    let dx = 0; let dy = 0;
+    if (input.up) dy -= 1;
+    if (input.down) dy += 1;
+    if (input.left) dx -= 1;
+    if (input.right) dx += 1;
+    camera.x += dx * camSpeed;
+    camera.y += dy * camSpeed;
+    camera.x = Math.max(0, Math.min(MAP_WIDTH - VIEW_WIDTH, camera.x));
+    camera.y = Math.max(0, Math.min(MAP_HEIGHT - VIEW_HEIGHT, camera.y));
+  } else {
+    const targetCamX = state.player.x - VIEW_WIDTH / 2;
+    const targetCamY = state.player.y - VIEW_HEIGHT / 2;
+    camera.x += (Math.max(0, Math.min(MAP_WIDTH - VIEW_WIDTH, targetCamX)) - camera.x) * 0.12;
+    camera.y += (Math.max(0, Math.min(MAP_HEIGHT - VIEW_HEIGHT, targetCamY)) - camera.y) * 0.12;
+  }
 
   context.save();
 
@@ -3111,8 +3130,36 @@ window.addEventListener("keyup", (event) => {
 });
 
 // Canvas Direct Click/Tap Interaction Handler
+let hostDragging = false;
+let hostLastX = 0;
+let hostLastY = 0;
+
+window.addEventListener("pointermove", (e) => {
+  if (options.role === "host" && hostDragging) {
+    const dx = e.clientX - hostLastX;
+    const dy = e.clientY - hostLastY;
+    hostLastX = e.clientX;
+    hostLastY = e.clientY;
+    const rect = canvas.getBoundingClientRect();
+    camera.x -= dx * (VIEW_WIDTH / rect.width);
+    camera.y -= dy * (VIEW_HEIGHT / rect.height);
+    camera.x = Math.max(0, Math.min(MAP_WIDTH - VIEW_WIDTH, camera.x));
+    camera.y = Math.max(0, Math.min(MAP_HEIGHT - VIEW_HEIGHT, camera.y));
+  }
+});
+
+window.addEventListener("pointerup", () => { hostDragging = false; });
+
 canvas.addEventListener("pointerdown", (event) => {
   getAudioContext();
+
+  if (options.role === "host") {
+    hostDragging = true;
+    hostLastX = event.clientX;
+    hostLastY = event.clientY;
+    return;
+  }
+
   if (state.frozen || state.freezeTimer > 0) return;
 
   const rect = canvas.getBoundingClientRect();

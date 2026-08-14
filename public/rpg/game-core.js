@@ -2,7 +2,8 @@ const DEFAULT_COLOR = "#00aaff";
 const DEFAULT_PLAYER_ID = "player";
 const DEFAULT_PLAYER_NAME = "Player";
 const PLAYER_RADIUS = 12;
-const MOVE_SPEED = 120;
+const MOVE_SPEED = 160;
+const SPRINT_MULTIPLIER = 1.6;
 
 const finiteCoordinate = (value) => typeof value === "number" && Number.isFinite(value);
 

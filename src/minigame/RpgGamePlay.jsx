@@ -66,6 +66,10 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
   const [floatingTexts, setFloatingTexts] = useState([]);
   const [nowMs, setNowMs] = useState(Date.now());
 
+  // Tutorial
+  const [showTutorial, setShowTutorial] = useState(gameState.status === "phase_1");
+
+
   // Lấy config phase hiện tại
   const phaseConfig = PHASE_CONFIGS[gameState.status] || PHASE_CONFIGS.phase_1;
   const activeMission = gameState.mission || phaseConfig.mission;
@@ -917,6 +921,49 @@ const RpgGamePlay = ({ playerId, playerName, playerInfo, players, dbConnected, g
         </div>
       </div>
       
+      {/* Tutorial Modal */}
+      {showTutorial && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(15, 23, 42, 0.85)", zIndex: 9999,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          backdropFilter: "blur(4px)"
+        }}>
+          <div style={{
+            background: "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)",
+            border: "2px solid #38bdf8",
+            borderRadius: "16px", padding: "30px", maxWidth: "500px", width: "90%",
+            boxShadow: "0 10px 40px rgba(0,0,0,0.8), 0 0 0 1px rgba(56,189,248,0.3) inset",
+            color: "#f8fafc", textAlign: "center"
+          }}>
+            <h2 style={{ color: "#38bdf8", fontSize: "1.8rem", marginBottom: "15px", fontFamily: "var(--font-heading)" }}>
+              HƯỚNG DẪN CHƠI
+            </h2>
+            <div style={{ textAlign: "left", fontSize: "1rem", lineHeight: "1.6", marginBottom: "25px", color: "#cbd5e1" }}>
+              <p style={{ marginBottom: "10px" }}><strong>1. Di chuyển:</strong> Sử dụng các phím <span style={{color: "#facc15"}}>W, A, S, D</span> hoặc các nút điều hướng trên màn hình để di chuyển nhân vật.</p>
+              <p style={{ marginBottom: "10px" }}><strong>2. Thu thập:</strong> Tiến lại gần các hồ sơ, bằng chứng hoặc vật phẩm (như Minh bạch, Liêm chính) để thu thập chúng.</p>
+              <p style={{ marginBottom: "10px" }}><strong>3. Xử lý công việc:</strong> Đi đến các bục xử lý và nhấn phím <span style={{color: "#facc15"}}>[E] / [SPACE]</span> hoặc nút <span style={{color: "#ef4444", fontWeight: "bold"}}>⚡ XỬ LÝ</span> để hoàn thành nhiệm vụ.</p>
+              <p style={{ marginBottom: "10px" }}><strong>4. Cẩn thận rủi ro:</strong> Né tránh các cám dỗ, quan liêu, hối lộ để bảo vệ điểm uy tín của bạn!</p>
+              <p style={{ marginTop: "15px", fontStyle: "italic", textAlign: "center", color: "#94a3b8" }}>Hoàn thành nhiệm vụ ở góc trái phía trên màn hình để qua màn.</p>
+            </div>
+            <button 
+              onClick={() => setShowTutorial(false)}
+              style={{
+                background: "linear-gradient(90deg, #0ea5e9, #2563eb)",
+                border: "none", borderRadius: "8px", padding: "12px 30px",
+                color: "white", fontSize: "1.1rem", fontWeight: "bold",
+                cursor: "pointer", boxShadow: "0 4px 15px rgba(14, 165, 233, 0.4)",
+                transition: "transform 0.1s"
+              }}
+              onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+              onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+            >
+              ĐÃ HIỂU, BẮT ĐẦU!
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
