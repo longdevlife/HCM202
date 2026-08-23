@@ -4,34 +4,28 @@ export default function Hero() {
       id="hero"
       className="relative min-h-[100dvh] w-full bg-[#EDE8E1] flex items-center overflow-hidden"
     >
-      {/* Subtle warm ambient */}
+      {/* Subtle warm ambient background */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-[#C5A028]/5 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[10%] w-[40vw] h-[40vw] rounded-full bg-[#7A6040]/5 blur-[100px]" />
+        <div className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-[#C5A028]/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[10%] w-[40vw] h-[40vw] rounded-full bg-[#8B261D]/10 blur-[100px]" />
       </div>
 
-      {/* Background Portrait with parallax & soft blend */}
+      {/* Background illustration with parallax & soft blend */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none flex justify-end">
-        {/* Gradients to melt the image smoothly into the #EDE8E1 background */}
-        {/* Left-to-right fade for desktop */}
         <div
           className="absolute inset-0 z-10 hidden md:block"
           style={{
             background:
-              "linear-gradient(to right, #EDE8E1 0%, #EDE8E1 40%, rgba(237,232,225,0.5) 60%, transparent 100%)",
+              "linear-gradient(to right, #EDE8E1 0%, #EDE8E1 40%, rgba(237,232,225,0.6) 65%, transparent 100%)",
           }}
         />
-
-        {/* Top-to-bottom fade for mobile (if portrait moves to top/background) */}
         <div
           className="absolute inset-0 z-10 md:hidden"
           style={{
             background:
-              "linear-gradient(to top, #EDE8E1 0%, rgba(237,232,225,0.9) 40%, rgba(237,232,225,0.4) 100%)",
+              "linear-gradient(to top, #EDE8E1 0%, rgba(237,232,225,0.95) 45%, rgba(237,232,225,0.5) 100%)",
           }}
         />
-
-        {/* Bottom fade for grounding */}
         <div
           className="absolute inset-0 z-10"
           style={{
@@ -42,88 +36,83 @@ export default function Hero() {
 
         <img
           src="/!!!!ảnh nền.png"
-          alt="Revolution Background"
-          className="gsap-parallax h-[100dvh] md:h-[110dvh] w-full md:w-[60%] object-cover object-center z-0 opacity-85 mix-blend-multiply"
+          alt="Lịch Sử Đảng 1979-1981"
+          className="gsap-parallax h-[100dvh] md:h-[110dvh] w-full md:w-[60%] object-cover object-center z-0 opacity-75 mix-blend-multiply"
           data-speed="0.15"
           style={{
-            filter: "contrast(1.15) brightness(0.95) saturate(0.9)",
+            filter: "contrast(1.1) brightness(0.95) saturate(0.85)",
             WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 25%)",
-            maskImage: "linear-gradient(to right, transparent 0%, black 25%)"
+            maskImage: "linear-gradient(to right, transparent 0%, black 25%)",
           }}
         />
       </div>
 
-      {/* Editorial Typography — fades out on scroll */}
-      <div className="w-full md:w-[70%] lg:w-[60%] flex flex-col justify-center px-6 md:px-16 lg:px-24 py-24 md:py-32 relative z-10 hero-content-fade">
+      {/* Editorial Content */}
+      <div className="w-full md:w-[75%] lg:w-[65%] flex flex-col justify-center px-6 md:px-16 lg:px-24 py-24 md:py-32 relative z-10 hero-content-fade">
         <div>
-          <div className="gsap-reveal flex items-center gap-4 mb-10">
+          {/* Tag Header */}
+          <div className="gsap-reveal flex items-center gap-3 mb-6">
             <span
-              className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.25em] font-semibold text-[#7A6040]"
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8B261D]/10 border border-[#8B261D]/20 text-[11px] uppercase tracking-[0.2em] font-bold text-[#8B261D]"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
-              <span className="w-2 h-2 rounded-full bg-[#C5A028]" />
-              GROUP 5
+              CHUYÊN ĐỀ VNR-T17 • GROUP 1
+            </span>
+            <span className="text-[#7A6040] text-xs font-semibold tracking-wider">
+              1979 – 1981
             </span>
           </div>
 
-          {/* Title with text-reveal animation */}
+          {/* Headline */}
           <h1
-            className="text-5xl md:text-7xl lg:text-[5.5rem] leading-[1.05] tracking-tight text-[#3D3529] mb-6 drop-shadow-sm"
+            className="text-4xl sm:text-6xl md:text-7xl lg:text-[5.2rem] leading-[1.08] tracking-tight text-[#3D3529] mb-6 drop-shadow-sm font-bold"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            <span className="gsap-text-reveal block font-light italic text-[#7A6040] text-3xl md:text-4xl lg:text-5xl mb-3">
-              Tư Tưởng
+            <span className="gsap-text-reveal block font-light italic text-[#7A6040] text-2xl sm:text-4xl md:text-5xl mb-2">
+              Khúc Dạo Đầu Của Đổi Mới
             </span>
-            <span className="gsap-text-reveal block">Hồ Chí Minh</span>
+            <span className="gsap-text-reveal block text-[#8B261D]">
+              “SẢN XUẤT BUNG RA”
+            </span>
           </h1>
 
           <p
-            className="gsap-reveal text-sm md:text-base text-[#C5A028] font-semibold tracking-[0.15em] uppercase mb-6"
+            className="gsap-reveal text-xs md:text-sm text-[#8B261D] font-semibold tracking-[0.18em] uppercase mb-4"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
-            Về Nhà Nước Dân Chủ
+            Các thử nghiệm đổi mới sớm & Cơ chế thích ứng chính sách từ thực tiễn
           </p>
 
           <p
-            className="gsap-reveal text-base md:text-lg text-[#7A6040] max-w-xl leading-relaxed font-light mb-8 drop-shadow-sm"
+            className="gsap-reveal text-base md:text-lg text-[#5A4632] max-w-2xl leading-relaxed font-light mb-8"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
-            Xây dựng mô hình quản trị quốc gia "Của dân, Do dân, Vì dân" – Sự kết hợp hài hòa giữa bản chất giai cấp công nhân và sức mạnh đại đoàn kết toàn dân tộc.
+            Giai đoạn 1979–1981 là "phòng thí nghiệm thực tiễn" sống động của Đảng. Từ những tiếng sấm "xé rào" tại Hải Phòng, TP. Hồ Chí Minh đến ba bước đột phá thể chế (Hội nghị TW6, Chỉ thị 100, Quyết định 25/26-CP) – tạo tiền đề thực chứng mở đường cho Đại hội VI năm 1986.
           </p>
 
-          <div className="gsap-reveal mb-10 pl-6 border-l-2 border-[#C5A028] italic max-w-2xl">
-            <p className="text-lg md:text-xl text-[#3D3529] font-medium leading-relaxed" style={{ fontFamily: "'EB Garamond', serif" }}>
-              "Nước ta là nước dân chủ. Bao nhiêu lợi ích đều vì dân. Bao nhiêu quyền hạn đều của dân... Chính quyền từ xã đến Chính phủ trung ương do dân cử ra."
+          {/* Historic Quote */}
+          <div className="gsap-reveal mb-10 pl-6 border-l-4 border-[#8B261D] bg-white/50 p-5 rounded-r-2xl backdrop-blur-sm max-w-2xl shadow-sm">
+            <p className="text-lg md:text-xl text-[#3D3529] font-medium leading-relaxed italic" style={{ fontFamily: "'EB Garamond', serif" }}>
+              "Thực tiễn là tiêu chuẩn của chân lý. Không thể ngồi trong phòng giấy mà áp đặt các quy định chủ quan cho cuộc sống."
             </p>
-            <p className="text-sm mt-3 text-[#7A6040] font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>
-              — Chủ tịch Hồ Chí Minh (1949)
+            <p className="text-xs mt-3 text-[#7A6040] font-bold tracking-wider uppercase" style={{ fontFamily: "'Inter', sans-serif" }}>
+              — Đồng chí Trường Chinh (Khảo sát thực tế cơ sở, 1979)
             </p>
           </div>
 
-          <div className="gsap-reveal flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <a
-              href="#phan-1"
-              className="magnetic-btn group/btn flex items-center justify-center px-8 py-3.5 bg-[#3D3529] text-[#EDE8E1] rounded-full transition-all duration-500 hover:bg-[#C5A028] hover:-translate-y-0.5 shadow-[0_8px_24px_-8px_rgba(61,53,41,0.3)]"
-            >
-              <span
-                className="font-semibold tracking-[0.08em] text-xs uppercase"
-                style={{ fontFamily: "'Inter', sans-serif" }}
-              >
-                Bắt Đầu Khám Phá
-              </span>
-            </a>
-          </div>
-
-          <div className="mt-14 flex flex-wrap gap-3">
+          {/* Jump Navigation Tags */}
+          <div className="flex flex-wrap gap-2.5">
             {[
-              { label: "01. Cơ Sở Lý Luận", link: "#phan-1" },
-              { label: "02. Liên Hệ Thực Tiễn", link: "#phan-2" },
-              { label: "03. Giải Pháp Quản Trị", link: "#phan-3" },
+              { label: "01. Bối Cảnh Lịch Sử", link: "#boi-canh" },
+              { label: "02. Hồ Sơ Xé Rào", link: "#xe-rao" },
+              { label: "03. Ba Đột Phá Thể Chế", link: "#dot-pha" },
+              { label: "04. Cơ Chế Học Hỏi", link: "#hoc-hoi" },
+              { label: "05. Di Sản & Bài Học", link: "#di-san" },
             ].map((tag) => (
               <a
                 key={tag.label}
                 href={tag.link}
-                className="gsap-reveal px-5 py-2.5 rounded-full border border-[#3D3529]/10 bg-[#EDE8E1]/30 backdrop-blur-sm text-[11px] uppercase font-semibold tracking-[0.05em] text-[#7A6040]/90 transition-colors duration-300 hover:border-[#C5A028]/40 hover:text-[#C5A028] hover:bg-white"
+                className="gsap-reveal px-4 py-2 rounded-full border border-[#3D3529]/15 bg-white/70 backdrop-blur-sm text-[11px] uppercase font-semibold tracking-[0.04em] text-[#5A4632] transition-all duration-300 hover:border-[#8B261D] hover:text-[#8B261D] hover:bg-white hover:shadow-sm"
                 style={{ fontFamily: "'Inter', sans-serif" }}
               >
                 {tag.label}
