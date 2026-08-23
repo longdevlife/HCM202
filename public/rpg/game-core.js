@@ -2,7 +2,8 @@ const DEFAULT_COLOR = "#00aaff";
 const DEFAULT_PLAYER_ID = "player";
 const DEFAULT_PLAYER_NAME = "Player";
 const PLAYER_RADIUS = 12;
-const MOVE_SPEED = 120;
+const MOVE_SPEED = 160;
+const SPRINT_MULTIPLIER = 1.6;
 
 const finiteCoordinate = (value) => typeof value === "number" && Number.isFinite(value);
 
@@ -24,24 +25,23 @@ export function parseGameOptions(search = "") {
 
 export function normalizeSnapshot(value) {
   const source = value && typeof value === "object" ? value : {};
-  const normalized = {};
-  for (const key of ["players", "items", "hazards", "npcs", "gates"]) {
-    const collection = source[key];
-    normalized[key] = {};
-    if (!collection || typeof collection !== "object" || Array.isArray(collection)) continue;
-    for (const [id, entity] of Object.entries(collection)) {
-      if (!entity || typeof entity !== "object" || Array.isArray(entity)) continue;
-      if (!finiteCoordinate(entity.x) || !finiteCoordinate(entity.y)) continue;
-      normalized[key][id] = { ...entity };
-    }
-  }
-  return normalized;
+  const players = source.players && typeof source.players === "object" && !Array.isArray(source.players)
+    ? source.players
+    : {};
+
+  return {
+    players: Object.fromEntries(
+      Object.entries(players).filter(([, player]) => player && typeof player === "object" && !Array.isArray(player))
+    ),
+  };
 }
 
 export function movePlayer(player, input = {}, deltaSeconds = 0, bounds = {}) {
   const x = finiteCoordinate(player?.x) ? player.x : 0;
   const y = finiteCoordinate(player?.y) ? player.y : 0;
   const delta = Number.isFinite(deltaSeconds) && deltaSeconds > 0 ? deltaSeconds : 0;
+  const speedMult = typeof player?.speedMultiplier === "number" && Number.isFinite(player.speedMultiplier) ? player.speedMultiplier : 1;
+  const effectiveSpeed = MOVE_SPEED * speedMult;
   let dx = input?.right ? 1 : 0;
   dx -= input?.left ? 1 : 0;
   let dy = input?.down ? 1 : 0;
@@ -51,8 +51,8 @@ export function movePlayer(player, input = {}, deltaSeconds = 0, bounds = {}) {
   const height = finiteCoordinate(bounds?.height) ? bounds.height : Infinity;
   return {
     ...player,
-    x: Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, x + (dx / length) * MOVE_SPEED * delta)),
-    y: Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, y + (dy / length) * MOVE_SPEED * delta)),
+    x: Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, x + (dx / length) * effectiveSpeed * delta)),
+    y: Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, y + (dy / length) * effectiveSpeed * delta)),
   };
 }
 
