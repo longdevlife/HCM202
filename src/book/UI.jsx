@@ -7,20 +7,24 @@ export const viewModeAtom = atom("showcase"); // "showcase" | "reading"
 
 export const pages = [
   {
-    front: "/magazines/first_page.png",
-    back: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_07 PM (1).png",
+    front: "/textures/hinh/hinh1.png",
+    back: "/textures/hinh/hinh2.png",
   },
   {
-    front: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_07 PM (2).png",
-    back: "/magazines/page3.png",
+    front: "/textures/hinh/hinh3.png",
+    back: "/textures/hinh/hinh4.png",
   },
   {
-    front: "/magazines/page4.png",
-    back: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_10 PM (5).png",
+    front: "/textures/hinh/hinh5.png",
+    back: "/textures/hinh/hinh6.png",
   },
   {
-    front: "/magazines/ChatGPT Image Aug 12, 2026, 05_13_11 PM (6).png",
-    back: "/magazines/last_page.png",
+    front: "/textures/hinh/hinh7.png",
+    back: "/textures/hinh/hinh8.png",
+  },
+  {
+    front: "/textures/hinh/hinh9.png",
+    back: "/textures/hinh/hinh10.png",
   },
 ];
 
@@ -29,6 +33,7 @@ const pageLabels = [
   "Trang 1–2",
   "Trang 3–4",
   "Trang 5–6",
+  "Trang 7–8",
   "Bìa sau",
 ];
 
@@ -37,6 +42,7 @@ const pageTitles = [
   "Trang 1–2",
   "Trang 3–4",
   "Trang 5–6",
+  "Trang 7–8",
   null,
 ];
 
@@ -103,7 +109,7 @@ export const UI = () => {
           className="absolute left-6 top-1/2 -translate-y-1/2 -rotate-90 origin-center text-[12px] tracking-[0.3em] font-light opacity-50 whitespace-nowrap uppercase"
           style={{ fontFamily: "'Inter', sans-serif", color: '#E5D5B5' }}
         >
-          Tạp Chí Pháp Quyền <span className="mx-4 text-[#C5272D] opacity-80">●</span> 2026
+          Tạp Chí Lịch Sử Đảng <span className="mx-4 text-[#C5272D] opacity-80">●</span> VNR-T17
         </div>
 
         {/* Right Vertical */}
@@ -111,7 +117,7 @@ export const UI = () => {
           className="absolute right-6 top-1/2 -translate-y-1/2 rotate-90 origin-center text-[12px] tracking-[0.3em] font-light opacity-50 whitespace-nowrap uppercase"
           style={{ fontFamily: "'Inter', sans-serif", color: '#E5D5B5' }}
         >
-          Nhà Nước Trong Sạch, Vững Mạnh
+          "Sản Xuất Bung Ra" (1979-1981)
         </div>
 
         {/* Top Left: Issue Stamp */}
@@ -128,7 +134,7 @@ export const UI = () => {
             Tiêu Điểm
           </span>
           <span className="text-[22px] max-w-[300px]" style={{ fontFamily: 'Playfair Display, serif', color: '#C5A028', fontStyle: 'italic', lineHeight: 1.2, fontSize: 'clamp(16px, 4.6vw, 22px)', width: 'min(300px, calc(100vw - 6rem))', whiteSpace: 'normal', overflowWrap: 'break-word' }}>
-            Mục 3 · Nhà nước trong sạch, vững mạnh
+            Chuyên Đề · "Sản Xuất Bung Ra"
           </span>
         </div>
 
