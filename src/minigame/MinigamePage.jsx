@@ -3,7 +3,7 @@ import { ref, onValue, set, remove } from "firebase/database";
 import { db } from "./firebaseConfig";
 import HostView from "./HostView";
 import PlayerView from "./PlayerView";
-import { normalizeGameState } from "./gameStateUtils";
+import { createInitialPolicyState } from "./policyStateUtils";
 import "./minigame.css";
 import "./pixel-ui.css";
 
@@ -29,10 +29,7 @@ export const MinigamePage = () => {
   });
 
   const [dbConnected, setDbConnected] = useState(false);
-  const [gameState, setGameState] = useState({
-    status: "waiting", // waiting | phase_1 | situation_1 | phase_2 | situation_2 | phase_3 | finished
-    publicTrust: 70,
-  });
+  const [gameState, setGameState] = useState(() => createInitialPolicyState());
 
   // Kiểm tra kết nối Firebase Realtime Database
   useEffect(() => {
@@ -54,43 +51,50 @@ export const MinigamePage = () => {
     const unsubscribe = onValue(gameStateRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const normalized = normalizeGameState(data);
-        setGameState(normalized);
-        if (normalized.status !== data.status) {
-          set(gameStateRef, normalized);
-        }
+        setGameState(data);
       } else {
-        // Khởi tạo trạng thái mặc định nếu database trống
-        set(gameStateRef, { status: "waiting", publicTrust: 70 });
+        set(gameStateRef, createInitialPolicyState());
       }
     });
 
     return () => unsubscribe();
   }, []);
 
-  const handleSelectRole = async (selectedRole) => {
-    setRole(selectedRole);
-    localStorage.setItem("minigame_role", selectedRole);
+  const [showHostAuthModal, setShowHostAuthModal] = useState(false);
+  const [hostPasswordInput, setHostPasswordInput] = useState("");
+  const [authError, setAuthError] = useState("");
 
-    // Nếu chọn làm Host/MC, tự động reset game về trạng thái phòng chờ ban đầu để sẵn sàng đón người chơi mới
+  const handleSelectRole = async (selectedRole) => {
     if (selectedRole === "host") {
+      setShowHostAuthModal(true);
+      setHostPasswordInput("");
+      setAuthError("");
+      return;
+    }
+
+    setRole("player");
+    localStorage.setItem("minigame_role", "player");
+  };
+
+  const handleConfirmHostAuth = async (e) => {
+    e?.preventDefault();
+    if (hostPasswordInput.trim().toLowerCase() === "host") {
+      setShowHostAuthModal(false);
+      setAuthError("");
+      setRole("host");
+      localStorage.setItem("minigame_role", "host");
+
       try {
-        // 1. Đưa trạng thái game về waiting trước để tất cả client unmount game ngay lập tức
-        await set(ref(db, "gameState"), { status: "waiting", publicTrust: 70 });
-        
-        // 2. Chờ một khoảng trễ ngắn (100ms) để các client kịp nhận tin, unmount và dừng ghi dữ liệu vị trí
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // 3. Sau đó mới dọn dẹp sạch sẽ database
-        await remove(ref(db, "votes"));
-        await remove(ref(db, "books"));
-        await remove(ref(db, "traps"));
-        await remove(ref(db, "marketEvents"));
-        await remove(ref(db, "players"));
+        await set(ref(db, "gameState"), createInitialPolicyState());
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        await remove(ref(db, "decisions"));
         await remove(ref(db, "positions"));
+        await remove(ref(db, "players"));
       } catch (err) {
         console.error("Lỗi reset database khi chọn vai trò Host:", err);
       }
+    } else {
+      setAuthError("Mật khẩu không chính xác!");
     }
   };
 
@@ -99,43 +103,160 @@ export const MinigamePage = () => {
     localStorage.removeItem("minigame_role");
   };
 
-  // Màn hình chọn vai trò ban đầu
+  // Màn hình chọn vai trò ban đầu (Role Selection)
   if (!role) {
     return (
       <div className="minigame-container">
         <div className="minigame-panel role-selection">
-          <h1 className="minigame-title">SỨ MỆNH LIÊM CHÍNH</h1>
-          <p className="minigame-subtitle">Hành trình xây dựng Nhà nước trong sạch, vững mạnh</p>
-          
+          <h1 className="minigame-title">MÔ PHỎNG QUYẾT ĐỊNH CHÍNH SÁCH</h1>
+          <p className="minigame-subtitle">Hành trình tháo gỡ khủng hoảng kinh tế & đổi mới thể chế (1978–1981)</p>
+
           <div className="role-buttons">
             <div className="role-card role-player group" onClick={() => handleSelectRole("player")}>
               <div className="role-icon transition-transform duration-300 group-hover:scale-110 text-cyan-400">
                 <IconPhone className="w-16 h-16" />
               </div>
               <div className="role-name">Người Chơi</div>
-              <div className="role-desc">Dành cho sinh viên cả lớp. Quét mã QR, nhập vai cán bộ trẻ, xử lý hồ sơ, giữ uy tín và né các rủi ro công vụ.</div>
+              <div className="role-desc">
+                Dành cho sinh viên cả lớp. Quét mã QR, nhập vai lực lượng thực tiễn (Đoàn Xá, Bà Thi, Dệt Thành Công, Long An), khảo sát thực địa và đưa ra quyết định chính sách.
+              </div>
             </div>
 
             <div className="role-card role-host group" onClick={() => handleSelectRole("host")}>
               <div className="role-icon transition-transform duration-300 group-hover:scale-110 text-red-500">
                 <IconDesktop className="w-16 h-16" />
               </div>
-              <div className="role-name">Ban Tổ Chức (Host/MC)</div>
-              <div className="role-desc">Dành cho nhóm thuyết trình. Quản lý phase, mở tình huống, theo dõi uy tín, niềm tin nhân dân và bảng xếp hạng realtime.</div>
+              <div className="role-name">Ban Tổ Chức (Host/MC) 🔒</div>
+              <div className="role-desc">
+                Dành cho nhóm thuyết trình (Cần nhập mật khẩu). Chiếu màn hình lớn, điều phối 4 giai đoạn lịch sử 1978–1981, theo dõi mô hình vĩ mô và bảng xếp hạng realtime.
+              </div>
             </div>
           </div>
 
-          <div style={{ marginTop: "30px", fontSize: "0.85rem", color: dbConnected ? "var(--neon-green)" : "var(--neon-red)", display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ 
-              width: "8px", 
-              height: "8px", 
-              borderRadius: "50%", 
-              background: dbConnected ? "var(--neon-green)" : "var(--neon-red)",
-              boxShadow: dbConnected ? "0 0 10px var(--neon-green)" : "0 0 10px var(--neon-red)"
-            }} />
-            Trạng thái máy chủ: {dbConnected ? "ĐÃ KẾT NỐI (Realtime)" : "MẤT KẾT NỐI (Vui lòng cấu hình Firebase)"}
+          <div
+            style={{
+              marginTop: "30px",
+              fontSize: "0.85rem",
+              color: dbConnected ? "var(--neon-green)" : "var(--neon-red)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <span
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: dbConnected ? "var(--neon-green)" : "var(--neon-red)",
+                boxShadow: dbConnected ? "0 0 10px var(--neon-green)" : "0 0 10px var(--neon-red)",
+              }}
+            />
+            Trạng thái máy chủ: {dbConnected ? "ĐÃ KẾT NỐI (Realtime Firebase)" : "ĐANG KẾT NỐI (Vui lòng kiểm tra Firebase)..."}
           </div>
         </div>
+
+        {/* MODAL NHẬP MẬT KHẨU HOST */}
+        {showHostAuthModal && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9999,
+              background: "rgba(0, 0, 0, 0.85)",
+              backdropFilter: "blur(8px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "16px",
+            }}
+          >
+            <div
+              className="minigame-panel"
+              style={{
+                width: "100%",
+                maxWidth: "440px",
+                padding: "24px",
+                borderRadius: "16px",
+                border: "2px solid #ef4444",
+                boxShadow: "0 0 40px rgba(239, 68, 68, 0.4)",
+                background: "#0f172a",
+                textAlign: "center",
+              }}
+            >
+              <div style={{ fontSize: "2.2rem", marginBottom: "8px" }}>🔐</div>
+              <h3 style={{ margin: "0 0 6px 0", color: "#f87171", fontSize: "1.25rem", fontWeight: "800" }}>
+                XÁC THỰC QUYỀN HOST / MC
+              </h3>
+              <p style={{ color: "#94a3b8", fontSize: "0.85rem", margin: "0 0 18px 0", lineHeight: "1.4" }}>
+                Vui lòng nhập mật khẩu quản trị viên để vào phòng điều khiển và kích hoạt máy chiếu.
+              </p>
+
+              <form onSubmit={handleConfirmHostAuth}>
+                <input
+                  type="password"
+                  value={hostPasswordInput}
+                  onChange={(e) => {
+                    setHostPasswordInput(e.target.value);
+                    if (authError) setAuthError("");
+                  }}
+                  placeholder="Nhập mật khẩu"
+                  autoFocus
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    background: "rgba(0,0,0,0.6)",
+                    border: authError ? "2px solid #ef4444" : "1px solid #38bdf8",
+                    borderRadius: "8px",
+                    color: "#fff",
+                    fontSize: "1rem",
+                    textAlign: "center",
+                    outline: "none",
+                    boxSizing: "border-box",
+                    marginBottom: "10px",
+                  }}
+                />
+
+                {authError && (
+                  <div style={{ color: "#ef4444", fontSize: "0.82rem", fontWeight: "bold", marginBottom: "14px" }}>
+                    ❌ {authError}
+                  </div>
+                )}
+
+                <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowHostAuthModal(false);
+                      setAuthError("");
+                    }}
+                    className="btn-cyber"
+                    style={{
+                      flex: 1,
+                      padding: "10px",
+                      background: "rgba(255,255,255,0.1)",
+                      border: "1px solid rgba(255,255,255,0.2)",
+                      color: "#cbd5e1",
+                    }}
+                  >
+                    HỦY BỎ
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-cyber btn-cyber-red"
+                    style={{
+                      flex: 1,
+                      padding: "10px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    XÁC NHẬN 🚀
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -143,21 +264,23 @@ export const MinigamePage = () => {
   return (
     <div className="minigame-container">
       {role === "host" ? (
-        <HostView 
-          gameState={gameState} 
-          dbConnected={dbConnected} 
-          onResetRole={handleResetRole} 
+        <HostView
+          gameState={gameState}
+          dbConnected={dbConnected}
+          onResetRole={handleResetRole}
         />
       ) : (
-        <PlayerView 
+        <PlayerView
           playerId={playerId}
           playerName={playerName}
           setPlayerName={setPlayerName}
-          gameState={gameState} 
-          dbConnected={dbConnected} 
-          onResetRole={handleResetRole} 
+          gameState={gameState}
+          dbConnected={dbConnected}
+          onResetRole={handleResetRole}
         />
       )}
     </div>
   );
 };
+
+export default MinigamePage;

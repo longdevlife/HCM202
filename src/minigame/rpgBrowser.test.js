@@ -1,104 +1,193 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const publicDir = path.resolve(__dirname, "../../public");
+
+let testServer = null;
+let testServerPort = 0;
+
+function startTestServer() {
+  return new Promise((resolve) => {
+    if (testServer) return resolve(testServerPort);
+
+    const mimeTypes = {
+      ".html": "text/html",
+      ".js": "text/javascript",
+      ".css": "text/css",
+      ".json": "application/json",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".svg": "image/svg+xml",
+    };
+
+    testServer = http.createServer((req, res) => {
+      const urlPath = req.url.split("?")[0];
+      const safePath = path.normalize(urlPath).replace(/^(\.\.[\/\\])+/, "");
+      const filePath = path.join(publicDir, safePath);
+
+      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        const ext = path.extname(filePath);
+        res.writeHead(200, {
+          "Content-Type": mimeTypes[ext] || "application/octet-stream",
+          "Access-Control-Allow-Origin": "*",
+        });
+        fs.createReadStream(filePath).pipe(res);
+      } else {
+        res.writeHead(404);
+        res.end("Not found");
+      }
+    });
+
+    testServer.listen(0, "127.0.0.1", () => {
+      testServerPort = testServer.address().port;
+      resolve(testServerPort);
+    });
+  });
+}
+
+test.after(() => {
+  if (testServer) {
+    testServer.close();
+  }
+});
+
 async function withBrowser(run) {
-  const browser = await chromium.launch({ headless: true });
+  const previous = browserQueue;
+  let release;
+  browserQueue = new Promise((resolve) => {
+    release = resolve;
+  });
+  await previous;
+  let browser;
   try {
+    browser = await chromium.launch({ headless: true });
     await run(await browser.newPage());
   } finally {
-    await browser.close();
+    await browser?.close();
+    release();
   }
 }
 
+let browserQueue = Promise.resolve();
+
 async function openScene(page, role = "player") {
+  const port = await startTestServer();
   await page.addInitScript(() => {
     window.__RPG_TEST_HOOK__ = true;
   });
-  await page.goto(`http://127.0.0.1:5173/rpg/index.html?role=${role}&id=tester&name=Lan`, { waitUntil: "domcontentloaded" });
+  await page.goto(`http://127.0.0.1:${port}/rpg/index.html?role=${role}&id=tester&name=Lan`, {
+    waitUntil: "domcontentloaded",
+  });
   await page.waitForSelector("canvas[data-rendered='true']");
 }
 
-async function collisionMessages(page, snapshot, source) {
-  return page.evaluate(async ({ snapshot: incoming, useParentSource }) => {
-    const sent = [];
-    window.parent.postMessage = (message) => sent.push(message);
-    window.dispatchEvent(new MessageEvent("message", {
-      data: incoming,
-      ...(useParentSource ? { source: window.parent } : {}),
-    }));
-    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-    return sent;
-  }, { snapshot, useParentSource: source === "parent" });
-}
-
-const collisionSnapshot = (kind, id) => ({
-  type: "GAME_SNAPSHOT",
-  phase: "playing",
-  players: {},
-  items: {},
-  hazards: {},
-  npcs: kind === "npc" ? { [id]: { id, kind, x: 480, y: 293 } } : {},
-  gates: kind === "gate" ? { [id]: { id, kind, x: 480, y: 293 } } : {},
-});
-
-test("standalone player and host scenes render without a black fallback", async () => {
+test("standalone policy player and host scenes render without a black fallback", async () => {
   await withBrowser(async (page) => {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     for (const role of ["player", "host"]) {
       await openScene(page, role);
-      assert.equal(await page.locator("#game-status").isVisible(), true);
-      assert.notEqual(await page.locator("#game-status").innerText(), "");
+      assert.equal(await page.locator("canvas[data-rendered='true']").count(), 1);
+      const centerPixel = await page.locator("#game-canvas").evaluate((canvas) => (
+        Array.from(canvas.getContext("2d").getImageData(480, 270, 1, 1).data)
+      ));
+      assert.notDeepEqual(centerPixel, [0, 0, 0, 255]);
     }
     assert.deepEqual(errors, []);
   });
 });
 
-test("host scene does not emit collision mutations", async () => {
+test("host scene does not emit policy station mutations", async () => {
   await withBrowser(async (page) => {
     await openScene(page, "host");
-    const messages = await collisionMessages(page, {
-      ...collisionSnapshot("npc", "npc_1"),
-      items: { book_1: { id: "book_1", kind: "item", x: 480, y: 270 } },
-    }, "parent");
+    const messages = await page.evaluate(async () => {
+      const sent = [];
+      window.parent.postMessage = (message) => sent.push(message);
+      window.dispatchEvent(new MessageEvent("message", {
+        data: {
+          type: "POLICY_GAME_SNAPSHOT",
+          phaseId: "phase_1",
+          phaseStatus: "active",
+          station: { id: "doan_xa_crisis", phaseId: "phase_1", x: 480, y: 270, radius: 40 },
+          taskCompletedByPlayer: false,
+          players: {},
+        },
+        source: window.parent,
+      }));
+      window.dispatchEvent(new KeyboardEvent("keydown", { code: "Space" }));
+      await new Promise((resolve) => setTimeout(resolve, 40));
+      return sent.filter((message) => message.type === "POLICY_STATION_INTERACT");
+    });
     assert.deepEqual(messages, []);
   });
 });
 
-test("empty host scene does not draw a phantom local player", async () => {
+test("player emits one policy station interaction for one task", async () => {
   await withBrowser(async (page) => {
-    await openScene(page, "host");
-    const centerPixel = await page.locator("#game-canvas").evaluate((canvas) => (
-      Array.from(canvas.getContext("2d").getImageData(480, 270, 1, 1).data)
+    await openScene(page, "player");
+    await page.evaluate(() => {
+      window.__policyMessages = [];
+      window.parent.postMessage = (message) => window.__policyMessages.push(message);
+      const snapshot = {
+        type: "POLICY_GAME_SNAPSHOT",
+        phaseId: "phase_1",
+        phaseStatus: "active",
+        station: {
+          id: "doan_xa_crisis",
+          phaseId: "phase_1",
+          label: "Test station",
+          shortLabel: "Test station",
+          x: 480,
+          y: 270,
+          radius: 40,
+        },
+        taskCompletedByPlayer: false,
+        players: {
+          tester: { id: "tester", name: "Lan", x: 480, y: 270, direction: "down" },
+        },
+      };
+      window.dispatchEvent(new MessageEvent("message", { data: snapshot, source: window.parent }));
+    });
+    await page.keyboard.press("Space");
+    await page.keyboard.press("Space");
+    const messages = await page.evaluate(() => (
+      window.__policyMessages.filter((message) => message.type === "POLICY_STATION_INTERACT")
     ));
-    assert.notDeepEqual(centerPixel, [0, 170, 255, 255]);
+
+    assert.deepEqual(messages, [{
+      type: "POLICY_STATION_INTERACT",
+      phaseId: "phase_1",
+      stationId: "doan_xa_crisis",
+    }]);
   });
 });
 
-test("player emits an overlapping NPC collision only once", async () => {
+test("player ignores a snapshot that does not originate from its parent", async () => {
   await withBrowser(async (page) => {
-    await openScene(page);
-    const messages = await collisionMessages(page, collisionSnapshot("npc", "npc_1"), "parent");
-    assert.deepEqual(messages, [{ type: "FOUND_LOYAL_CUSTOMER", npcId: "npc_1" }]);
-  });
-});
-
-test("player emits an overlapping gate collision only once", async () => {
-  await withBrowser(async (page) => {
-    await openScene(page);
-    const messages = await collisionMessages(page, collisionSnapshot("gate", "gate_1"), "parent");
-    assert.deepEqual(messages, [{ type: "ESCAPED_GATE", gateId: "gate_1" }]);
-  });
-});
-
-test("scene ignores a snapshot that does not originate from its parent", async () => {
-  await withBrowser(async (page) => {
-    await openScene(page);
-    const messages = await collisionMessages(page, {
-      ...collisionSnapshot("npc", "npc_1"),
-      items: { book_1: { id: "book_1", kind: "item", x: 480, y: 270 } },
-    }, "other");
+    await openScene(page, "player");
+    const messages = await page.evaluate(async () => {
+      const sent = [];
+      window.parent.postMessage = (message) => sent.push(message);
+      window.dispatchEvent(new MessageEvent("message", {
+        data: {
+          type: "POLICY_GAME_SNAPSHOT",
+          phaseId: "phase_1",
+          station: { id: "doan_xa_crisis", phaseId: "phase_1", x: 480, y: 270, radius: 40 },
+          taskCompletedByPlayer: false,
+          players: { tester: { id: "tester", x: 480, y: 270 } },
+        },
+        source: null,
+      }));
+      window.dispatchEvent(new KeyboardEvent("keydown", { code: "Space" }));
+      await new Promise((resolve) => setTimeout(resolve, 40));
+      return sent.filter((message) => message.type === "POLICY_STATION_INTERACT");
+    });
     assert.deepEqual(messages, []);
   });
 });
@@ -120,9 +209,7 @@ test("player applies position deltas without emitting gameplay mutations", async
       await new Promise((resolve) => requestAnimationFrame(resolve));
       return {
         updates: canvas.dataset.positionUpdates,
-        mutations: sent.filter((message) => [
-          "NHAT_SACH", "DINH_BAY", "FOUND_LOYAL_CUSTOMER", "ESCAPED_GATE",
-        ].includes(message.type)),
+        mutations: sent.filter((message) => message.type === "POLICY_STATION_INTERACT"),
       };
     });
 
