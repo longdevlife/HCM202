@@ -40,3 +40,17 @@ test("createPositionWriter falls back to legacy player storage after permission 
   assert.equal(await writer({ x: 30, y: 40, direction: "right" }), "legacy");
   assert.deepEqual(writes, ["positions:10", "players:10", "players:30"]);
 });
+
+test("createPositionWriter exposes a write method for iframe message handlers", async () => {
+  let receivedMove = null;
+  const writer = createPositionWriter({
+    writeModern: async (move) => {
+      receivedMove = move;
+    },
+    writeLegacy: async () => {},
+  });
+
+  assert.equal(typeof writer.write, "function");
+  await writer.write({ x: 12, y: 24, direction: "up" });
+  assert.deepEqual(receivedMove, { x: 12, y: 24, direction: "up" });
+});

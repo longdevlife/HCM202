@@ -17,7 +17,7 @@ export function isPermissionDenied(error) {
 export function createPositionWriter({ writeModern, writeLegacy }) {
   let useLegacyStorage = false;
 
-  return async (move) => {
+  const write = async (move) => {
     if (useLegacyStorage) {
       await writeLegacy(move);
       return "legacy";
@@ -33,6 +33,9 @@ export function createPositionWriter({ writeModern, writeLegacy }) {
       return "legacy";
     }
   };
+
+  write.write = write;
+  return write;
 }
 
 export function normalizePosition(value) {

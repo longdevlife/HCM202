@@ -31,3 +31,6 @@ skills/
 
 # Local isolated worktrees
 .worktrees/
+
+# Test & QA artifacts
+artifacts/

@@ -1,73 +1,75 @@
 /* Pixel-art 8-bit Design System cho khu MINI GAME. Import SAU minigame.css để override. */
-@import url("https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=VT323&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=VT323&family=JetBrains+Mono:wght@500;700;800&family=Inter:wght@400;500;600;700;800&display=swap");
 
-/* 1. TYPOGRAPHY: Thay đổi toàn bộ font CSS của hệ thống sang Pixel font Unicode */
+/* 1. TYPOGRAPHY: Thiết lập chuẩn font hỗ trợ 100% tiếng Việt có dấu, sắc nét không lỗi */
 .minigame-container {
-  --font-heading: "Silkscreen", monospace !important;
-  --font-body: "VT323", monospace !important;
-  --font-quote: "VT323", monospace !important;
+  --font-heading: "Silkscreen", "Segoe UI", system-ui, sans-serif !important;
+  --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif !important;
+  --font-mono: "JetBrains Mono", "VT323", monospace !important;
+  --font-quote: "Inter", "Segoe UI", sans-serif !important;
+  font-family: var(--font-body) !important;
+  color: #f1f5f9;
 }
 
-.minigame-container,
+/* Áp dụng font chữ rõ ràng, chuẩn tiếng Việt cho các khối nội dung và modal */
 .minigame-panel,
-.minigame-panel *,
 .host-dashboard-grid,
-.host-dashboard-grid *,
 .lobby-waiting,
-.lobby-waiting *,
 .narrative-widget,
-.narrative-widget *,
 .role-selection,
-.role-selection *,
 .player-grid,
-.player-grid * {
-  font-family: "VT323", monospace !important;
-  font-size: 1.18rem !important; /* Đã thu nhỏ gọn gàng để tránh phình to chữ gây cuộn đứng */
-  letter-spacing: 0.5px;
+.decision-card,
+.policy-card,
+.dialogue-modal {
+  font-family: var(--font-body) !important;
+  letter-spacing: 0.2px;
 }
 
-/* Tiêu đề chính 8-bit gọn gàng dùng font Silkscreen viết hoa */
+/* Tiêu đề chính 8-bit gọn gàng */
 .minigame-title {
-  font-family: "Silkscreen", monospace !important;
-  font-size: 1.8rem !important; /* Thu nhỏ tiêu đề tránh chiếm nhiều chỗ đứng */
+  font-family: var(--font-heading) !important;
+  font-size: 1.6rem !important;
   color: #fff !important;
-  text-shadow: 3px 3px 0 #000 !important;
-  letter-spacing: 1.5px !important;
+  text-shadow: 2px 2px 0 #000 !important;
+  letter-spacing: 1px !important;
   text-transform: uppercase !important;
   margin-bottom: 6px !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
 }
 
 .minigame-subtitle {
-  font-family: "VT323", monospace !important;
-  font-size: 1.25rem !important; /* Thu gọn subtitle */
+  font-family: var(--font-body) !important;
+  font-size: 0.95rem !important;
   color: #ff4b9f !important; /* Hồng neon */
-  text-shadow: 1.5px 1.5px 0 #000 !important;
-  margin-bottom: 15px !important; /* Giảm margin đứng */
+  text-shadow: 1px 1px 0 #000 !important;
+  margin-bottom: 15px !important;
+  font-weight: 600 !important;
 }
 
-/* Các nhãn chữ in hoa Silkscreen */
+/* Các nhãn chữ in hoa */
 .leaderboard-title,
 .kpi-label,
 .mission-label,
 .role-name,
 .player-rank {
-  font-family: "Silkscreen", monospace !important;
-  font-size: 0.78rem !important; /* Thu gọn */
+  font-family: var(--font-heading) !important;
+  font-size: 0.78rem !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
-  letter-spacing: 1px !important;
+  letter-spacing: 0.5px !important;
 }
 
-/* Các chữ số Latinh hoặc bảng xếp hạng dùng font pixel */
+/* Các chữ số Latinh hoặc bảng xếp hạng dùng font monospace sắc nét */
 .pix-num,
 .podium-number,
 .podium-score,
 .kpi-val,
-.player-score-txt {
-  font-family: "VT323", monospace !important;
-  font-size: 1.4rem !important; /* Thu gọn hợp lý */
-  font-weight: bold !important;
+.player-score-txt,
+.timer-val {
+  font-family: var(--font-mono) !important;
+  font-size: 1.3rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
 }
 
 /* 2. BACKGROUND: Bầu trời đêm sao Pixel lấp lánh ảo diệu */
@@ -181,41 +183,83 @@
   padding-top: 6px !important;
 }
 
-/* 5. NÚT BẤM PIXEL 8-BIT LÚN CƠ HỌC (Tối ưu gọn) */
+/* 5. NÚT BẤM & TÙY CHỌN CHUẨN TIẾNG VIỆT (Tối ưu Mobile & PC) */
 .btn-cyber,
 .btn-cyber-blue,
-.option-button {
-  font-family: "VT323", monospace !important;
-  font-size: 1.35rem !important; /* Thu nhỏ size chữ nút bấm */
-  font-weight: bold !important;
+.btn-cyber-red {
+  font-family: var(--font-body) !important;
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
   color: #fff !important;
-  border: 3px solid #000 !important;
-  border-radius: 0px !important;
-  background: #ff4b9f !important; /* Hồng neon */
+  border: 2px solid #000 !important;
+  border-radius: 10px !important;
+  background: #ec4899 !important;
   box-shadow: 3px 3px 0 0 #000 !important;
-  transition: none !important;
   cursor: pointer !important;
   text-transform: uppercase !important;
-  padding: 8px 16px !important; /* Thu nhỏ padding */
+  padding: 10px 18px !important;
   box-sizing: border-box !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  white-space: nowrap !important;
+  touch-action: manipulation !important;
+  letter-spacing: 0.5px !important;
   z-index: 3 !important;
 }
 
-/* Nút sự kiện MC (spam/kích hoạt item) - luôn trên 1 dòng, không xuống hàng */
+.btn-cyber-blue {
+  background: #0284c7 !important;
+}
+
+.btn-cyber-red {
+  background: #dc2626 !important;
+}
+
+/* Nút Tùy chọn Quyết định & Đối thoại: Tự động xuống dòng, không bị tràn màn hình */
+.option-button {
+  font-family: var(--font-body) !important;
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  color: #f1f5f9 !important;
+  border: 2px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 12px !important;
+  background: rgba(15, 23, 42, 0.85) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  cursor: pointer !important;
+  text-transform: none !important;
+  padding: 12px 14px !important;
+  box-sizing: border-box !important;
+  display: block !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  width: 100% !important;
+  text-align: left !important;
+  touch-action: manipulation !important;
+  transition: all 0.2s ease !important;
+}
+
+.option-button:hover:not(:disabled) {
+  border-color: #38bdf8 !important;
+  background: rgba(30, 41, 59, 0.95) !important;
+}
+
+.option-button.selected {
+  border-color: var(--neon-gold) !important;
+  background: rgba(245, 158, 11, 0.15) !important;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Nút sự kiện MC (spam/kích hoạt item) */
 .btn-market-flat {
-  font-family: "VT323", monospace !important;
-  font-size: 1.15rem !important;
-  font-weight: bold !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
   color: #fff !important;
   border: 2px solid #000 !important;
-  border-radius: 0px !important;
-  background: #0095ff !important;
-  box-shadow: 3px 3px 0 0 #000 !important;
-  transition: none !important;
+  border-radius: 8px !important;
+  background: #0284c7 !important;
+  box-shadow: 2px 2px 0 0 #000 !important;
   cursor: pointer !important;
   padding: 8px 12px !important;
   box-sizing: border-box !important;
@@ -229,20 +273,11 @@
   z-index: 3 !important;
 }
 
-/* Đổi màu theo loại nút */
-.btn-cyber-blue {
-  background: #0095ff !important;
-}
-
-/* Nút Option A / B màu sắc tươi sáng */
-.option-button:nth-child(1) { background: #0095ff !important; }
-.option-button:nth-child(2) { background: #2e7d32 !important; }
-
 /* Hiệu ứng Hover nhô lên */
 .btn-cyber:hover,
 .btn-cyber-blue:hover,
-.btn-market-flat:hover,
-.option-button:hover {
+.btn-cyber-red:hover,
+.btn-market-flat:hover {
   transform: translate(-1px, -1px) !important;
   box-shadow: 4px 4px 0 0 #000 !important;
   filter: brightness(1.15) !important;
@@ -305,20 +340,22 @@
   color: #8b8680 !important;
 }
 
-/* Game input */
+/* Game input chuẩn tiếng Việt & chống tự động phóng to trên iOS Safari */
 .game-input {
-  border: 3px solid #000 !important;
-  border-radius: 0px !important;
-  background: #100a12 !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 10px !important;
+  background: rgba(15, 23, 42, 0.9) !important;
   color: #fff !important;
-  font-family: "VT323", monospace !important;
-  font-size: 1.25rem !important;
-  padding: 6px 10px !important;
-  box-shadow: inset 2px 2px 0 #000 !important;
+  font-family: var(--font-body) !important;
+  font-size: 16px !important;
+  padding: 10px 14px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  outline: none !important;
 }
 .game-input:focus {
-  border-color: #ff4b9f !important;
-  outline: none !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3) !important;
 }
 
 /* 7. WIDGETS DÀNH CHO HOST DASHBOARD */
@@ -467,8 +504,8 @@ iframe {
   /* Lưới chọn nhân vật trải hàng ngang trên PC */
   .minigame-panel.player-panel-md .character-grid {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 12px !important; /* Thu nhỏ gap */
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
   }
   
   /* Màn hình chọn vai trò */
@@ -477,46 +514,123 @@ iframe {
   }
 }
 
-/* Cấu hình tối ưu hiển thị cho di động (max-width 767px) */
+/* Cấu hình tối ưu hiển thị cho di động & màn hình cảm ứng (max-width 767px) */
 @media (max-width: 767px) {
   .minigame-container {
-    padding-top: 75px !important;
-    padding-bottom: 20px !important;
-  }
-  .minigame-panel {
-    padding: 12px 10px !important; /* Thu hẹp tối đa padding panel để game Phaser to nhất có thể */
-    width: 98% !important;
-    margin: 5px auto !important;
-    box-shadow: 
-      0 0 0 3px #ff4b9f, 
-      0 0 0 7px #000, 
-      5px 5px 0 0 rgba(0, 0, 0, 0.85) !important;
-  }
-  .game-console-wrapper {
-    max-width: 100% !important;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 65px) !important;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px) !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
     width: 100% !important;
-    padding: 4px !important;
-    border-radius: 0px !important;
-    border: 3px solid #000 !important;
-    box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.85) !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
   }
-  iframe {
-    border: 3px solid #000 !important;
-    box-shadow: 4px 4px 0 0 #000 !important;
+
+  .minigame-panel {
+    padding: 14px 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+    border-radius: 14px !important;
+    box-shadow: 
+      0 0 0 2px #ff4b9f, 
+      0 0 0 5px #000, 
+      4px 4px 0 0 rgba(0, 0, 0, 0.85) !important;
   }
+
+  /* Grid 4 nhân vật chia đều 2 cột trên điện thoại (2x2 cân đối) */
+  .character-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .character-option {
+    padding: 8px 6px !important;
+    border-radius: 10px !important;
+  }
+
+  .character-option .character-name {
+    font-size: 0.78rem !important;
+  }
+
+  .character-option .character-desc {
+    font-size: 0.65rem !important;
+    line-height: 1.25 !important;
+  }
+
+  /* Role Selection trên mobile */
+  .role-buttons {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  .role-card {
+    padding: 16px 14px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Nút bấm cảm ứng & D-pad */
+  .dpad-container {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    touch-action: manipulation !important;
+  }
+
+  .dpad-btn {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 1.1rem !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  .action-stamp-btn {
+    width: 76px !important;
+    height: 76px !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  /* Ngăn chặn Safari phóng to input khi gõ trên iPhone */
+  input[type="text"],
+  input[type="password"],
+  input[type="number"],
+  .game-input {
+    font-size: 16px !important;
+  }
+
+  /* Option Buttons trong bảng quyết định */
+  .options-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .option-button {
+    padding: 12px 14px !important;
+    font-size: 0.85rem !important;
+    border-radius: 12px !important;
+    touch-action: manipulation !important;
+  }
+
+  .minigame-title {
+    font-size: 1.4rem !important;
+  }
+
+  .minigame-subtitle {
+    font-size: 0.88rem !important;
+    margin-bottom: 12px !important;
+  }
+
   .mission-card,
   .lobby-waiting ol {
     padding: 10px 12px !important;
-    margin-bottom: 8px !important;
-  }
-  .mission-text {
-    font-size: 1.15rem !important;
-  }
-  .minigame-title {
-    font-size: 1.45rem !important;
-  }
-  .minigame-subtitle {
-    font-size: 1.1rem !important;
     margin-bottom: 8px !important;
   }
 }

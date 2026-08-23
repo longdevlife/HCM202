@@ -1,142 +1,120 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ref, set, onValue, remove, update } from "firebase/database";
+import { ref, set, onValue, remove, update, runTransaction } from "firebase/database";
 import { db } from "./firebaseConfig";
-import { situations, PHASE_CONFIGS } from "./situations";
-import { applyPhaseOneGate, applyPhaseTwoGate, applyVoteOutcome, calculateFinalScore } from "./gameStateUtils";
-import { buildRpgSnapshot, createMarketEventEntities, createPhaseWorld } from "./rpgBridge";
+import { POLICY_CYCLES, getPolicyCycle } from "./policyCycles";
+import { createInitialPolicyState } from "./policyStateUtils";
+import { buildStartPhasePatch, buildResolvePhasePatch, buildNextPhasePatch } from "./policyGameActions";
+import { buildPolicyRpgSnapshot } from "./rpgBridge";
 import { subscribeToPlayerPositions } from "./playerPositionSync";
+import { getCharacterOption } from "./characterOptions";
 import {
-  IconPhone,
   IconDesktop,
   IconLeaf,
   IconWarning,
   IconFlame,
-  IconBook,
-  IconBolt,
   IconTrophy,
   IconCrown,
   IconBulb,
-  IconMarxTheory,
-  IconUser,
-  IconPin,
-  IconArrowRight,
-  IconRefresh
+  IconBolt,
+  IconRefresh,
+  IconArrowRight
 } from "./icons";
 
-const getPhaseIcon = (status, className = "w-5 h-5") => {
-  if (status === "phase_1") return <IconLeaf className={`${className} text-emerald-500`} />;
-  if (status === "phase_2") return <IconWarning className={`${className} text-amber-500`} />;
-  if (status === "phase_3") return <IconFlame className={`${className} text-red-500`} />;
+const getPhaseIcon = (phaseId, className = "w-5 h-5") => {
+  if (phaseId === "phase_1") return <IconLeaf className={`${className} text-emerald-500`} />;
+  if (phaseId === "phase_2") return <IconWarning className={`${className} text-cyan-500`} />;
+  if (phaseId === "phase_3") return <IconWarning className={`${className} text-amber-500`} />;
+  if (phaseId === "phase_4") return <IconFlame className={`${className} text-red-500`} />;
   return null;
 };
 
-const getTrustResult = (publicTrust = 70) => {
-  if (publicTrust >= 80) return "CƠ QUAN TRONG SẠCH, VỮNG MẠNH";
-  if (publicTrust >= 60) return "CƠ QUAN HOẠT ĐỘNG TỐT";
-  if (publicTrust >= 40) return "NIỀM TIN ĐANG SUY GIẢM";
-  return "KHỦNG HOẢNG NIỀM TIN";
-};
-
-const EMPTY_RPG_WORLD = { books: {}, traps: {}, npcs: {}, gates: {} };
-
-const HostView = ({ gameState, dbConnected, onResetRole }) => {
+export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) => {
   const iframeRef = useRef(null);
   const iframeReadyRef = useRef(false);
   const [players, setPlayers] = useState({});
-  const [votes, setVotes] = useState({});
+  const [decisions, setDecisions] = useState({});
   const [qrUrl, setQrUrl] = useState("");
-  const [rpgWorld, setRpgWorld] = useState(EMPTY_RPG_WORLD);
   const positionsRef = useRef({});
+  const autoResolvedRef = useRef("");
+  const autoNextPhaseRef = useRef("");
 
+  const currentPhaseId = gameState.phaseId || gameState.status;
+  const cycle = getPolicyCycle(currentPhaseId);
+  const isRpgPhase = ["phase_1", "phase_2", "phase_3", "phase_4"].includes(gameState.status);
+  const isResolved = gameState.phaseStatus === "resolved";
+  const isFinished = gameState.status === "finished";
+
+  // QR Code
   useEffect(() => {
     const url = window.location.origin + window.location.pathname + "#minigame";
     setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?size=250x250&color=c5272d&data=${encodeURIComponent(url)}`);
   }, []);
 
-  useEffect(() => subscribeToPlayerPositions(db, ({ playerId, position }) => {
-    if (position) positionsRef.current[playerId] = position;
-    else delete positionsRef.current[playerId];
+  // Sync player positions
+  useEffect(() => {
+    return subscribeToPlayerPositions(db, ({ playerId, position }) => {
+      if (position) positionsRef.current[playerId] = position;
+      else delete positionsRef.current[playerId];
 
-    if (iframeReadyRef.current) {
-      iframeRef.current?.contentWindow?.postMessage({
-        type: "PLAYER_POSITION",
-        playerId,
-        position,
-      }, "*");
-    }
-  }), []);
+      if (iframeReadyRef.current) {
+        iframeRef.current?.contentWindow?.postMessage(
+          {
+            type: "PLAYER_POSITION",
+            playerId,
+            position,
+          },
+          "*"
+        );
+      }
+    });
+  }, []);
 
+  // Listen to players
   useEffect(() => {
     const unsubPlayers = onValue(ref(db, "players"), (s) => setPlayers(s.val() || {}));
     return () => unsubPlayers();
   }, []);
 
+  // Listen to decisions
   useEffect(() => {
-    const collections = ["books", "traps", "npcs", "gates"];
-    const unsubscribes = collections.map((collection) => onValue(ref(db, collection), (snapshot) => {
-      setRpgWorld((currentWorld) => ({
-        ...currentWorld,
-        [collection]: snapshot.val() || {},
-      }));
-    }));
-    return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
-  }, []);
-
-  useEffect(() => {
-    if (gameState.status === "situation_1" || gameState.status === "situation_2") {
-      const sitNum = gameState.status === "situation_1" ? 1 : 2;
-      const unsubVotes = onValue(ref(db, `votes/situation_${sitNum}`), (s) => setVotes(s.val() || {}));
-      return () => unsubVotes();
+    if (!currentPhaseId) {
+      setDecisions({});
+      return;
     }
-    setVotes({});
-    return undefined;
-  }, [gameState.status]);
-
-  const playerList = useMemo(() => Object.entries(players).map(([id, info]) => ({ id, ...info })), [players]);
-  const totalPlayers = playerList.length;
-  const currentConfig = PHASE_CONFIGS[gameState.status];
-  const publicTrust = Number.isFinite(gameState.publicTrust) ? gameState.publicTrust : 70;
-  const averageIntegrity = totalPlayers
-    ? Math.round(playerList.reduce((sum, p) => sum + (Number.isFinite(p.integrity) ? p.integrity : 100), 0) / totalPlayers)
-    : 100;
-  const activePlayersCount = playerList.filter((p) => p.status !== "suspended").length;
-  const suspendedPlayersCount = playerList.filter((p) => p.status === "suspended").length;
-  const totalCaseFiles = playerList.reduce((sum, p) => {
-    const phaseProgress = p.progress?.[gameState.status] || p.progress?.phase_1 || {};
-    return sum + (Number(phaseProgress.case_file) || 0);
-  }, 0);
-  const phaseCompletedCount = playerList.filter((p) => {
-    if (gameState.status === "phase_1") return p.phaseOneQualified;
-    if (gameState.status === "phase_2") return p.phaseTwoQualified;
-    if (gameState.status === "phase_3") return p.completedFinalMission || p.escaped;
-    return false;
-  }).length;
-
-  const getVoteStats = () => {
-    let aCount = 0;
-    let bCount = 0;
-    Object.values(votes).forEach((v) => {
-      if (v.choice === "A") aCount++;
-      if (v.choice === "B") bCount++;
+    const unsubDecisions = onValue(ref(db, `decisions/${currentPhaseId}`), (s) => {
+      setDecisions(s.val() || {});
     });
-    const total = aCount + bCount || 1;
-    return {
-      aCount,
-      bCount,
-      total: aCount + bCount,
-      aPercent: Math.round((aCount / total) * 100),
-      bPercent: Math.round((bCount / total) * 100),
-    };
-  };
+    return () => unsubDecisions();
+  }, [currentPhaseId]);
 
-  const sortedPlayers = [...playerList].sort((a, b) => calculateFinalScore(b) - calculateFinalScore(a));
-  const rpgCollections = useMemo(() => ({ players, ...rpgWorld }), [players, rpgWorld]);
+  const playerList = useMemo(
+    () => Object.entries(players).map(([id, info]) => ({ id, ...info })),
+    [players]
+  );
+  const totalPlayers = playerList.length;
+  const decisionsList = useMemo(() => Object.values(decisions || {}), [decisions]);
+  const submittedCount = decisionsList.length;
 
-  const postRpgSnapshot = useCallback((force = false) => {
-    const iframeWindow = iframeRef.current?.contentWindow;
-    if (!iframeWindow || (!iframeReadyRef.current && !force)) return;
-    iframeWindow.postMessage(buildRpgSnapshot(gameState, rpgCollections, positionsRef.current), "*");
-  }, [gameState, rpgCollections]);
+  const sortedPlayers = useMemo(
+    () => [...playerList].sort((a, b) => (b.score || 0) - (a.score || 0)),
+    [playerList]
+  );
+
+  const postRpgSnapshot = useCallback(
+    (force = false) => {
+      const iframeWindow = iframeRef.current?.contentWindow;
+      if (!iframeWindow || (!iframeReadyRef.current && !force)) return;
+      iframeWindow.postMessage(
+        buildPolicyRpgSnapshot({
+          gameState,
+          players,
+          positions: positionsRef.current,
+        }),
+        "*"
+      );
+    },
+    [gameState, players]
+  );
 
   const handleIframeLoad = useCallback(() => {
     iframeReadyRef.current = true;
@@ -147,181 +125,288 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
     postRpgSnapshot();
   }, [postRpgSnapshot]);
 
-  const handleStartPhase = async (phaseKey, publicTrustOverride = publicTrust) => {
-    const config = PHASE_CONFIGS[phaseKey];
+  // Host Action: Resolve Phase
+  const handleResolvePhase = useCallback(async () => {
+    if (!currentPhaseId || gameState.phaseStatus !== "active") return;
+    try {
+      let resolvedPatch = null;
+      const transactionResult = await runTransaction(ref(db, "gameState"), (currentGameState) => {
+        if (
+          !currentGameState
+          || currentGameState.status !== currentPhaseId
+          || currentGameState.phaseId !== currentPhaseId
+          || currentGameState.phaseStatus !== "active"
+        ) {
+          return;
+        }
 
-    if (phaseKey === "phase_1") {
+        const patch = buildResolvePhasePatch(
+          currentGameState,
+          currentPhaseId,
+          decisions,
+          players
+        );
+        resolvedPatch = patch;
+        return {
+          ...currentGameState,
+          phaseStatus: patch["gameState/phaseStatus"],
+          macro: patch["gameState/macro"],
+          agriculture: patch["gameState/agriculture"],
+          industry: patch["gameState/industry"],
+          currentResult: patch["gameState/currentResult"],
+          results: {
+            ...(currentGameState.results || {}),
+            [currentPhaseId]: patch[`gameState/results/${currentPhaseId}`],
+          },
+        };
+      });
+      if (!transactionResult.committed || !resolvedPatch) return;
+
+      const playerPatch = Object.fromEntries(
+        Object.entries(resolvedPatch).filter(([path]) => !path.startsWith("gameState/"))
+      );
+      if (Object.keys(playerPatch).length > 0) await update(ref(db), playerPatch);
+    } catch (err) {
+      console.error("Lỗi resolve phase:", err);
+    }
+  }, [currentPhaseId, gameState, decisions, players]);
+
+  // Host Action: Next Phase
+  const handleNextPhase = useCallback(async () => {
+    try {
+      const patch = buildNextPhasePatch(gameState, Date.now());
+      await update(ref(db), patch);
+    } catch (err) {
+      console.error("Lỗi next phase:", err);
+    }
+  }, [gameState]);
+
+  // Host Action: Start Game (Phase 1)
+  const handleStartGame = async () => {
+    try {
+      const initial = createInitialPolicyState();
+      const patch = buildStartPhasePatch(initial, "phase_1", Date.now());
+
       const playerUpdates = {};
       playerList.forEach((p) => {
-        playerUpdates[`${p.id}/score`] = 0;
-        playerUpdates[`${p.id}/integrity`] = 100;
-        playerUpdates[`${p.id}/status`] = "active";
-        playerUpdates[`${p.id}/recoveryTasksRemaining`] = null;
-        playerUpdates[`${p.id}/progress`] = null;
-        playerUpdates[`${p.id}/phaseOneQualified`] = null;
-        playerUpdates[`${p.id}/phaseOneMessage`] = null;
-        playerUpdates[`${p.id}/phaseTwoQualified`] = null;
-        playerUpdates[`${p.id}/phaseTwoMessage`] = null;
-        playerUpdates[`${p.id}/completedFinalMission`] = null;
-        playerUpdates[`${p.id}/completedAt`] = null;
-        playerUpdates[`${p.id}/rpgClaims`] = null;
-        playerUpdates[`${p.id}/decisionBonus`] = 0;
-        playerUpdates[`${p.id}/phaseBonus`] = 0;
+        playerUpdates[`players/${p.id}/score`] = 0;
+        playerUpdates[`players/${p.id}/taskProgress`] = { phase_1: false, phase_2: false, phase_3: false, phase_4: false };
+        playerUpdates[`players/${p.id}/submitted`] = { phase_1: false, phase_2: false, phase_3: false, phase_4: false };
+        playerUpdates[`players/${p.id}/decisions`] = { phase_1: null, phase_2: null, phase_3: null, phase_4: null };
+        playerUpdates[`players/${p.id}/lastScoreDelta`] = 0;
       });
-      if (Object.keys(playerUpdates).length > 0) await update(ref(db, "players"), playerUpdates);
-      await remove(ref(db, "votes"));
-      await remove(ref(db, "marketEvents"));
-      await remove(ref(db, "npcs"));
-      await remove(ref(db, "gates"));
-      await remove(ref(db, "positions"));
-    }
 
-    const world = createPhaseWorld(phaseKey, config, Date.now());
-    await update(ref(db), {
-      books: world.books,
-      traps: world.traps,
-      npcs: world.npcs,
-      gates: world.gates,
+      await remove(ref(db, "decisions"));
+      await remove(ref(db, "positions"));
+      await update(ref(db), {
+        ...patch,
+        ...playerUpdates,
+      });
+    } catch (err) {
+      console.error("Lỗi bắt đầu game:", err);
+    }
+  };
+
+  // Host Action: Reset Game
+  const handleResetGame = async () => {
+    try {
+      const initial = createInitialPolicyState();
+      await set(ref(db, "gameState"), initial);
+      await remove(ref(db, "decisions"));
+      await remove(ref(db, "positions"));
+      const playerUpdates = {};
+      playerList.forEach((p) => {
+        playerUpdates[`players/${p.id}/score`] = 0;
+        playerUpdates[`players/${p.id}/taskProgress`] = null;
+        playerUpdates[`players/${p.id}/submitted`] = null;
+      });
+      if (Object.keys(playerUpdates).length > 0) {
+        await update(ref(db), playerUpdates);
+      }
+    } catch (err) {
+      console.error("Lỗi reset game:", err);
+    }
+  };
+
+  // Host Action: Spawn Extra Thematic Items for All Players
+  const handleSpawnExtraItems = async () => {
+    try {
+      await update(ref(db, "gameState"), {
+        spawnEvent: Date.now(),
+      });
+      iframeRef.current?.contentWindow?.postMessage({ type: "SPAWN_EXTRA_ITEMS" }, "*");
+    } catch (err) {
+      console.error("Lỗi thả thêm vật phẩm từ Host:", err);
+    }
+  };
+
+  // Authoritative Timers Check Loop
+  useEffect(() => {
+    if (!isRpgPhase) return;
+
+    const timer = setInterval(() => {
+      const now = Date.now();
+
+      if (
+        gameState.phaseStatus === "active" &&
+        gameState.decisionEndsAt &&
+        now >= gameState.decisionEndsAt
+      ) {
+        const resolveKey = `${currentPhaseId}:${gameState.decisionEndsAt}`;
+        if (autoResolvedRef.current !== resolveKey) {
+          autoResolvedRef.current = resolveKey;
+          handleResolvePhase();
+        }
+      }
+
+      if (
+        gameState.phaseStatus === "resolved" &&
+        gameState.phaseEndsAt &&
+        now >= gameState.phaseEndsAt
+      ) {
+        const nextKey = `${currentPhaseId}:${gameState.phaseEndsAt}`;
+        if (autoNextPhaseRef.current !== nextKey) {
+          autoNextPhaseRef.current = nextKey;
+          handleNextPhase();
+        }
+      }
+    }, 500);
+
+    return () => clearInterval(timer);
+  }, [isRpgPhase, gameState, currentPhaseId, handleResolvePhase, handleNextPhase]);
+
+  // Countdown timer
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  useEffect(() => {
+    if (!isRpgPhase) return;
+    const updateTime = () => {
+      const targetTime = isResolved ? gameState.phaseEndsAt : gameState.decisionEndsAt;
+      if (targetTime) {
+        setSecondsLeft(Math.max(0, Math.ceil((targetTime - Date.now()) / 1000)));
+      }
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 500);
+    return () => clearInterval(interval);
+  }, [isRpgPhase, isResolved, gameState.phaseEndsAt, gameState.decisionEndsAt]);
+
+  const macro = gameState.macro || {
+    foodSecurity: 50,
+    industrialOutput: 50,
+    socialStability: 50,
+    foreignCurrency: 50,
+    policySupport: 50
+  };
+
+  // Vote Stats Calculator for current phase
+  const voteStats = useMemo(() => {
+    const counts = {};
+    const total = decisionsList.length || 1;
+    (cycle?.options || []).forEach((opt) => {
+      counts[opt.id] = 0;
+    });
+    decisionsList.forEach((d) => {
+      if (counts[d.optionId] !== undefined) {
+        counts[d.optionId] += 1;
+      }
     });
 
-    const gameStateData = {
-      status: phaseKey,
-      phaseStartedAt: Date.now(),
-      publicTrust: phaseKey === "phase_1" ? 70 : publicTrustOverride,
-      mission: config.mission,
-      learningMeaning: config.learningMeaning,
-      recap: config.recap,
-      progressGoals: config.progressGoals,
-    };
+    const result = {};
+    Object.entries(counts).forEach(([optId, count]) => {
+      result[optId] = {
+        count,
+        percent: Math.round((count / total) * 100),
+      };
+    });
+    return { counts: result, total: decisionsList.length };
+  }, [decisionsList, cycle]);
 
-    if (config.durationMs) {
-      gameStateData.phaseEndsAt = Date.now() + config.durationMs;
-    }
-
-    await set(ref(db, "gameState"), gameStateData);
-  };
-
-  const handleMarketEvent = async (eventType) => {
-    const createdAt = Date.now();
-    const id = `${createdAt}_${eventType}`;
-    const entities = createMarketEventEntities(eventType, gameState.status, currentConfig, createdAt);
-    const eventUpdates = {
-      [`marketEvents/${id}`]: {
-        type: eventType,
-        phase: gameState.status,
-        createdAt,
-      },
-    };
-
-    for (const collection of ["books", "traps", "npcs"]) {
-      for (const [entityId, entity] of Object.entries(entities[collection])) {
-        eventUpdates[`${collection}/${entityId}`] = entity;
-      }
-    }
-
-    await update(ref(db), eventUpdates);
-  };
-
-  const applyCollectiveGoal = async (phaseKey, updates) => {
-    const config = PHASE_CONFIGS[phaseKey];
-    if (!config?.collectiveGoal || totalPlayers === 0) return updates;
-    const completed = Object.values(updates).filter((p) => (
-      phaseKey === "phase_1" ? p.phaseOneQualified : p.phaseTwoQualified
-    )).length;
-    const ratio = completed / totalPlayers;
-    if (ratio >= config.collectiveGoal.ratio) {
-      await update(ref(db, "gameState"), {
-        publicTrust: Math.min(100, publicTrust + config.collectiveGoal.trustReward),
-        collectiveMessage: "NHIỆM VỤ TẬP THỂ HOÀN THÀNH",
-      });
-    } else {
-      await update(ref(db, "gameState"), {
-        collectiveMessage: phaseKey === "phase_1" ? "Hồ sơ tồn đọng đang tăng." : "Thử thách quyền lực vẫn còn nhiều áp lực.",
-      });
-    }
-    return updates;
-  };
-
-  const handleTriggerSituation = async (sitNum) => {
-    const updates = {};
-    if (sitNum === 1) {
-      playerList.forEach((p) => {
-        const { id, ...playerData } = p;
-        updates[id] = applyPhaseOneGate(playerData);
-      });
-      await applyCollectiveGoal("phase_1", updates);
-    }
-    if (sitNum === 2) {
-      playerList.forEach((p) => {
-        const { id, ...playerData } = p;
-        updates[id] = applyPhaseTwoGate(playerData);
-      });
-      await applyCollectiveGoal("phase_2", updates);
-    }
-    if (Object.keys(updates).length > 0) await update(ref(db, "players"), updates);
-    await set(ref(db, "gameState/status"), `situation_${sitNum}`);
-  };
-
-  const handleStartNextPhaseFromSituation = async (nextPhase, sitNum) => {
-    const stats = getVoteStats();
-    const nextState = applyVoteOutcome(gameState, sitNum, stats);
-    await update(ref(db, "gameState"), nextState);
-    await handleStartPhase(nextPhase, nextState.publicTrust);
-  };
-
-  const handleFinishGame = async () => {
-    const phaseThreeConfig = PHASE_CONFIGS.phase_3;
-    if (phaseThreeConfig?.collectiveGoal && totalPlayers > 0) {
-      const completed = playerList.filter((p) => p.completedFinalMission || p.escaped).length;
-      if (completed / totalPlayers >= phaseThreeConfig.collectiveGoal.ratio) {
-        await update(ref(db, "gameState"), {
-          publicTrust: Math.min(100, publicTrust + phaseThreeConfig.collectiveGoal.trustReward),
-          collectiveMessage: "NHIỆM VỤ TẬP THỂ CUỐI HOÀN THÀNH",
-        });
-      }
-    }
-    await set(ref(db, "gameState/status"), "finished");
-  };
-
-  const handleResetGame = async () => {
-    await set(ref(db, "gameState"), { status: "waiting", publicTrust: 70 });
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    await remove(ref(db, "votes"));
-    await remove(ref(db, "books"));
-    await remove(ref(db, "traps"));
-    await remove(ref(db, "marketEvents"));
-    await remove(ref(db, "players"));
-    await remove(ref(db, "positions"));
-    await remove(ref(db, "npcs"));
-    await remove(ref(db, "gates"));
-  };
-
-  const Leaderboard = ({ max = 5, title = "XẾP HẠNG LIÊM CHÍNH" }) => (
-    <div className="dashboard-widget" style={{ background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.04)", borderRadius: "14px", padding: "16px" }}>
-      <h3 className="leaderboard-title" style={{ fontSize: "0.85rem", color: "var(--neon-gold)", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "12px", fontWeight: "bold", display: "flex", alignItems: "center", gap: "6px" }}>
+  const Leaderboard = ({ max = 5, title = "BẢNG XẾP HẠNG ĐIỂM CÔNG VỤ" }) => (
+    <div
+      className="dashboard-widget"
+      style={{
+        background: "rgba(255,255,255,0.01)",
+        border: "1px solid rgba(255,255,255,0.04)",
+        borderRadius: "14px",
+        padding: "16px",
+      }}
+    >
+      <h3
+        className="leaderboard-title"
+        style={{
+          fontSize: "0.85rem",
+          color: "var(--neon-gold)",
+          letterSpacing: "0.5px",
+          textTransform: "uppercase",
+          marginBottom: "12px",
+          fontWeight: "bold",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+        }}
+      >
         <IconTrophy className="w-4 h-4 text-yellow-500" /> {title}
       </h3>
       <div className="leaderboard-list" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {sortedPlayers.slice(0, max).map((p, idx) => {
-          const integrity = Number.isFinite(p.integrity) ? p.integrity : 100;
-          const finalScore = calculateFinalScore(p);
-          const barColor = integrity >= 80 ? "var(--neon-green)" : integrity >= 60 ? "var(--neon-gold)" : "var(--neon-red)";
+          const char = getCharacterOption(p.roleId || p.character);
           return (
-            <div className="leaderboard-item-flat" key={p.id} style={{ display: "flex", flexDirection: "column", gap: "6px", background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.03)", borderRadius: "10px", padding: "10px 12px" }}>
+            <div
+              className="leaderboard-item-flat"
+              key={p.id}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+                background: "rgba(255,255,255,0.01)",
+                border: "1px solid rgba(255,255,255,0.03)",
+                borderRadius: "10px",
+                padding: "10px 12px",
+              }}
+            >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ width: "18px", height: "18px", borderRadius: "50%", background: idx === 0 ? "var(--neon-gold)" : idx === 1 ? "#a0a0a0" : idx === 2 ? "#b07040" : "rgba(255,255,255,0.05)", color: idx < 3 ? "#000" : "#8b8680", fontSize: "0.7rem", fontWeight: "bold", display: "flex", alignItems: "center", justifyContent: "center" }}>{idx + 1}</span>
-                  <span style={{ fontWeight: "bold", color: "#fff", display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.85rem" }}>
-                    {p.name} {p.status === "suspended" && <IconWarning className="w-3.5 h-3.5 text-red-500 inline-block" />}
+                  <span
+                    style={{
+                      width: "18px",
+                      height: "18px",
+                      borderRadius: "50%",
+                      background:
+                        idx === 0
+                          ? "var(--neon-gold)"
+                          : idx === 1
+                          ? "#a0a0a0"
+                          : idx === 2
+                          ? "#b07040"
+                          : "rgba(255,255,255,0.05)",
+                      color: idx < 3 ? "#000" : "#8b8680",
+                      fontSize: "0.7rem",
+                      fontWeight: "bold",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {idx + 1}
+                  </span>
+                  <span
+                    style={{
+                      fontWeight: "bold",
+                      color: "#fff",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      fontSize: "0.85rem",
+                    }}
+                  >
+                    {p.name} <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>({char?.shortLabel || ""})</span>
                   </span>
                 </div>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", fontSize: "0.78rem" }}>
-                  <span className="pix-num" style={{ color: barColor, fontWeight: "bold" }}>UT {integrity}</span>
-                  <span className="pix-num" style={{ color: "var(--neon-gold)", fontWeight: "bold" }}>{finalScore}</span>
+                  <span className="pix-num" style={{ color: "var(--neon-gold)", fontWeight: "bold" }}>
+                    {p.score || 0}đ
+                  </span>
                 </div>
-              </div>
-              <div style={{ width: "100%", height: "3px", background: "rgba(255,255,255,0.04)", borderRadius: "1.5px", overflow: "hidden" }}>
-                <div style={{ width: `${integrity}%`, height: "100%", background: barColor, borderRadius: "1.5px", transition: "width 0.4s ease" }} />
               </div>
             </div>
           );
@@ -330,308 +415,433 @@ const HostView = ({ gameState, dbConnected, onResetRole }) => {
     </div>
   );
 
-  const isRpgPhase = ["phase_1", "phase_2", "phase_3"].includes(gameState.status);
-
   return (
     <div className="minigame-panel host-panel">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
+      {/* Top Header */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "15px",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          paddingBottom: "12px",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <IconDesktop className="w-5 h-5 text-red-500" />
-          <span style={{ fontWeight: 800, color: "var(--neon-red)", letterSpacing: "1px", textTransform: "uppercase", fontSize: "0.95rem" }}>Bảng điều khiển MC</span>
-          {currentConfig && (
-            <span style={{ fontSize: "0.85rem", color: "var(--neon-gold)", marginLeft: "10px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
-              {getPhaseIcon(gameState.status)} {currentConfig.name}
+          <span
+            style={{
+              fontWeight: 800,
+              color: "var(--neon-red)",
+              letterSpacing: "1px",
+              textTransform: "uppercase",
+              fontSize: "0.95rem",
+            }}
+          >
+            Bảng điều khiển MC (VNR-T17)
+          </span>
+          {isRpgPhase && (
+            <span
+              style={{
+                fontSize: "0.85rem",
+                color: "var(--neon-gold)",
+                marginLeft: "10px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              {getPhaseIcon(currentPhaseId)} Phase {currentPhaseId.replace("phase_", "")} ({cycle.year}): {cycle.title}
             </span>
           )}
         </div>
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button className="btn-cyber" style={{ padding: "6px 14px", fontSize: "0.75rem", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "9999px" }} onClick={onResetRole}>
+
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          {isRpgPhase && (
+            <div
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "0.95rem",
+                fontWeight: "bold",
+                color: isResolved ? "var(--neon-green)" : (secondsLeft <= 30 ? "var(--neon-red)" : "var(--neon-blue)"),
+                background: "rgba(0,0,0,0.4)",
+                padding: "5px 12px",
+                borderRadius: "9999px",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+            >
+              ⏱️ {isResolved ? `Chuyển phase sau: ${secondsLeft}s` : `Còn lại: ${Math.floor(secondsLeft / 60)}:${(secondsLeft % 60).toString().padStart(2, "0")}`}
+            </div>
+          )}
+
+          <button
+            className="btn-cyber"
+            style={{
+              padding: "6px 14px",
+              fontSize: "0.75rem",
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "9999px",
+            }}
+            onClick={onResetRole}
+          >
             <IconRefresh className="w-3.5 h-3.5 mr-1 inline-block" /> Đổi vai
           </button>
-          <button className="btn-cyber" style={{ padding: "6px 14px", fontSize: "0.75rem", background: "rgba(197, 39, 45, 0.1)", border: "1px solid rgba(197, 39, 45, 0.2)", borderRadius: "9999px", color: "var(--neon-red)" }} onClick={handleResetGame}>Reset</button>
         </div>
       </div>
 
+      {/* MÀN HÌNH CHỜ (WAITING) */}
       {gameState.status === "waiting" && (
-        <div className="lobby-waiting">
-          <h2 className="minigame-title">SỨ MỆNH LIÊM CHÍNH</h2>
-          <p className="minigame-subtitle">Hành trình xây dựng Nhà nước trong sạch, vững mạnh</p>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: "50px", margin: "35px 0" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "30px", alignItems: "start" }}>
+          <div>
+            <h2 className="minigame-title" style={{ fontSize: "2rem" }}>
+              MÔ PHỎNG QUYẾT ĐỊNH CHÍNH SÁCH (1978–1981)
+            </h2>
+            <p className="minigame-subtitle" style={{ fontSize: "1.1rem", marginBottom: "20px" }}>
+              Hành trình thực tiễn "xé rào" và quá trình thể chế hóa mở đường cho Đổi Mới
+            </p>
+
+            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "20px", marginBottom: "20px" }}>
+              <div style={{ color: "var(--neon-gold)", fontWeight: "bold", fontSize: "1rem", marginBottom: "8px" }}>
+                🎯 HƯỚNG DẪN DÀNH CHO MC & NGƯỜI CHƠI:
+              </div>
+              <ul style={{ color: "#cbd5e1", fontSize: "0.88rem", lineHeight: "1.65", margin: 0, paddingLeft: "20px" }}>
+                <li><strong>4 Giai đoạn lịch sử (1978–1981):</strong> Hải Phòng khoán hộ ➔ TP.HCM 'Xé rào' & Dệt Thành Công ➔ Long An bù giá vào lương ➔ Thể chế hóa Chỉ thị 100 & Quyết định 25-CP.</li>
+                <li><strong>Ghi điểm phong phú:</strong> Khảo sát thực địa (<span style={{ color: "#4ade80" }}>+5đ</span>), Đối thoại Nhân vật Lịch sử (<span style={{ color: "#4ade80" }}>+10đ</span>), Cứu giúp nhân dân (<span style={{ color: "#4ade80" }}>+8đ</span>), Thu thập Tư liệu Lịch sử (<span style={{ color: "#4ade80" }}>+2đ đến +10đ</span>).</li>
+                <li><strong>Tránh bẫy:</strong> Cẩn thận bẫy đóng băng quan liêu <strong style={{ color: "#38bdf8" }}>❄️</strong> (đóng băng 2.5s, <span style={{ color: "#f87171" }}>-3đ</span>).</li>
+                <li><strong>Quyết định chính sách:</strong> Biểu quyết phương án cải cách và phân bổ Kế hoạch 3 phần (P1, P2, P3) để định hình kinh tế vĩ mô đất nước.</li>
+              </ul>
+            </div>
+
+            <button
+              className="btn-cyber btn-cyber-blue"
+              style={{ padding: "16px 32px", fontSize: "1.1rem", fontWeight: "800", width: "100%" }}
+              disabled={totalPlayers === 0}
+              onClick={handleStartGame}
+            >
+              Bắt đầu Phase 1 (Năm 1978) 🚀
+            </button>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "20px", padding: "24px" }}>
+            <span style={{ fontSize: "0.85rem", color: "var(--neon-gold)", textTransform: "uppercase", fontWeight: "bold", marginBottom: "12px", letterSpacing: "1px" }}>
+              Quét mã QR để tham gia
+            </span>
             {qrUrl && (
-              <div style={{ background: "#fff", padding: "15px", borderRadius: "15px", boxShadow: "0 10px 30px rgba(0,0,0,0.3)" }}>
-                <img src={qrUrl} alt="QR Code" style={{ display: "block" }} />
-                <div style={{ color: "#333", fontSize: "0.85rem", fontWeight: "bold", marginTop: "10px" }}>QUÉT ĐỂ NHẬN NHIỆM VỤ</div>
-              </div>
+              <img
+                src={qrUrl}
+                alt="QR Code"
+                style={{ width: "200px", height: "200px", borderRadius: "12px", border: "2px solid var(--neon-red)", padding: "6px", background: "#fff", marginBottom: "16px" }}
+              />
             )}
-            <div style={{ textAlign: "left", maxWidth: "430px" }}>
-              <div style={{ fontSize: "1rem", marginBottom: "12px", color: "var(--neon-gold)", fontWeight: "bold", display: "flex", alignItems: "center", gap: "6px" }}>
-                <IconPhone className="w-5 h-5 text-cyan-400" /> LUẬT CHƠI:
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "0.8rem", color: "#8b8680" }}>Số người chơi đã vào:</div>
+              <div style={{ fontSize: "2rem", fontWeight: "bold", fontFamily: "var(--font-mono)", color: "var(--neon-gold)" }}>
+                {totalPlayers}
               </div>
-              <ol style={{ paddingLeft: "20px", color: "#8b8680", lineHeight: "1.7" }}>
-                <li>Nhập vai cán bộ trẻ trong cơ quan hành chính mô phỏng</li>
-                <li>Thu thập <b>hồ sơ, phản hồi tốt, liêm chính, minh bạch</b></li>
-                <li>Né <b>quan liêu, lãng phí, lợi ích cá nhân, đặc quyền</b></li>
-                <li>Giữ <b>Uy tín</b> cá nhân và nâng <b>Niềm tin nhân dân</b> của cả lớp</li>
-              </ol>
-              <div className="player-count" style={{ marginTop: "20px", display: "flex", alignItems: "center", gap: "8px" }}>
-                Đã tham gia: <span className="pix-num" style={{ fontFamily: "var(--font-mono)", fontWeight: "bold" }}>{totalPlayers}</span> cán bộ
-                <div className="loading-dots"><span></span><span></span><span></span></div>
-              </div>
-              <button className="btn-cyber btn-cyber-blue" style={{ width: "100%", marginTop: "20px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }} onClick={() => handleStartPhase("phase_1")}>
-                <IconLeaf className="w-5 h-5" /> Bắt đầu Phase 1: Vì Dân Phục Vụ
-              </button>
             </div>
           </div>
-          {totalPlayers > 0 && (
-            <div className="player-grid">
-              {playerList.map((p) => (
-                <div className="player-pill" key={p.id} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                  <IconUser className="w-4 h-4 text-slate-400" /> {p.name}
+        </div>
+      )}
+
+      {/* MÀN HÌNH ACTIVE PHASE (PHASE 1 - 4) */}
+      {isRpgPhase && !isResolved && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "20px" }}>
+          {/* CỘT TRÁI: KPI VĨ MÔ & SPECTATOR MAP */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            {/* KPI Cards Flat */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px" }}>
+              <div className="kpi-card-flat">
+                <span className="kpi-label">🌾 Lương Thực</span>
+                <span className="kpi-val pix-num" style={{ color: "#34d399" }}>{macro.foodSecurity}</span>
+              </div>
+              <div className="kpi-card-flat">
+                <span className="kpi-label">🏭 Công Nghiệp</span>
+                <span className="kpi-val pix-num" style={{ color: "#38bdf8" }}>{macro.industrialOutput}</span>
+              </div>
+              <div className="kpi-card-flat">
+                <span className="kpi-label">🤝 Ổn Định XH</span>
+                <span className="kpi-val pix-num" style={{ color: "#fbbf24" }}>{macro.socialStability}</span>
+              </div>
+              <div className="kpi-card-flat">
+                <span className="kpi-label">💵 Ngoại Tệ</span>
+                <span className="kpi-val pix-num" style={{ color: "#c084fc" }}>{macro.foreignCurrency}</span>
+              </div>
+              <div className="kpi-card-flat">
+                <span className="kpi-label">🏛️ Thể Chế</span>
+                <span className="kpi-val pix-num" style={{ color: "#f472b6" }}>{macro.policySupport}</span>
+              </div>
+            </div>
+
+            {/* Spectator Iframe Map */}
+            <div
+              style={{
+                border: "1px solid rgba(255,255,255,0.06)",
+                borderRadius: "16px",
+                overflow: "hidden",
+                background: "#000",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+              }}
+            >
+              <iframe
+                ref={iframeRef}
+                src={typeof window !== "undefined" && window.location.pathname.startsWith("/HCM202") ? "/rpg/index.html?role=host" : "./rpg/index.html?role=host"}
+                onLoad={handleIframeLoad}
+                style={{ width: "100%", aspectRatio: "16/9", border: "none", display: "block" }}
+                title="RPG Spectator"
+              />
+            </div>
+
+            <div style={{ color: "#8b8680", fontSize: "0.78rem", display: "flex", alignItems: "center", gap: "4px" }}>
+              <IconBulb className="w-3.5 h-3.5 text-yellow-500" /> Kéo chuột hoặc phím mũi tên để quan sát toàn bộ các trạm trên bản đồ
+            </div>
+          </div>
+
+          {/* CỘT PHẢI: MC DẪN DẮT, LEADERBOARD & ACTION BUTTON */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div
+              className="narrative-widget"
+              style={{
+                background: "rgba(255,183,0,0.02)",
+                border: "1px solid rgba(255,183,0,0.1)",
+                borderRadius: "12px",
+                padding: "12px 14px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  color: "var(--neon-gold)",
+                  fontWeight: "bold",
+                  fontSize: "0.75rem",
+                  textTransform: "uppercase",
+                  marginBottom: "4px",
+                }}
+              >
+                <IconBulb className="w-3.5 h-3.5 text-yellow-500" /> BỐI CẢNH LỊCH SỬ
+              </div>
+              <p style={{ color: "#e1dbd6", fontStyle: "italic", fontSize: "0.82rem", margin: 0, lineHeight: "1.45" }}>
+                "{cycle.description}"
+              </p>
+            </div>
+
+            {/* Tiến độ nộp phiếu */}
+            <div
+              style={{
+                background: "rgba(0,0,0,0.3)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                borderRadius: "10px",
+                padding: "10px 12px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span style={{ fontSize: "0.8rem", color: "#94a3b8" }}>Tiến độ nộp quyết định:</span>
+              <span style={{ fontWeight: "bold", color: "var(--neon-gold)", fontFamily: "var(--font-mono)", fontSize: "0.95rem" }}>
+                {submittedCount} / {totalPlayers}
+              </span>
+            </div>
+
+            <Leaderboard max={5} />
+
+            <button
+              className="btn-cyber"
+              style={{
+                width: "100%",
+                padding: "10px",
+                fontSize: "0.85rem",
+                fontWeight: "bold",
+                background: "rgba(16, 185, 129, 0.15)",
+                border: "1px solid rgba(16, 185, 129, 0.5)",
+                color: "#34d399",
+                borderRadius: "10px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                cursor: "pointer",
+              }}
+              onClick={handleSpawnExtraItems}
+            >
+              <span>🌱</span>
+              <span>THẢ THÊM TƯ LIỆU CHO CẢ LỚP (+5)</span>
+            </button>
+
+            <button
+              className="btn-cyber btn-cyber-blue"
+              style={{ width: "100%", padding: "14px", fontSize: "0.95rem", fontWeight: "800" }}
+              onClick={handleResolvePhase}
+            >
+              <IconBolt className="w-4 h-4 text-yellow-400 mr-1.5 inline-block" />
+              Khóa & Đánh Giá Quyết Định Ngay
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MÀN HÌNH REVIEW KẾT QUẢ QUYẾT ĐỊNH (RESOLVED) */}
+      {isRpgPhase && isResolved && gameState.currentResult && (() => {
+        const res = gameState.currentResult;
+        const agri = res.agriculture;
+        const ind = res.industry;
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            {/* Header kết quả */}
+            <div style={{ textAlign: "center" }}>
+              <span className="selected-character-badge" style={{ "--character-color": "#facc15", padding: "4px 12px", fontSize: "0.8rem", fontWeight: "bold" }}>
+                KẾT QUẢ GIAI ĐOẠN NĂM {cycle.year}
+              </span>
+              <h2 className="minigame-title" style={{ fontSize: "1.8rem", marginTop: "8px" }}>
+                QUYẾT ĐỊNH ĐA SỐ: {res.winningOptionTitle}
+              </h2>
+            </div>
+
+            {/* Voting Options Distribution Cards */}
+            <div style={{ display: "grid", gridTemplateColumns: `repeat(${cycle.options.length}, 1fr)`, gap: "16px" }}>
+              {cycle.options.map((opt, idx) => {
+                const optStats = voteStats.counts[opt.id] || { count: 0, percent: 0 };
+                const isWinning = opt.id === res.winningOptionId;
+
+                return (
+                  <div
+                    key={opt.id}
+                    style={{
+                      background: isWinning ? "rgba(16, 185, 129, 0.08)" : "rgba(15, 23, 42, 0.5)",
+                      border: isWinning ? "2px solid #34d399" : "1px solid rgba(255, 255, 255, 0.1)",
+                      borderRadius: "16px",
+                      padding: "16px",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: "800", fontSize: "1rem", color: isWinning ? "#34d399" : "#f8fafc", marginBottom: "6px" }}>
+                        {String.fromCharCode(65 + idx)}. {opt.title}
+                      </div>
+                      <div style={{ fontSize: "0.8rem", color: "#cbd5e1", lineHeight: "1.4", marginBottom: "12px" }}>
+                        {opt.description}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                        <div style={{ flex: 1, height: "16px", background: "rgba(0,0,0,0.4)", borderRadius: "8px", overflow: "hidden" }}>
+                          <div
+                            style={{
+                              height: "100%",
+                              width: `${optStats.percent}%`,
+                              background: isWinning ? "linear-gradient(90deg, #059669, #34d399)" : "linear-gradient(90deg, #3b82f6, #60a5fa)",
+                              borderRadius: "8px",
+                              transition: "width 0.6s ease",
+                            }}
+                          />
+                        </div>
+                        <span style={{ fontWeight: "800", fontFamily: "var(--font-mono)", fontSize: "0.88rem", color: isWinning ? "#34d399" : "#94a3b8" }}>
+                          {optStats.count} ({optStats.percent}%)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Macro KPIs Impact Grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "10px" }}>
+              {[
+                { label: "🌾 Lương Thực", key: "foodSecurity", val: res.macro?.foodSecurity, delta: res.macroDelta?.foodSecurity },
+                { label: "🏭 Công Nghiệp", key: "industrialOutput", val: res.macro?.industrialOutput, delta: res.macroDelta?.industrialOutput },
+                { label: "🤝 Ổn Định", key: "socialStability", val: res.macro?.socialStability, delta: res.macroDelta?.socialStability },
+                { label: "💵 Ngoại Tệ", key: "foreignCurrency", val: res.macro?.foreignCurrency, delta: res.macroDelta?.foreignCurrency },
+                { label: "🏛️ Thể Chế", key: "policySupport", val: res.macro?.policySupport, delta: res.macroDelta?.policySupport },
+              ].map((m) => (
+                <div key={m.key} className="kpi-card-flat" style={{ padding: "10px" }}>
+                  <span className="kpi-label">{m.label}</span>
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: "6px" }}>
+                    <span className="kpi-val pix-num">{m.val}</span>
+                    <span style={{ fontSize: "0.75rem", fontWeight: "bold", color: (m.delta || 0) >= 0 ? "#34d399" : "#f87171" }}>
+                      {(m.delta || 0) >= 0 ? `+${m.delta}` : m.delta}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-      )}
 
-      {isRpgPhase && currentConfig && (
-        <div className="host-dashboard-grid" style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: "20px", marginTop: "15px", textAlign: "left" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
-              <div className="kpi-card-flat"><span className="kpi-label">Cán Bộ Đang Hoạt Động</span><span className="kpi-val pix-num" style={{ color: "var(--neon-blue)" }}>{activePlayersCount}<span style={{ fontSize: "0.85rem", color: "#8b8680", fontWeight: "normal" }}>/{totalPlayers}</span></span></div>
-              <div className="kpi-card-flat"><span className="kpi-label">Uy Tín Trung Bình</span><span className="kpi-val pix-num" style={{ color: averageIntegrity >= 60 ? "var(--neon-green)" : "var(--neon-red)" }}>{averageIntegrity}</span></div>
-              <div className="kpi-card-flat"><span className="kpi-label">Hồ Sơ Đã Giải Quyết</span><span className="kpi-val pix-num" style={{ color: "var(--neon-green)" }}>{totalCaseFiles}</span></div>
-              <div className="kpi-card-flat"><span className="kpi-label">Niềm Tin Nhân Dân</span><span className="kpi-val pix-num" style={{ color: publicTrust >= 60 ? "var(--neon-gold)" : "var(--neon-red)" }}>{publicTrust}%</span></div>
-            </div>
-            {suspendedPlayersCount > 0 && (
-              <div style={{ background: "rgba(197,39,45,0.06)", border: "1px solid rgba(197,39,45,0.12)", borderRadius: "10px", padding: "8px 12px", fontSize: "0.8rem", color: "var(--neon-red)", display: "flex", alignItems: "center", gap: "6px" }}>
-                <IconWarning className="w-4 h-4 flex-shrink-0" />
-                <span>{suspendedPlayersCount} cán bộ đang cần hoàn thành nhiệm vụ khắc phục để lấy lại tín nhiệm.</span>
+            {/* Economic Formulas Explanation */}
+            {(agri || ind) && (
+              <div style={{ background: "rgba(15,23,42,0.9)", border: "1px solid rgba(250, 204, 21, 0.3)", borderRadius: "16px", padding: "16px" }}>
+                <div style={{ color: "#facc15", fontWeight: "800", fontSize: "0.95rem", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <IconBulb className="w-4 h-4 text-yellow-400" /> MÔ HÌNH TOÁN KINH TẾ & PHÂN BỔ:
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", fontSize: "0.82rem", color: "#e2e8f0" }}>
+                  {agri && (
+                    <div style={{ background: "rgba(0,0,0,0.3)", padding: "10px", borderRadius: "8px" }}>
+                      <strong style={{ color: "#34d399" }}>Nông nghiệp (Hàm Ya):</strong>
+                      <div>• Tỷ lệ khoán sản phẩm (Ie): {agri.Ie} (θ kiểm soát: {agri.theta})</div>
+                      <div>• Lao động tập trung (Lc): {agri.Lc}%</div>
+                      <div>• Hệ số sản lượng (Ya): <span style={{ color: "#34d399", fontWeight: "bold" }}>{agri.YaPercent}%</span></div>
+                    </div>
+                  )}
+                  {ind && (
+                    <div style={{ background: "rgba(0,0,0,0.3)", padding: "10px", borderRadius: "8px" }}>
+                      <strong style={{ color: "#38bdf8" }}>Công nghiệp (Kế hoạch 3 phần):</strong>
+                      <div>• P1(Pháp lệnh): {Math.round(ind.P1 * 100)}% | P2(Tự cân đối): {Math.round(ind.P2 * 100)}% | P3(Phụ thêm): {Math.round(ind.P3 * 100)}%</div>
+                      <div>• Chỉ số hiệu quả (Ei): <span style={{ color: "#38bdf8", fontWeight: "bold" }}>{ind.Ei}</span></div>
+                      {ind.administrativePenalty && (
+                        <div style={{ color: "#f87171", fontWeight: "bold", marginTop: "4px" }}>
+                          ⚠️ Phạt hành chính do P1 &lt; 40%
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
-            <div style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", overflow: "hidden", background: "#000", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
-              <iframe ref={iframeRef} src={`/rpg/index.html?role=host&phase=${encodeURIComponent(gameState.status || "phase_1")}`} onLoad={handleIframeLoad} style={{ width: "100%", aspectRatio: "16/9", border: "none", display: "block" }} title="RPG Spectator" />
-            </div>
-            <div style={{ color: "#8b8680", fontSize: "0.78rem", display: "flex", alignItems: "center", gap: "4px" }}>
-              <IconBulb className="w-3.5 h-3.5 text-yellow-500" /> Kéo chuột hoặc phím mũi tên để quan sát bản đồ
-            </div>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div className="narrative-widget" style={{ background: "rgba(255,183,0,0.01)", border: "1px solid rgba(255,183,0,0.06)", borderRadius: "12px", padding: "12px 14px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--neon-gold)", fontWeight: "bold", fontSize: "0.75rem", textTransform: "uppercase", marginBottom: "6px" }}>
-                <IconBulb className="w-3.5 h-3.5 text-yellow-500" /> MC Dẫn Dắt
-              </div>
-              <p style={{ color: "#e1dbd6", fontStyle: "italic", fontSize: "0.85rem", margin: 0, lineHeight: "1.5" }}>"{currentConfig.mcNarration}"</p>
-            </div>
-            <Leaderboard />
-            <div className="dashboard-widget" style={{ background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.04)", borderRadius: "14px", padding: "16px" }}>
-              <h4 style={{ fontSize: "0.8rem", color: "var(--neon-blue)", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 10px 0", display: "flex", alignItems: "center", gap: "6px" }}>
-                <IconBolt className="w-3.5 h-3.5 text-yellow-400" /> Kích Hoạt Sự Kiện (Spam Item)
-              </h4>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {currentConfig.hostEvents?.map((event) => (
-                  <button
-                    key={event.type}
-                    className="btn-market-flat"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: "8px",
-                      padding: "8px 12px",
-                      borderRadius: "0px",
-                      cursor: "pointer",
-                      width: "100%",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                    }}
-                    onClick={() => handleMarketEvent(event.type)}
-                  >
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        fontWeight: "bold",
-                        fontSize: "0.88rem",
-                        color: "#fff",
-                        whiteSpace: "nowrap",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <IconBook className="w-4 h-4 text-yellow-400 flex-shrink-0" />
-                      <span style={{ whiteSpace: "nowrap" }}>{event.label}</span>
-                    </span>
-                    <span
-                      style={{
-                        color: "#fef08a",
-                        background: "rgba(0,0,0,0.35)",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        padding: "2px 8px",
-                        fontSize: "0.72rem",
-                        fontWeight: "bold",
-                        whiteSpace: "nowrap",
-                        flexShrink: 0,
-                        borderRadius: "3px",
-                      }}
-                    >
-                      {event.hint}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "10px" }}>
-              {gameState.collectiveMessage && (
-                <div style={{ background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.03)", borderRadius: "10px", padding: "10px 12px", fontSize: "0.8rem", color: "var(--neon-gold)" }}>{gameState.collectiveMessage}</div>
-              )}
-              <div style={{ background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.03)", borderRadius: "10px", padding: "10px 12px", fontSize: "0.8rem" }}>
-                <span style={{ color: "var(--neon-gold)", fontWeight: "bold", display: "block", marginBottom: "3px" }}>MC CHỐT Ý:</span>
-                <span style={{ color: "#a8a29a", lineHeight: "1.4" }}>{currentConfig.recap}</span>
-              </div>
-              {gameState.status === "phase_1" && <button className="btn-cyber" style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "12px", fontSize: "0.95rem", whiteSpace: "nowrap" }} onClick={() => handleTriggerSituation(1)}><IconBolt className="w-4 h-4 text-yellow-500 animate-pulse flex-shrink-0" /> <span style={{ whiteSpace: "nowrap" }}>Chốt Phase 1 & Tình huống 1</span></button>}
-              {gameState.status === "phase_2" && <button className="btn-cyber" style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "12px", fontSize: "0.95rem", whiteSpace: "nowrap" }} onClick={() => handleTriggerSituation(2)}><IconBolt className="w-4 h-4 text-yellow-500 animate-pulse flex-shrink-0" /> <span style={{ whiteSpace: "nowrap" }}>Chốt Phase 2 & Tình huống 2</span></button>}
-              {gameState.status === "phase_3" && <button className="btn-cyber btn-cyber-blue" style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", padding: "12px", fontSize: "0.95rem", whiteSpace: "nowrap" }} onClick={handleFinishGame}><IconTrophy className="w-4 h-4 text-yellow-500 animate-bounce flex-shrink-0" /> <span style={{ whiteSpace: "nowrap" }}>Kết thúc & Tổng kết</span></button>}
-            </div>
-          </div>
-        </div>
-      )}
 
-      {(gameState.status === "situation_1" || gameState.status === "situation_2") && (() => {
-        const sitIdx = gameState.status === "situation_1" ? 0 : 1;
-        const sit = situations[sitIdx];
-        const stats = getVoteStats();
-        const nextPhase = gameState.status === "situation_1" ? "phase_2" : "phase_3";
-        return (
-          <div>
-            <div style={{ textAlign: "center", marginBottom: "16px" }}>
-              <span style={{ background: "rgba(239, 68, 68, 0.15)", color: "var(--neon-red)", border: "1px solid rgba(239, 68, 68, 0.3)", padding: "4px 14px", borderRadius: "20px", fontSize: "0.85rem", fontWeight: "bold", letterSpacing: "1px" }}>
-                BIỂU QUYẾT ĐẠO ĐỨC CÔNG VỤ
-              </span>
-              <h2 style={{ color: "#ffffff", fontSize: "1.6rem", fontWeight: "800", marginTop: "10px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-                <IconBolt className="w-6 h-6 text-red-500 animate-pulse" /> TÌNH HUỐNG {sitIdx + 1}: {sit.title.toUpperCase()}
-              </h2>
-              <p style={{ color: "var(--neon-gold)", fontSize: "0.95rem", fontStyle: "italic", margin: "4px 0 0" }}>{sit.subtitle}</p>
-            </div>
-
-            <div className="situation-box" style={{ fontSize: "1.12rem", lineHeight: "1.8", marginBottom: "25px", background: "rgba(15,23,42,0.8)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", padding: "20px 24px" }}>
-              {sit.story}
-            </div>
-
-            {/* BẢNG KẾT QUẢ BIỂU QUYẾT VÀ SO SÁNH 2 ĐÁP ÁN A & B */}
-            <div style={{ margin: "25px 0" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
-                <h3 style={{ fontSize: "1.05rem", color: "#38bdf8", textTransform: "uppercase", fontWeight: "800", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
-                  <IconUser className="w-5 h-5 text-cyan-400" /> KẾT QUẢ BIỂU QUYẾT CẢ LỚP: ({stats.total}/{totalPlayers} Cán bộ đã bầu)
-                </h3>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-                {/* CỘT ĐÁP ÁN A */}
-                <div style={{ background: "rgba(12, 74, 110, 0.2)", border: "2px solid rgba(56, 189, 248, 0.4)", borderRadius: "16px", padding: "18px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                    <div style={{ fontWeight: "800", fontSize: "1.05rem", color: "#38bdf8" }}>A. {sit.optionA.label}</div>
-                  </div>
-                  <div style={{ fontSize: "0.82rem", color: "#f87171", fontWeight: "bold", marginBottom: "10px" }}>
-                    {sit.optionA.ethicalEvaluation}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-                    <div style={{ flex: 1, height: "24px", background: "rgba(0,0,0,0.4)", borderRadius: "12px", overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${stats.aPercent}%`, background: "linear-gradient(90deg, #0284c7, #38bdf8)", transition: "width 0.8s", borderRadius: "12px" }} />
-                    </div>
-                    <span style={{ fontWeight: "800", fontFamily: "var(--font-mono)", fontSize: "1rem", color: "#38bdf8" }}>{stats.aCount} ({stats.aPercent}%)</span>
-                  </div>
-                  <div style={{ fontSize: "0.85rem", color: "#cbd5e1", lineHeight: "1.5", background: "rgba(0,0,0,0.25)", padding: "10px", borderRadius: "10px" }}>
-                    <b>Hệ quả:</b> {sit.optionA.consequence}
-                  </div>
-                </div>
-
-                {/* CỘT ĐÁP ÁN B */}
-                <div style={{ background: "rgba(6, 78, 59, 0.2)", border: "2px solid rgba(16, 185, 129, 0.4)", borderRadius: "16px", padding: "18px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                    <div style={{ fontWeight: "800", fontSize: "1.05rem", color: "#34d399" }}>B. {sit.optionB.label}</div>
-                  </div>
-                  <div style={{ fontSize: "0.82rem", color: "#34d399", fontWeight: "bold", marginBottom: "10px" }}>
-                    {sit.optionB.ethicalEvaluation}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-                    <div style={{ flex: 1, height: "24px", background: "rgba(0,0,0,0.4)", borderRadius: "12px", overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${stats.bPercent}%`, background: "linear-gradient(90deg, #059669, #34d399)", transition: "width 0.8s", borderRadius: "12px" }} />
-                    </div>
-                    <span style={{ fontWeight: "800", fontFamily: "var(--font-mono)", fontSize: "1rem", color: "#34d399" }}>{stats.bCount} ({stats.bPercent}%)</span>
-                  </div>
-                  <div style={{ fontSize: "0.85rem", color: "#cbd5e1", lineHeight: "1.5", background: "rgba(0,0,0,0.25)", padding: "10px", borderRadius: "10px" }}>
-                    <b>Hệ quả:</b> {sit.optionB.consequence}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* BÌNH LUẬN & BÀI HỌC TƯ TƯỞNG HỒ CHÍ MINH */}
-            <div className="explanation-section" style={{ background: "rgba(15,23,42,0.9)", border: "1px solid rgba(250, 204, 21, 0.3)", borderRadius: "18px", padding: "22px", marginTop: "25px" }}>
-              <div style={{ color: "#facc15", fontWeight: "800", fontSize: "1.1rem", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
-                <IconBulb className="w-5 h-5 text-yellow-400" /> BÀI HỌC TƯ TƯỞNG HỒ CHÍ MINH & ĐẠO ĐỨC CÔNG VỤ:
-              </div>
-              <p style={{ color: "#fef08a", fontSize: "0.95rem", lineHeight: "1.6", fontStyle: "italic", background: "rgba(250,204,21,0.06)", padding: "12px 16px", borderRadius: "10px", borderLeft: "4px solid #facc15", margin: "0 0 14px" }}>
-                {sit.hoChiMinhThought}
-              </p>
-              
-              <div style={{ color: "#e2e8f0", fontSize: "0.9rem", lineHeight: "1.6", margin: "0 0 14px" }}>
-                <span style={{ color: "#38bdf8", fontWeight: "bold" }}>Ý nghĩa cốt lõi: </span>
-                {sit.explanationSummary}
-              </div>
-
-              <div style={{ background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "12px", padding: "14px 18px" }}>
-                <div style={{ color: "#f87171", fontWeight: "800", fontSize: "0.92rem", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <IconMarxTheory className="w-4 h-4 text-red-500" /> MC GỢI Ý THẢO LUẬN VỚI HỘI TRƯỜNG:
-                </div>
-                <p style={{ color: "#ffffff", fontWeight: "bold", fontSize: "0.95rem", margin: "0 0 6px" }}>
-                  "{sit.discussionQuestion}"
-                </p>
-                <p style={{ color: "#94a3b8", fontSize: "0.85rem", margin: 0, lineHeight: "1.5" }}>
-                  {sit.marxLenin}
-                </p>
-              </div>
-            </div>
-
-            <div style={{ marginTop: "25px" }}>
-              <Leaderboard max={5} title="BẢNG XẾP HẠNG TẠM THỜI" />
-            </div>
-
-            <button className="btn-cyber btn-cyber-blue" style={{ width: "100%", marginTop: "25px", padding: "16px", fontSize: "1.15rem", fontWeight: "800", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "10px" }} onClick={() => handleStartNextPhaseFromSituation(nextPhase, sitIdx + 1)}>
-              {getPhaseIcon(nextPhase, "w-5 h-5")} Bắt đầu Phase {nextPhase.replace("phase_", "")}: {PHASE_CONFIGS[nextPhase].name} <IconArrowRight className="w-4 h-4" />
+            <button
+              className="btn-cyber btn-cyber-blue"
+              style={{ padding: "14px", fontSize: "1rem", fontWeight: "800" }}
+              onClick={handleNextPhase}
+            >
+              Chuyển Sang Phase Tiếp Theo &rarr;
             </button>
           </div>
         );
       })()}
 
+      {/* MÀN HÌNH TỔNG KẾT (FINISHED) */}
       {gameState.status === "finished" && (
         <div style={{ textAlign: "center" }}>
           <h2 className="minigame-title" style={{ display: "inline-flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
-            <IconTrophy className="w-10 h-10 text-yellow-500 animate-bounce" /> {getTrustResult(publicTrust)}
+            <IconTrophy className="w-10 h-10 text-yellow-500 animate-bounce" /> HOÀN THÀNH MÔ PHỎNG LỊCH SỬ 1978–1981
           </h2>
-          <p className="minigame-subtitle">Tổng kết Sứ Mệnh Liêm Chính của toàn cơ quan</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", margin: "24px 0" }}>
-            <div className="kpi-card-flat"><span className="kpi-label">Cán bộ tham gia</span><span className="kpi-val pix-num">{totalPlayers}</span></div>
-            <div className="kpi-card-flat"><span className="kpi-label">Hoàn thành Phase 3</span><span className="kpi-val pix-num">{phaseCompletedCount}</span></div>
-            <div className="kpi-card-flat"><span className="kpi-label">Uy tín trung bình</span><span className="kpi-val pix-num">{averageIntegrity}</span></div>
-            <div className="kpi-card-flat"><span className="kpi-label">Niềm tin nhân dân</span><span className="kpi-val pix-num">{publicTrust}%</span></div>
+          <p className="minigame-subtitle">Tổng kết 4 chu kỳ quyết định của toàn cơ quan</p>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "12px", margin: "24px 0" }}>
+            <div className="kpi-card-flat"><span className="kpi-label">🌾 Lương Thực</span><span className="kpi-val pix-num">{macro.foodSecurity}</span></div>
+            <div className="kpi-card-flat"><span className="kpi-label">🏭 Công Nghiệp</span><span className="kpi-val pix-num">{macro.industrialOutput}</span></div>
+            <div className="kpi-card-flat"><span className="kpi-label">🤝 Ổn Định XH</span><span className="kpi-val pix-num">{macro.socialStability}</span></div>
+            <div className="kpi-card-flat"><span className="kpi-label">💵 Ngoại Tệ</span><span className="kpi-val pix-num">{macro.foreignCurrency}</span></div>
+            <div className="kpi-card-flat"><span className="kpi-label">🏛️ Thể Chế</span><span className="kpi-val pix-num">{macro.policySupport}</span></div>
           </div>
+
           <Leaderboard max={10} title="BẢNG XẾP HẠNG CHI TIẾT (TOP 10)" />
+
           <div className="mission-card" style={{ marginTop: "24px", textAlign: "left" }}>
-            <div className="mission-label">LỚP VỪA TRẢI NGHIỆM GÌ?</div>
-            <div className="mission-text">Quyền lực không tự nhiên tạo ra một bộ máy tốt. Khi thực thi công vụ, cán bộ luôn có thể gặp sức ép của quan hệ cá nhân, thành tích, lợi ích và sự quan liêu.</div>
-          </div>
-          <div style={{ background: "rgba(255,183,0,0.04)", border: "1px solid rgba(255,183,0,0.15)", borderRadius: "16px", padding: "24px", marginTop: "30px", textAlign: "left", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.02)" }}>
-            <div style={{ fontWeight: "bold", color: "var(--neon-gold)", marginBottom: "10px", fontSize: "1.1rem", display: "flex", alignItems: "center", gap: "6px" }}>
-              <IconBulb className="w-5 h-5 text-yellow-500" /> Bài học tổng kết:
+            <div className="mission-label">BÀI HỌC KINH TẾ CHÍNH TRỊ</div>
+            <div className="mission-text">
+              Thực tiễn sinh động giai đoạn 1978–1981 đã chứng minh rằng: khi mô hình tập trung quan liêu bộc lộ khuyết tật, những sáng kiến từ cơ sở (khoán sản phẩm, tự chủ sản xuất, cơ chế giá thị trường) đã tạo xung lực mạnh mẽ để mở đường cho Đổi Mới toàn diện 1986.
             </div>
-            <p style={{ color: "#e1dbd6", lineHeight: "1.7" }}>
-              Xây dựng Nhà nước trong sạch, vững mạnh không chỉ cần cán bộ có đạo đức mà còn cần trách nhiệm, minh bạch và cơ chế kiểm soát quyền lực. Một cơ quan phục vụ nhân dân phải vừa hiệu quả, vừa công khai, vừa giữ được niềm tin.
-            </p>
           </div>
+
           <div style={{ display: "flex", gap: "20px", marginTop: "30px" }}>
-            <button className="btn-cyber" style={{ flex: 1 }} onClick={() => handleStartPhase("phase_1")}>Chơi lại</button>
+            <button className="btn-cyber" style={{ flex: 1 }} onClick={handleStartGame}>Chơi lại từ Phase 1</button>
             <button className="btn-cyber btn-cyber-blue" style={{ flex: 1 }} onClick={handleResetGame}>Về phòng chờ</button>
           </div>
         </div>
