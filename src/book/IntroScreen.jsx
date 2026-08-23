@@ -19,31 +19,42 @@ export const IntroScreen = ({ onEnter }) => {
     >
       <div className="noise-overlay" />
 
+      {/* Top Left Group 1 Label */}
+      <div className="absolute top-8 left-8 z-20 opacity-0 animate-[fadeIn_1s_ease_0.3s_forwards]">
+        <span 
+          className="text-xs md:text-sm tracking-[0.2em] uppercase"
+          style={{ fontFamily: "'Inter', sans-serif", color: '#8B7355', fontWeight: 600 }}
+        >
+          Group 1
+        </span>
+      </div>
+
       {/* Magazine Cover Content */}
-      <div className="relative z-10 flex flex-col items-center text-center max-w-2xl px-6">
+      <div className="relative z-10 flex flex-col items-center text-center w-full max-w-5xl px-6">
         
         {/* Issue info */}
         <div 
-          className="flex items-center gap-3 mb-4 opacity-0 animate-[fadeIn_1s_ease_0.3s_forwards]"
+          className="flex items-center gap-3 mb-6 opacity-0 animate-[fadeIn_1s_ease_0.3s_forwards]"
           style={{ fontFamily: "'Inter', sans-serif" }}
         >
-          <span className="text-[10px] tracking-[0.3em] uppercase" style={{ color: '#8B7355' }}>Kỳ 1</span>
+          <span className="text-[10px] tracking-[0.3em] uppercase font-semibold" style={{ color: '#8B7355' }}>Đề tài VNR-T17</span>
           <span style={{ color: '#C5272D', fontSize: '8px' }}>●</span>
-          <span className="text-[10px] tracking-[0.3em] uppercase" style={{ color: '#8B7355' }}>Tháng 5/2026</span>
+          <span className="text-[10px] tracking-[0.3em] uppercase font-semibold" style={{ color: '#8B7355' }}>Giai đoạn 1979–1981</span>
         </div>
 
         {/* Masthead — Magazine title */}
         <h1
-          className="text-4xl md:text-6xl font-bold mb-2 opacity-0 animate-[slideInFromTop_1s_ease_0.5s_forwards]"
-          style={{ fontFamily: "'Playfair Display', serif", color: '#C5272D', lineHeight: 1.1, letterSpacing: '0.05em' }}
+          className="text-2xl md:text-3xl font-semibold mb-4 opacity-0 animate-[slideInFromTop_1s_ease_0.5s_forwards]"
+          style={{ fontFamily: "'EB Garamond', serif", color: '#C5272D', letterSpacing: '0.15em', textTransform: 'uppercase' }}
         >
-          TẠP CHÍ
+          Tạp chí Lịch sử Đảng
         </h1>
+        
         <h2
-          className="text-5xl md:text-7xl font-bold mb-2 opacity-0 animate-[slideInFromTop_1s_ease_0.7s_forwards]"
-          style={{ fontFamily: "'Playfair Display', serif", color: '#1A1A1A', lineHeight: 1.1 }}
+          className="text-3xl md:text-5xl font-bold mb-4 opacity-0 animate-[slideInFromTop_1s_ease_0.7s_forwards] w-full"
+          style={{ fontFamily: "'EB Garamond', serif", color: '#1A1A1A', lineHeight: 1.4 }}
         >
-          PHÁP QUYỀN
+          SẢN XUẤT BUNG RA – BƯỚC ĐỘT PHÁ TƯ DUY TỪ RUỘNG ĐỒNG VÀ NHÀ MÁY
         </h2>
 
         {/* Decorative line */}
@@ -58,7 +69,7 @@ export const IntroScreen = ({ onEnter }) => {
           className="tracking-[0.15em] uppercase text-xs mb-3 opacity-0 animate-[fadeIn_1s_ease_1.1s_forwards]"
           style={{ fontFamily: "'Inter', sans-serif", color: '#8B7355' }}
         >
-          Mục 3 · Nhà nước trong sạch, vững mạnh
+          CHUYÊN ĐỀ ĐỔI MỚI KINH TẾ (1979–1981) • ĐỀ TÀI VNR-T17
         </p>
 
         {/* Tagline */}
@@ -66,7 +77,7 @@ export const IntroScreen = ({ onEnter }) => {
           className="text-sm md:text-base max-w-md mx-auto leading-relaxed mb-10 opacity-0 animate-[fadeIn_1s_ease_1.3s_forwards]"
           style={{ fontFamily: "'EB Garamond', serif", color: '#5C5044', fontStyle: 'italic' }}
         >
-          Kiểm soát quyền lực nhà nước — Phòng, chống tiêu cực — Vì nhân dân phục vụ
+          Cơ chế học hỏi và điều chỉnh chính sách thích ứng (Adaptive Policy Learning)
         </p>
 
         {/* CTA Button */}
