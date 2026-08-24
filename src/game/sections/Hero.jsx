@@ -65,14 +65,14 @@ export default function Hero() {
 
           {/* Headline */}
           <h1
-            className="text-4xl sm:text-6xl md:text-7xl lg:text-[5.2rem] leading-[1.08] tracking-tight text-[#3D3529] mb-6 drop-shadow-sm font-bold"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] leading-[1.1] tracking-tight text-[#3D3529] mb-6 drop-shadow-sm font-bold"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            <span className="gsap-text-reveal block font-light italic text-[#7A6040] text-2xl sm:text-4xl md:text-5xl mb-2">
-              Khúc Dạo Đầu Của Đổi Mới
+            <span className="gsap-text-reveal block font-light italic text-[#7A6040] text-xl sm:text-3xl md:text-4xl mb-3">
+              Tổng Luận Biện Chứng &
             </span>
             <span className="gsap-text-reveal block text-[#8B261D]">
-              “SẢN XUẤT BUNG RA”
+              BÀI HỌC QUẢN TRỊ THỜI ĐẠI
             </span>
           </h1>
 
@@ -80,14 +80,14 @@ export default function Hero() {
             className="gsap-reveal text-xs md:text-sm text-[#8B261D] font-semibold tracking-[0.18em] uppercase mb-4"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
-            Các thử nghiệm đổi mới sớm & Cơ chế thích ứng chính sách từ thực tiễn
+            Giải mã bước chuyển biến lịch sử "Sản xuất bung ra" (1979–1981)
           </p>
 
           <p
             className="gsap-reveal text-base md:text-lg text-[#5A4632] max-w-2xl leading-relaxed font-light mb-8"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
-            Giai đoạn 1979–1981 là "phòng thí nghiệm thực tiễn" sống động của Đảng. Từ những tiếng sấm "xé rào" tại Hải Phòng, TP. Hồ Chí Minh đến ba bước đột phá thể chế (Hội nghị TW6, Chỉ thị 100, Quyết định 25/26-CP) – tạo tiền đề thực chứng mở đường cho Đại hội VI năm 1986.
+            dưới lăng kính Triết học Mác - Lênin và Khoa học Chính sách Thích ứng (Adaptive Policy Learning).
           </p>
 
           {/* Historic Quote */}
@@ -103,11 +103,11 @@ export default function Hero() {
           {/* Jump Navigation Tags */}
           <div className="flex flex-wrap gap-2.5">
             {[
-              { label: "01. Bối Cảnh Lịch Sử", link: "#boi-canh" },
-              { label: "02. Hồ Sơ Xé Rào", link: "#xe-rao" },
-              { label: "03. Ba Đột Phá Thể Chế", link: "#dot-pha" },
-              { label: "04. Cơ Chế Học Hỏi", link: "#hoc-hoi" },
-              { label: "05. Di Sản & Bài Học", link: "#di-san" },
+              { label: "01. Mâu Thuẫn Kinh Tế", link: "#boi-canh" },
+              { label: "02. Nhận Thức Chân Lý", link: "#xe-rao" },
+              { label: "03. Phủ Định Biện Chứng", link: "#dot-pha" },
+              { label: "04. Chuyển Hóa Lượng - Chất", link: "#hoc-hoi" },
+              { label: "05. Bài Học Chiến Lược", link: "#di-san" },
             ].map((tag) => (
               <a
                 key={tag.label}
