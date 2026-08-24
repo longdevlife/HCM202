@@ -305,6 +305,8 @@ h1, h2, h3 {
 .navbar-brand {
   display: flex; align-items: center; gap: 0.8rem;
   font-family: 'Playfair Display', serif;
+  font-variant-numeric: lining-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
   color: #3D3529;
   font-size: 1.15rem;
   font-weight: 600;
