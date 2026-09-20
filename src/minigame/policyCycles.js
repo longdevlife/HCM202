@@ -1,152 +1,127 @@
+export const PHASE_3_PRESETS = {
+  toan_dien_ben_vung: { P1: 0.45, P2: 0.35, P3: 0.20, Lc: 65, theta: 0.60 },
+  uu_tien_nong_thon: { P1: 0.60, P2: 0.25, P3: 0.15, Lc: 80, theta: 0.80 },
+  dot_pha_tri_thuc: { P1: 0.30, P2: 0.40, P3: 0.30, Lc: 45, theta: 0.35 }
+};
+
+// Backward-compatibility aliases
 export const PHASE_4_PRESETS = {
-  plan_focus: { P1: 0.60, P2: 0.25, P3: 0.15, Lc: 80, theta: 0.80 },
-  balanced_khoan: { P1: 0.45, P2: 0.35, P3: 0.20, Lc: 65, theta: 0.60 },
-  incentive_risk: { P1: 0.30, P2: 0.40, P3: 0.30, Lc: 45, theta: 0.35 }
+  ...PHASE_3_PRESETS,
+  plan_focus: PHASE_3_PRESETS.uu_tien_nong_thon,
+  balanced_khoan: PHASE_3_PRESETS.toan_dien_ben_vung,
+  incentive_risk: PHASE_3_PRESETS.dot_pha_tri_thuc
 };
 
 export const POLICY_CYCLES = [
   {
     id: 'phase_1',
-    year: 1978,
-    yearLabel: '1978',
-    title: 'Khủng hoảng lương thực & Thử nghiệm khoán',
-    subtitle: 'Hợp tác xã Đoàn Xá (Hải Phòng)',
-    description: 'Sản xuất nông nghiệp theo công điểm đình đốn, thiếu đói gay gắt. Cần lựa chọn phương thức khoán để khôi phục nông nghiệp.',
+    year: 1,
+    yearLabel: 'Chặng 1',
+    title: 'Khái Luận Cơ Cấu Xã Hội & Cơ Cấu Xã Hội - Giai Cấp',
+    subtitle: 'Nhận diện các loại hình cơ cấu & 4 quan hệ cốt lõi của giai tầng',
+    description: 'Cơ cấu xã hội gồm nhiều loại hình (dân cư, nghề nghiệp, giai cấp, dân tộc, tôn giáo). Trong đó, cơ cấu xã hội - giai cấp giữ vị trí trung tâm vì phản ánh trực tiếp quan hệ sở hữu TLSX, tổ chức quản lý, địa vị chính trị và phân phối lợi ích.',
     durationMs: 240000,
     decisionWindowMs: 210000,
-    defaultOptionId: 'keep_piecework',
+    defaultOptionId: 'opt_p1_toandien',
     task: {
-      stationId: 'doan_xa_crisis',
-      objectiveLabel: 'Xác nhận tín hiệu thiếu lương thực tại điểm Đoàn Xá',
-      successText: 'Đã khảo sát thực địa tình hình sản xuất lúa và năng suất sụt giảm tại Đoàn Xá.',
+      stationId: 'station_p1_concept',
+      objectiveLabel: 'Khảo sát thực địa tại Trung Tâm Nghiên Cứu Cơ Cấu Xã Hội',
+      successText: 'Đã hoàn tất thu thập dữ liệu về các loại hình cơ cấu và 4 quan hệ nền tảng của giai tầng.',
       taskBonus: 5
     },
     options: [
       {
-        id: 'keep_piecework',
-        title: 'Duy trì công điểm tập trung',
-        shortTitle: 'Duy trì công điểm',
-        description: 'Tuân thủ chặt chẽ mô hình quản lý tập trung, chia công điểm truyền thống.',
-        effectsSummary: 'An toàn về mặt chính sách, nhưng khủng hoảng lương thực tiếp diễn kéo dài.'
+        id: 'opt_p1_phiendien',
+        title: 'Chỉ Chú Trọng Cơ Cấu Kỹ Thuật Nghề Nghiệp Thuần Túy',
+        shortTitle: 'Kỹ Thuật Nghề Nghiệp',
+        description: 'Xem nhẹ quan hệ giai cấp và phân phối lợi ích, chỉ tập trung các chỉ số cơ học về nghề nghiệp và dân cư đơn thuần.',
+        effectsSummary: 'Tăng nhẹ chỉ tiêu kinh tế trước mắt, nhưng tiềm ẩn nguy cơ bất bình đẳng và suy giảm gắn kết xã hội.'
       },
       {
-        id: 'try_harvest_contract',
-        title: 'Thử nghiệm khoán chui khâu gặt',
-        shortTitle: 'Khoán khâu gặt',
-        description: 'Giao khoán trực tiếp khâu thu hoạch đến hộ gia đình nhằm tạo động lực mạnh mẽ cho xã viên.',
-        effectsSummary: 'Tăng mạnh an ninh lương thực và ổn định xã hội, nhưng chịu rủi ro về mặt chính sách.'
+        id: 'opt_p1_toandien',
+        title: 'Tiếp Cận Toàn Diện & Trọng Tâm CCXH-GC',
+        shortTitle: 'Tiếp Cận Toàn Diện',
+        description: 'Lấy cơ cấu xã hội - giai cấp làm trọng tâm gắn với sở hữu TLSX và phân phối lợi ích, đồng thời phát triển hài hòa cơ cấu nghề nghiệp, dân tộc và tôn giáo.',
+        effectsSummary: 'Củng cố nền tảng chính trị - xã hội, tăng đồng thuận thể chế và bảo đảm định hướng xã hội chủ nghĩa.'
       }
     ]
   },
   {
     id: 'phase_2',
-    year: 1979,
-    yearLabel: '1979',
-    title: 'Hội nghị TW 6 & Tự cứu sản xuất công nghiệp',
-    subtitle: 'Xí nghiệp Dệt Thành Công (TP.HCM)',
-    description: 'Nhà nước thiếu ngoại tệ cấp phát nguyên liệu sợi, nhà máy đối mặt nguy cơ đóng cửa toàn bộ dây chuyền.',
+    year: 2,
+    yearLabel: 'Chặng 2',
+    title: 'Vị Trí Của CCXH-GC & Tác Động Tương Hỗ Xã Hội',
+    subtitle: 'Gắn trực tiếp với kinh tế - chính trị & không tuyệt đối hóa phiến diện',
+    description: 'Cơ cấu xã hội - giai cấp giữ vị trí quan trọng hàng đầu, tác động trực tiếp đến nghề nghiệp, dân cư, dân tộc, tôn giáo. Tuy nhiên, không được tuyệt đối hóa vai trò của nó mà phải tôn trọng mối quan hệ tác động qua lại giữa các loại hình cơ cấu.',
     durationMs: 240000,
     decisionWindowMs: 210000,
-    defaultOptionId: 'wait_state_supply',
+    defaultOptionId: 'opt_p2_haihoa',
     task: {
-      stationId: 'det_thanh_cong_yarn',
-      objectiveLabel: 'Xác nhận bảng thiếu sợi tại điểm Dệt Thành Công',
-      successText: 'Đã thu thập dữ liệu tồn kho sợi và nhu cầu nguyên liệu khẩn cấp của xí nghiệp.',
+      stationId: 'station_p2_central',
+      objectiveLabel: 'Khảo sát thực địa tại Viện Quan Hệ Giai Tầng & Khối Đại Đoàn Kết',
+      successText: 'Đã đánh giá thực nghiệm tác động lan tỏa của biến đổi giai cấp lên cơ cấu dân cư, dân tộc và tôn giáo.',
       taskBonus: 5
     },
     options: [
       {
-        id: 'wait_state_supply',
-        title: 'Chờ cấp phát chỉ tiêu từ Nhà nước',
-        shortTitle: 'Chờ cấp phát',
-        description: 'Không tự ý tìm nguồn sợi, kiên nhẫn chờ chỉ tiêu phân bổ nguyên liệu trung ương.',
-        effectsSummary: 'Bảo toàn dự trữ ngoại tệ nhà nước, nhưng máy móc đình đốn, sản lượng công nghiệp sụt giảm.'
+        id: 'opt_p2_tuyetdoi',
+        title: 'Tuyệt Đối Hóa Vai Trò Giai Cấp Một Chiều',
+        shortTitle: 'Tuyệt Đối Hóa Giai Cấp',
+        description: 'Nhấn mạnh thái quá yếu tố giai cấp, xem nhẹ đặc thù bản sắc văn hóa dân tộc, tôn giáo và sự đa dạng của các nhóm cộng đồng dân cư.',
+        effectsSummary: 'Gây xáo trộn và căng thẳng trong quan hệ xã hội, suy giảm khối đại đoàn kết toàn dân tộc.'
       },
       {
-        id: 'borrow_fx_import',
-        title: 'Vay ngoại tệ nhập sợi (Mô hình Kế hoạch 3 phần)',
-        shortTitle: 'Vay ngoại tệ nhập sợi',
-        description: 'Chủ động vay vốn ngân hàng ngoại thương để nhập sợi, sản xuất và xuất khẩu trả nợ.',
-        effectsSummary: 'Khôi phục mạnh sản lượng công nghiệp, giải quyết việc làm, gia tăng áp lực ngoại tệ.'
+        id: 'opt_p2_haihoa',
+        title: 'Hài Hòa Giai Cấp & Đại Đoàn Kết Toàn Dân',
+        shortTitle: 'Hài Hòa & Đoàn Kết',
+        description: 'Tôn trọng vị trí hàng đầu của CCXH-GC gắn với phát triển kinh tế, đồng thời bảo đảm bình đẳng dân tộc, tự do tín ngưỡng tôn giáo và đoàn kết toàn dân.',
+        effectsSummary: 'Gia tăng mạnh mẽ sự ổn định xã hội, tạo sức mạnh tổng hợp và nâng cao niềm tin vào thể chế.'
       }
     ]
   },
   {
     id: 'phase_3',
-    year: 1980,
-    yearLabel: '1980',
-    title: 'Khảo sát thực địa & Đối thoại đổi mới tư duy',
-    subtitle: 'Đoàn công tác Trung ương đi thực tế',
-    description: 'Đoàn lãnh đạo cấp cao khảo sát các mô hình "xé rào" thực tiễn tại Hải Phòng, TP.HCM và Long An.',
+    year: 3,
+    yearLabel: 'Chặng 3',
+    title: 'Quy Luật Biến Đổi & Chiến Lược Liên Minh Giai Cấp',
+    subtitle: 'Cơ cấu kinh tế quy định cơ cấu giai cấp ➔ Nhu cầu liên minh Công - Nông - Trí thức',
+    description: 'Kinh tế thay đổi kéo theo biến đổi nghề nghiệp và xuất hiện tầng lớp mới (doanh nhân, trí thức số). Các giai cấp vừa đấu tranh vừa liên minh, từng bước xích lại gần nhau. Cần quyết định gói chiến lược phân bổ nguồn lực quốc gia cho khối liên minh.',
     durationMs: 240000,
     decisionWindowMs: 210000,
-    defaultOptionId: 'report_truth',
+    defaultOptionId: 'toan_dien_ben_vung',
     task: {
-      stationId: 'field_survey_report',
-      objectiveLabel: 'Gặp điểm khảo sát và mở báo cáo thực tế',
-      successText: 'Đã hoàn thành buổi làm việc và trình bày báo cáo với đoàn công tác khảo sát thực địa.',
+      stationId: 'station_p3_alliance',
+      objectiveLabel: 'Biểu quyết tại Hội Nghị Chiến Lược Liên Minh Giai Cấp Toàn Quốc',
+      successText: 'Đã hoàn tất tham vấn phân bổ nguồn lực liên minh công nghiệp, nông nghiệp và kinh tế tri thức!',
       taskBonus: 5
     },
     options: [
       {
-        id: 'hide_data',
-        title: 'Che giấu số liệu "xé rào", báo cáo theo khuôn mẫu',
-        shortTitle: 'Báo cáo theo khuôn mẫu',
-        description: 'Tránh né rủi ro trách nhiệm tức thời, báo cáo thành tích theo đúng giáo điều cũ.',
-        effectsSummary: 'Giảm nguy cơ bị thanh tra trước mắt, nhưng bỏ lỡ cơ hội tháo gỡ điểm nghẽn thể chế.'
+        id: 'uu_tien_nong_thon',
+        title: 'Gói Ưu Tiên Nông Nghiệp & Nông Thôn Chiến Lược',
+        shortTitle: 'Ưu Tiên Nông Thôn',
+        description: 'P1=60% (Chỉ tiêu nhà nước & công nghiệp nặng), P2=25% (Hợp tác nông nghiệp), P3=15% (Kinh tế hộ) | Lc=80%, θ=0.80. Tập trung nguồn lực bảo vệ vững chắc địa bàn nông thôn.',
+        presetKey: 'uu_tien_nong_thon',
+        preset: PHASE_3_PRESETS.uu_tien_nong_thon,
+        effectsSummary: 'An toàn lương thực tuyệt đối và ổn định nông thôn, nhưng tốc độ chuyển dịch sang kinh tế tri thức chậm hơn.'
       },
       {
-        id: 'report_truth',
-        title: 'Báo cáo trung thực số liệu khoán & tự cân đối',
-        shortTitle: 'Báo cáo trung thực',
-        description: 'Trình bày thẳng thắn hiệu quả thực tế và các nút thắt của cơ chế quản lý cũ với lãnh đạo cấp cao.',
-        effectsSummary: 'Tạo đột phá để thay đổi thể chế vĩ mô, tăng cao sự ủng hộ chính sách đổi mới.'
-      }
-    ]
-  },
-  {
-    id: 'phase_4',
-    year: 1981,
-    yearLabel: '1981',
-    title: 'Thể chế hóa chính sách (Chỉ thị 100 & Quyết định 25-CP)',
-    subtitle: 'Hội nghị ban hành gói phân bổ cơ chế mới',
-    description: 'Chính thức ban hành cơ chế mới. Lựa chọn gói phân bổ tỷ trọng kế hoạch và khoán cho nền kinh tế.',
-    durationMs: 240000,
-    decisionWindowMs: 210000,
-    defaultOptionId: 'balanced_khoan',
-    task: {
-      stationId: 'policy_allocation_1981',
-      objectiveLabel: 'Chọn một gói phân bổ kế hoạch tại hội nghị tổng kết',
-      successText: 'Đã hoàn tất tham mưu phân bổ gói chính sách thể chế hóa năm 1981.',
-      taskBonus: 5
-    },
-    options: [
-      {
-        id: 'plan_focus',
-        title: 'Gói 1: Ưu tiên Pháp lệnh (Plan Focus)',
-        shortTitle: 'Ưu tiên Pháp lệnh',
-        description: 'P1=60%, P2=25%, P3=15% | Lc=80%, θ=0.80. Tập trung bảo đảm chỉ tiêu nhà nước giao.',
-        presetKey: 'plan_focus',
-        preset: PHASE_4_PRESETS.plan_focus,
-        effectsSummary: 'Hoàn thành nghiêm túc kế hoạch pháp lệnh, nhưng hạn chế động lực tự chủ của đơn vị.'
+        id: 'toan_dien_ben_vung',
+        title: 'Gói Liên Minh Toàn Diện & Phát Triển Bền Vững',
+        shortTitle: 'Liên Minh Toàn Diện',
+        description: 'P1=45% (Công nghiệp hiện đại), P2=35% (Nông nghiệp công nghệ), P3=20% (Kinh tế tri thức & Doanh nhân) | Lc=65%, θ=0.60. Cân đối hài hòa lợi ích giữa các giai tầng.',
+        presetKey: 'toan_dien_ben_vung',
+        preset: PHASE_3_PRESETS.toan_dien_ben_vung,
+        effectsSummary: 'Tăng trưởng kinh tế vững chắc, củng cố toàn diện an ninh lương thực, ổn định xã hội và khối liên minh công - nông - trí thức.'
       },
       {
-        id: 'balanced_khoan',
-        title: 'Gói 2: Khoán Cân Đối (Balanced Khoán)',
-        shortTitle: 'Khoán Cân Đối',
-        description: 'P1=45%, P2=35%, P3=20% | Lc=65%, θ=0.60. Cân đối hài hòa giữa pháp lệnh và quyền tự chủ.',
-        presetKey: 'balanced_khoan',
-        preset: PHASE_4_PRESETS.balanced_khoan,
-        effectsSummary: 'Đáp ứng kế hoạch pháp lệnh vừa đủ, đồng thời khích lệ sản xuất tự do và nâng cao đời sống.'
-      },
-      {
-        id: 'incentive_risk',
-        title: 'Gói 3: Khuyến Khích Thị Trường (Incentive Risk)',
-        shortTitle: 'Khuyến Khích Thị Trường',
-        description: 'P1=30%, P2=40%, P3=30% | Lc=45%, θ=0.35. Đẩy mạnh tự chủ nhưng P1 < P1Req (Phạt hành chính).',
-        presetKey: 'incentive_risk',
-        preset: PHASE_4_PRESETS.incentive_risk,
-        effectsSummary: 'Hiệu quả tự chủ và sản lượng tối đa, nhưng vi phạm ngưỡng pháp lệnh P1Req tối thiểu 40%.'
+        id: 'dot_pha_tri_thuc',
+        title: 'Gói Đột Phá Kinh Tế Tri Thức & Doanh Nhân Năng Động',
+        shortTitle: 'Đột Phá Tri Thức',
+        description: 'P1=30% (Nhà nước), P2=40% (Thị trường & Doanh nhân), P3=30% (Kinh tế số & Đổi mới sáng tạo) | Lc=45%, θ=0.35. Đẩy mạnh kinh tế tri thức và phát triển doanh nhân.',
+        presetKey: 'dot_pha_tri_thuc',
+        preset: PHASE_3_PRESETS.dot_pha_tri_thuc,
+        effectsSummary: 'Tăng trưởng năng động và đổi mới sáng tạo bứt phá, nhưng đòi hỏi chính sách hỗ trợ kịp thời để không giãn cách tầng lớp.'
       }
     ]
   }

@@ -108,8 +108,8 @@ export const MinigamePage = () => {
     return (
       <div className="minigame-container">
         <div className="minigame-panel role-selection">
-          <h1 className="minigame-title">MÔ PHỎNG QUYẾT ĐỊNH CHÍNH SÁCH</h1>
-          <p className="minigame-subtitle">Hành trình tháo gỡ khủng hoảng kinh tế & đổi mới thể chế (1978–1981)</p>
+          <h1 className="minigame-title">MÔ PHỎNG CHIẾN LƯỢC CƠ CẤU XÃ HỘI & LIÊN MINH</h1>
+          <p className="minigame-subtitle">Chuyên đề Chương 5: Cơ cấu xã hội - giai cấp trong thời kỳ quá độ lên chủ nghĩa xã hội</p>
 
           <div className="role-buttons">
             <div className="role-card role-player group" onClick={() => handleSelectRole("player")}>
@@ -118,7 +118,7 @@ export const MinigamePage = () => {
               </div>
               <div className="role-name">Người Chơi</div>
               <div className="role-desc">
-                Dành cho sinh viên cả lớp. Quét mã QR, nhập vai lực lượng thực tiễn (Đoàn Xá, Bà Thi, Dệt Thành Công, Long An), khảo sát thực địa và đưa ra quyết định chính sách.
+                Dành cho sinh viên cả lớp. Quét mã QR, nhập vai 4 lực lượng rường cột (Công nhân, Nông dân, Trí thức, Doanh nhân), khảo sát thực địa và biểu quyết chiến lược liên minh.
               </div>
             </div>
 
@@ -128,7 +128,7 @@ export const MinigamePage = () => {
               </div>
               <div className="role-name">Ban Tổ Chức (Host/MC) 🔒</div>
               <div className="role-desc">
-                Dành cho nhóm thuyết trình (Cần nhập mật khẩu). Chiếu màn hình lớn, điều phối 4 giai đoạn lịch sử 1978–1981, theo dõi mô hình vĩ mô và bảng xếp hạng realtime.
+                Dành cho nhóm thuyết trình (Cần nhập mật khẩu). Chiếu màn hình lớn, điều phối 3 chặng chuyên đề Chương 5, theo dõi mô hình phân bổ nguồn lực và bảng xếp hạng realtime.
               </div>
             </div>
           </div>

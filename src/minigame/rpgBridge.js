@@ -7,48 +7,48 @@ const finiteCoordinate = (value) => typeof value === 'number' && Number.isFinite
 
 export const POLICY_STATIONS = {
   phase_1: {
-    id: 'doan_xa_crisis',
+    id: 'station_p1_concept',
     phaseId: 'phase_1',
-    label: 'HTX Đoàn Xá (Khảo sát lương thực)',
-    shortLabel: 'Đoàn Xá',
-    icon: '🌾',
-    x: 480,
-    y: 139,
-    radius: 45,
-    prompt: 'Nhấn Space / Chạm vào để khảo sát thực địa Đoàn Xá'
-  },
-  phase_2: {
-    id: 'det_thanh_cong_yarn',
-    phaseId: 'phase_2',
-    label: 'XN Dệt Thành Công (Bảng thiếu sợi)',
-    shortLabel: 'Dệt Thành Công',
-    icon: '🏭',
-    x: 480,
-    y: 139,
-    radius: 45,
-    prompt: 'Nhấn Space / Chạm vào để kiểm tra kho sợi Dệt Thành Công'
-  },
-  phase_3: {
-    id: 'field_survey_report',
-    phaseId: 'phase_3',
-    label: 'Đoàn Khảo Sát Trung Ương (Báo cáo)',
-    shortLabel: 'Khảo Sát TW',
-    icon: '📋',
-    x: 480,
-    y: 139,
-    radius: 45,
-    prompt: 'Nhấn Space / Chạm vào để trình bày báo cáo với đoàn công tác'
-  },
-  phase_4: {
-    id: 'policy_allocation_1981',
-    phaseId: 'phase_4',
-    label: 'Hội Nghị Thể Chế 1981 (Phân bổ)',
-    shortLabel: 'Hội Nghị 1981',
+    label: 'Trung Tâm Khảo Sát Cơ Cấu Xã Hội',
+    shortLabel: 'Khảo Sát CCXH',
     icon: '🏛️',
     x: 480,
     y: 139,
     radius: 45,
-    prompt: 'Nhấn Space / Chạm vào để tham gia hội nghị phân bổ 1981'
+    prompt: 'Nhấn Space / Chạm vào để khảo sát dữ liệu cơ cấu xã hội'
+  },
+  phase_2: {
+    id: 'station_p2_central',
+    phaseId: 'phase_2',
+    label: 'Viện Quan Hệ Giai Tầng & Khối Đại Đoàn Kết',
+    shortLabel: 'Quan Hệ Giai Tầng',
+    icon: '⚖️',
+    x: 480,
+    y: 139,
+    radius: 45,
+    prompt: 'Nhấn Space / Chạm vào để khảo sát tác động tương hỗ xã hội'
+  },
+  phase_3: {
+    id: 'station_p3_alliance',
+    phaseId: 'phase_3',
+    label: 'Hội Nghị Chiến Lược Liên Minh Giai Cấp',
+    shortLabel: 'Hội Nghị Liên Minh',
+    icon: '🤝',
+    x: 480,
+    y: 150,
+    radius: 55,
+    prompt: 'Nhấn Space / Chạm vào để tham gia hội nghị biểu quyết liên minh'
+  },
+  phase_4: {
+    id: 'station_p3_alliance',
+    phaseId: 'phase_3',
+    label: 'Hội Nghị Chiến Lược Liên Minh Giai Cấp',
+    shortLabel: 'Hội Nghị Liên Minh',
+    icon: '🤝',
+    x: 480,
+    y: 150,
+    radius: 55,
+    prompt: 'Nhấn Space / Chạm vào để tham gia hội nghị biểu quyết liên minh'
   }
 };
 

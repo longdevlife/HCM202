@@ -1,4 +1,4 @@
-import { POLICY_CYCLES, PHASE_4_PRESETS, getPolicyCycle } from './policyCycles.js';
+import { POLICY_CYCLES, PHASE_3_PRESETS, PHASE_4_PRESETS, getPolicyCycle } from './policyCycles.js';
 import { getCharacterOption } from './characterOptions.js';
 
 export const clamp = (value, min, max) => {
@@ -64,6 +64,37 @@ export const calculateIndustry = ({
 };
 
 export const OPTION_EFFECTS = {
+  // Phase 1: Khái luận CCXH & CCXH-GC
+  opt_p1_toandien: {
+    foodSecurity: 4,
+    industrialOutput: 4,
+    socialStability: 8,
+    foreignCurrency: 2,
+    policySupport: 8
+  },
+  opt_p1_phiendien: {
+    foodSecurity: 0,
+    industrialOutput: 3,
+    socialStability: -6,
+    foreignCurrency: 1,
+    policySupport: -7
+  },
+  // Phase 2: Vị trí CCXH-GC & Tác động tương hỗ
+  opt_p2_haihoa: {
+    foodSecurity: 3,
+    industrialOutput: 3,
+    socialStability: 10,
+    foreignCurrency: 2,
+    policySupport: 9
+  },
+  opt_p2_tuyetdoi: {
+    foodSecurity: -3,
+    industrialOutput: -2,
+    socialStability: -10,
+    foreignCurrency: -4,
+    policySupport: -8
+  },
+  // Backward-compatibility aliases
   keep_piecework: {
     foodSecurity: 2,
     socialStability: -6,
@@ -212,8 +243,8 @@ export const resolvePhase = ({
   let updatedAgriculture = { ...(state.agriculture || {}) };
   let updatedIndustry = { ...(state.industry || {}) };
 
-  if (phaseId === 'phase_4') {
-    const preset = PHASE_4_PRESETS[winningOptionId] || PHASE_4_PRESETS.balanced_khoan;
+  if (phaseId === 'phase_3' || phaseId === 'phase_4') {
+    const preset = PHASE_3_PRESETS[winningOptionId] || PHASE_4_PRESETS[winningOptionId] || PHASE_3_PRESETS.toan_dien_ben_vung;
     const agri = calculateAgriculture({
       alpha: 0.92,
       beta: 0.45,

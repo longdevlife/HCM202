@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { getPolicyCycle } from './policyCycles.js';
 
 const METRIC_LABELS = {
-  foodSecurity: { label: 'An Ninh Lương Thực', icon: '🌾', color: '#10b981' },
-  industrialOutput: { label: 'Sản Lượng Công Nghiệp', icon: '🏭', color: '#0ea5e9' },
-  socialStability: { label: 'Ổn Định Xã Hội', icon: '🤝', color: '#f59e0b' },
-  foreignCurrency: { label: 'Dự Trữ Ngoại Tệ', icon: '💵', color: '#8b5cf6' },
-  policySupport: { label: 'Ủng Hộ Đổi Mới Thể Chế', icon: '🏛️', color: '#ec4899' }
+  foodSecurity: { label: 'Nông Thôn - Nông Nghiệp', icon: '🌾', color: '#10b981' },
+  industrialOutput: { label: 'Công Nghiệp & CNH', icon: '🏭', color: '#0ea5e9' },
+  socialStability: { label: 'Khối Đại Đoàn Kết XH', icon: '🤝', color: '#f59e0b' },
+  foreignCurrency: { label: 'Kinh Tế Tri Thức', icon: '💡', color: '#8b5cf6' },
+  policySupport: { label: 'Đồng Thuận Thể Chế XHCN', icon: '🏛️', color: '#ec4899' }
 };
 
 export const PhaseResult = ({
@@ -22,21 +22,36 @@ export const PhaseResult = ({
   const agri = result?.agriculture;
   const ind = result?.industry;
 
+  // Fix: countdown must use state + interval, not inline Date.now()
+  const [secondsLeft, setSecondsLeft] = useState(() =>
+    phaseEndsAt ? Math.max(0, Math.ceil((phaseEndsAt - Date.now()) / 1000)) : 0
+  );
+
+  useEffect(() => {
+    if (!phaseEndsAt || isFinished) return;
+    const interval = setInterval(() => {
+      const remaining = Math.max(0, Math.ceil((phaseEndsAt - Date.now()) / 1000));
+      setSecondsLeft(remaining);
+      if (remaining <= 0) clearInterval(interval);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [phaseEndsAt, isFinished]);
+
   return (
     <div className="phase-result-container bg-slate-900/95 border border-slate-700/80 rounded-xl p-4 shadow-2xl text-slate-100 animate-fadeIn">
       {/* Header */}
       <div className="border-b border-slate-700/60 pb-3 mb-4 flex items-center justify-between">
         <div>
           <span className="text-xs uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold mr-2">
-            Kết Quả Năm {cycle?.year || ''}
+            Kết Quả Chặng {cycle?.year || ''}
           </span>
           <h3 className="text-base font-bold text-slate-100 inline">
             Quyết định đa số: <span className="text-amber-400 font-extrabold">{result?.winningOptionTitle || 'Chính sách đã chọn'}</span>
           </h3>
         </div>
-        {phaseEndsAt && !isFinished && (
+        {phaseEndsAt && !isFinished && secondsLeft > 0 && (
           <div className="text-xs font-mono text-cyan-300 bg-cyan-500/10 px-2.5 py-1 rounded border border-cyan-500/30 font-semibold">
-            Chuyển phase sau: {Math.max(0, Math.ceil((phaseEndsAt - Date.now()) / 1000))}s
+            Chuyển phase sau: {secondsLeft}s
           </div>
         )}
       </div>
@@ -108,7 +123,7 @@ export const PhaseResult = ({
               <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
                 <div className="text-emerald-400 font-bold mb-1">Nông nghiệp: Ya = α·(Lc)^β·(Ie)^(1-β)</div>
                 <div className="text-[11px] text-slate-400 space-y-0.5">
-                  <div>• Tỷ lệ khoán sản phẩm (Ie): {agri.Ie} (θ kiểm soát: {agri.theta})</div>
+                  <div>• Tỷ lệ khuyến khích sản xuất (Ie): {agri.Ie} (θ kiểm soát: {agri.theta})</div>
                   <div>• Lao động tập trung (Lc): {agri.Lc}%</div>
                   <div>• Hệ số sản lượng nông nghiệp (Ya): <strong className="text-emerald-300">{agri.YaPercent}%</strong> ({agri.Ya})</div>
                 </div>
@@ -117,17 +132,17 @@ export const PhaseResult = ({
 
             {ind && (
               <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
-                <div className="text-cyan-400 font-bold mb-1">Công nghiệp (Kế hoạch 3 phần): Ei = Σ(γi·Pi)</div>
+                <div className="text-cyan-400 font-bold mb-1">Phân bổ Nguồn lực Liên minh 3 Khối: Ei = Σ(γi·Pi)</div>
                 <div className="text-[11px] text-slate-400 space-y-0.5">
-                  <div>• P1 (Pháp lệnh): {Math.round(ind.P1 * 100)}% | P2 (Tự cân đối): {Math.round(ind.P2 * 100)}% | P3 (Phụ thêm): {Math.round(ind.P3 * 100)}%</div>
-                  <div>• Chỉ số hiệu quả công nghiệp (Ei): <strong className="text-cyan-300">{ind.Ei}</strong></div>
+                  <div>• P1 (Công nghiệp - Nhà nước): {Math.round(ind.P1 * 100)}% | P2 (Nông nghiệp - Hợp tác): {Math.round(ind.P2 * 100)}% | P3 (Trí thức & Doanh nhân): {Math.round(ind.P3 * 100)}%</div>
+                  <div>• Chỉ số hiệu quả liên minh (Ei): <strong className="text-cyan-300">{ind.Ei}</strong></div>
                   {ind.administrativePenalty ? (
                     <div className="text-red-400 font-bold mt-1 bg-red-500/10 p-1 rounded border border-red-500/30">
-                      ⚠️ Phạt hành chính: P1 ({Math.round(ind.P1 * 100)}%) &lt; P1Req (40%) [-10 ủng hộ, -5 sản lượng]
+                      ⚠️ Cảnh báo: P1 ({Math.round(ind.P1 * 100)}%) &lt; 40% làm suy giảm vai trò nòng cốt nhà nước
                     </div>
                   ) : (
                     <div className="text-emerald-400 text-[10px] mt-1">
-                      ✓ Đạt chỉ tiêu pháp lệnh tối thiểu (P1 &ge; 40%)
+                      ✓ Đạt tỷ trọng trụ cột nhà nước tối thiểu (P1 &ge; 40%)
                     </div>
                   )}
                 </div>

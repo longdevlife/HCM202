@@ -23,8 +23,7 @@ import {
 const getPhaseIcon = (phaseId, className = "w-5 h-5") => {
   if (phaseId === "phase_1") return <IconLeaf className={`${className} text-emerald-500`} />;
   if (phaseId === "phase_2") return <IconWarning className={`${className} text-cyan-500`} />;
-  if (phaseId === "phase_3") return <IconWarning className={`${className} text-amber-500`} />;
-  if (phaseId === "phase_4") return <IconFlame className={`${className} text-red-500`} />;
+  if (phaseId === "phase_3") return <IconFlame className={`${className} text-amber-500`} />;
   return null;
 };
 
@@ -37,12 +36,86 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
   const positionsRef = useRef({});
   const autoResolvedRef = useRef("");
   const autoNextPhaseRef = useRef("");
+  const audioRef = useRef(null);
+
+  const [isBgmOn, setIsBgmOn] = useState(() => {
+    try {
+      const stored = localStorage.getItem("minigame_host_bgm");
+      if (stored !== null) return stored === "true";
+      return true; // Default ON as requested with Lovely Garden
+    } catch (_) {
+      return true;
+    }
+  });
 
   const currentPhaseId = gameState.phaseId || gameState.status;
   const cycle = getPolicyCycle(currentPhaseId);
-  const isRpgPhase = ["phase_1", "phase_2", "phase_3", "phase_4"].includes(gameState.status);
+  const isRpgPhase = ["phase_1", "phase_2", "phase_3"].includes(gameState.status);
   const isResolved = gameState.phaseStatus === "resolved";
   const isFinished = gameState.status === "finished";
+
+  // Audio setup for Host: "Lovely Garden"
+  useEffect(() => {
+    const audioSrc =
+      typeof window !== "undefined" && window.location.pathname.startsWith("/HCM202")
+        ? "/HCM202/lovely-garden.mp3"
+        : "/lovely-garden.mp3";
+    const audio = new Audio(audioSrc);
+    audio.loop = true;
+    audio.volume = 0.35;
+    audio.addEventListener("error", () => {
+      if (audio.src && !audio.src.includes("rpg/lovely-garden.mp3")) {
+        audio.src = "./rpg/lovely-garden.mp3";
+      }
+    });
+    audioRef.current = audio;
+
+    return () => {
+      try {
+        audio.pause();
+        audio.src = "";
+      } catch (_) {}
+      audioRef.current = null;
+    };
+  }, []);
+
+  // Sync BGM with Phase: Plays during active phase; pauses when Host resolves or finishes
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isBgmOn && isRpgPhase && gameState.phaseStatus === "active") {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn("Host audio autoplay pending interaction:", err);
+        });
+      }
+    } else if (isResolved || gameState.status === "finished" || !isBgmOn) {
+      audio.pause();
+    }
+  }, [isBgmOn, isRpgPhase, gameState.phaseStatus, isResolved, gameState.status]);
+
+  const handleToggleBgm = useCallback(() => {
+    setIsBgmOn((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("minigame_host_bgm", next.toString());
+      } catch (_) {}
+
+      const audio = audioRef.current;
+      if (audio) {
+        if (next) {
+          if (!isResolved && gameState.status !== "finished") {
+            audio.play().catch((err) => console.warn("Audio play error:", err));
+          }
+        } else {
+          audio.pause();
+        }
+      }
+      return next;
+    });
+  }, [isResolved, gameState.status]);
 
   // QR Code
   useEffect(() => {
@@ -119,6 +192,7 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
   const handleIframeLoad = useCallback(() => {
     iframeReadyRef.current = true;
     postRpgSnapshot(true);
+    iframeRef.current?.contentWindow?.postMessage({ type: "SET_BGM_MUTED", muted: true }, "*");
   }, [postRpgSnapshot]);
 
   useEffect(() => {
@@ -127,6 +201,9 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
 
   // Host Action: Resolve Phase
   const handleResolvePhase = useCallback(async () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
     if (!currentPhaseId || gameState.phaseStatus !== "active") return;
     try {
       let resolvedPatch = null;
@@ -174,25 +251,31 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
   // Host Action: Next Phase
   const handleNextPhase = useCallback(async () => {
     try {
+      if (audioRef.current && isBgmOn) {
+        audioRef.current.play().catch(() => {});
+      }
       const patch = buildNextPhasePatch(gameState, Date.now());
       await update(ref(db), patch);
     } catch (err) {
       console.error("Lỗi next phase:", err);
     }
-  }, [gameState]);
+  }, [gameState, isBgmOn]);
 
   // Host Action: Start Game (Phase 1)
   const handleStartGame = async () => {
     try {
+      if (audioRef.current && isBgmOn) {
+        audioRef.current.play().catch(() => {});
+      }
       const initial = createInitialPolicyState();
       const patch = buildStartPhasePatch(initial, "phase_1", Date.now());
 
       const playerUpdates = {};
       playerList.forEach((p) => {
         playerUpdates[`players/${p.id}/score`] = 0;
-        playerUpdates[`players/${p.id}/taskProgress`] = { phase_1: false, phase_2: false, phase_3: false, phase_4: false };
-        playerUpdates[`players/${p.id}/submitted`] = { phase_1: false, phase_2: false, phase_3: false, phase_4: false };
-        playerUpdates[`players/${p.id}/decisions`] = { phase_1: null, phase_2: null, phase_3: null, phase_4: null };
+        playerUpdates[`players/${p.id}/taskProgress`] = { phase_1: false, phase_2: false, phase_3: false };
+        playerUpdates[`players/${p.id}/submitted`] = { phase_1: false, phase_2: false, phase_3: false };
+        playerUpdates[`players/${p.id}/decisions`] = { phase_1: null, phase_2: null, phase_3: null };
         playerUpdates[`players/${p.id}/lastScoreDelta`] = 0;
       });
 
@@ -210,6 +293,9 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
   // Host Action: Reset Game
   const handleResetGame = async () => {
     try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
       const initial = createInitialPolicyState();
       await set(ref(db, "gameState"), initial);
       await remove(ref(db, "decisions"));
@@ -403,6 +489,20 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
                   </span>
                 </div>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", fontSize: "0.78rem" }}>
+                  {isRpgPhase && (
+                    <span
+                      style={{
+                        fontSize: "0.7rem",
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                        background: p.submitted?.[currentPhaseId] ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)",
+                        color: p.submitted?.[currentPhaseId] ? "#34d399" : "#fbbf24",
+                        border: p.submitted?.[currentPhaseId] ? "1px solid rgba(16, 185, 129, 0.4)" : "1px solid rgba(245, 158, 11, 0.4)",
+                      }}
+                    >
+                      {p.submitted?.[currentPhaseId] ? "✓ Đã nộp" : "⏳ Khảo sát"}
+                    </span>
+                  )}
                   <span className="pix-num" style={{ color: "var(--neon-gold)", fontWeight: "bold" }}>
                     {p.score || 0}đ
                   </span>
@@ -439,7 +539,7 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
               fontSize: "0.95rem",
             }}
           >
-            Bảng điều khiển MC (VNR-T17)
+            Bảng Điều Hành Ban Tổ Chức (Chương 5: Cơ Cấu Xã Hội - Giai Cấp & Liên Minh)
           </span>
           {isRpgPhase && (
             <span
@@ -475,6 +575,29 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
             </div>
           )}
 
+          {/* Host BGM Control Button */}
+          <button
+            className="btn-cyber"
+            style={{
+              padding: "6px 14px",
+              fontSize: "0.75rem",
+              background: isBgmOn ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
+              border: isBgmOn ? "1px solid rgba(16, 185, 129, 0.5)" : "1px solid rgba(239, 68, 68, 0.5)",
+              color: isBgmOn ? "#34d399" : "#f87171",
+              borderRadius: "9999px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+            onClick={handleToggleBgm}
+            title={isBgmOn ? "Tắt nhạc nền MC/Host (Lovely Garden)" : "Bật nhạc nền MC/Host (Lovely Garden)"}
+          >
+            <span>{isBgmOn ? "🔊" : "🔇"}</span>
+            <span>{isBgmOn ? "NHẠC (Lovely Garden)" : "TẮT NHẠC"}</span>
+          </button>
+
           <button
             className="btn-cyber"
             style={{
@@ -496,10 +619,10 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
         <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "30px", alignItems: "start" }}>
           <div>
             <h2 className="minigame-title" style={{ fontSize: "2rem" }}>
-              MÔ PHỎNG QUYẾT ĐỊNH CHÍNH SÁCH (1978–1981)
+              CHIẾN LƯỢC CƠ CẤU XÃ HỘI - GIAI CẤP & LIÊN MINH (CHƯƠNG 5)
             </h2>
             <p className="minigame-subtitle" style={{ fontSize: "1.1rem", marginBottom: "20px" }}>
-              Hành trình thực tiễn "xé rào" và quá trình thể chế hóa mở đường cho Đổi Mới
+              Mô phỏng chiến lược: Cơ cấu xã hội - giai cấp & Liên minh giai cấp trong thời kỳ quá độ lên CNXH
             </p>
 
             <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "20px", marginBottom: "20px" }}>
@@ -507,10 +630,11 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
                 🎯 HƯỚNG DẪN DÀNH CHO MC & NGƯỜI CHƠI:
               </div>
               <ul style={{ color: "#cbd5e1", fontSize: "0.88rem", lineHeight: "1.65", margin: 0, paddingLeft: "20px" }}>
-                <li><strong>4 Giai đoạn lịch sử (1978–1981):</strong> Hải Phòng khoán hộ ➔ TP.HCM 'Xé rào' & Dệt Thành Công ➔ Long An bù giá vào lương ➔ Thể chế hóa Chỉ thị 100 & Quyết định 25-CP.</li>
-                <li><strong>Ghi điểm phong phú:</strong> Khảo sát thực địa (<span style={{ color: "#4ade80" }}>+5đ</span>), Đối thoại Nhân vật Lịch sử (<span style={{ color: "#4ade80" }}>+10đ</span>), Cứu giúp nhân dân (<span style={{ color: "#4ade80" }}>+8đ</span>), Thu thập Tư liệu Lịch sử (<span style={{ color: "#4ade80" }}>+2đ đến +10đ</span>).</li>
+                <li><strong>3 Chặng chuyên đề trọng tâm:</strong> (1) Khái luận CCXH & CCXH-GC ➔ (2) Vị trí trung tâm & Tác động tương hỗ ➔ (3) Quy luật biến đổi & Chiến lược Liên minh Giai cấp.</li>
+                <li><strong>4 Lực lượng rường cột:</strong> Công nhân tiên phong, Nông dân chiến lược, Trí thức sáng tạo, Doanh nhân năng động cùng tham gia kiến tạo chính sách.</li>
+                <li><strong>Ghi điểm phong phú:</strong> Khảo sát thực địa (<span style={{ color: "#4ade80" }}>+5đ</span>), Đối thoại Chuyên gia (<span style={{ color: "#4ade80" }}>+10đ</span>), Hỗ trợ đại biểu nhân dân (<span style={{ color: "#4ade80" }}>+8đ</span>), Thu thập Tư liệu văn kiện (<span style={{ color: "#4ade80" }}>+2đ đến +10đ</span>).</li>
                 <li><strong>Tránh bẫy:</strong> Cẩn thận bẫy đóng băng quan liêu <strong style={{ color: "#38bdf8" }}>❄️</strong> (đóng băng 2.5s, <span style={{ color: "#f87171" }}>-3đ</span>).</li>
-                <li><strong>Quyết định chính sách:</strong> Biểu quyết phương án cải cách và phân bổ Kế hoạch 3 phần (P1, P2, P3) để định hình kinh tế vĩ mô đất nước.</li>
+                <li><strong>Quyết định chiến lược:</strong> Biểu quyết định hướng phát triển và phân bổ gói nguồn lực (P1, P2, P3) để phát huy sức mạnh khối liên minh công - nông - trí thức.</li>
               </ul>
             </div>
 
@@ -520,7 +644,7 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
               disabled={totalPlayers === 0}
               onClick={handleStartGame}
             >
-              Bắt đầu Phase 1 (Năm 1978) 🚀
+              Bắt đầu Chặng 1 (Khái luận CCXH & CCXH-GC) 🚀
             </button>
           </div>
 
@@ -545,140 +669,272 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
         </div>
       )}
 
-      {/* MÀN HÌNH ACTIVE PHASE (PHASE 1 - 4) */}
+      {/* MÀN HÌNH ACTIVE PHASE (PHASE 1 - 3): RẠP CHIẾU TOÀN CẢNH FULL-WIDTH */}
       {isRpgPhase && !isResolved && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "20px" }}>
-          {/* CỘT TRÁI: KPI VĨ MÔ & SPECTATOR MAP */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            {/* KPI Cards Flat */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px" }}>
-              <div className="kpi-card-flat">
-                <span className="kpi-label">🌾 Lương Thực</span>
-                <span className="kpi-val pix-num" style={{ color: "#34d399" }}>{macro.foodSecurity}</span>
-              </div>
-              <div className="kpi-card-flat">
-                <span className="kpi-label">🏭 Công Nghiệp</span>
-                <span className="kpi-val pix-num" style={{ color: "#38bdf8" }}>{macro.industrialOutput}</span>
-              </div>
-              <div className="kpi-card-flat">
-                <span className="kpi-label">🤝 Ổn Định XH</span>
-                <span className="kpi-val pix-num" style={{ color: "#fbbf24" }}>{macro.socialStability}</span>
-              </div>
-              <div className="kpi-card-flat">
-                <span className="kpi-label">💵 Ngoại Tệ</span>
-                <span className="kpi-val pix-num" style={{ color: "#c084fc" }}>{macro.foreignCurrency}</span>
-              </div>
-              <div className="kpi-card-flat">
-                <span className="kpi-label">🏛️ Thể Chế</span>
-                <span className="kpi-val pix-num" style={{ color: "#f472b6" }}>{macro.policySupport}</span>
-              </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%" }}>
+          {/* 1. TOP STATUS STRIP: 5 CHỈ SỐ VĨ MÔ CHƯƠNG 5 & TIẾN ĐỘ BIỂU QUYẾT */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(5, 1fr) auto",
+              gap: "10px",
+              alignItems: "stretch",
+            }}
+          >
+            <div className="kpi-card-flat" style={{ padding: "8px 12px" }}>
+              <span className="kpi-label">🌾 Nông Dân</span>
+              <span className="kpi-val pix-num" style={{ color: "#34d399", fontSize: "1.2rem" }}>{macro.foodSecurity}</span>
+            </div>
+            <div className="kpi-card-flat" style={{ padding: "8px 12px" }}>
+              <span className="kpi-label">🏭 Công Nhân</span>
+              <span className="kpi-val pix-num" style={{ color: "#38bdf8", fontSize: "1.2rem" }}>{macro.industrialOutput}</span>
+            </div>
+            <div className="kpi-card-flat" style={{ padding: "8px 12px" }}>
+              <span className="kpi-label">🤝 Khối Liên Minh</span>
+              <span className="kpi-val pix-num" style={{ color: "#fbbf24", fontSize: "1.2rem" }}>{macro.socialStability}</span>
+            </div>
+            <div className="kpi-card-flat" style={{ padding: "8px 12px" }}>
+              <span className="kpi-label">💡 Trí Thức & DN</span>
+              <span className="kpi-val pix-num" style={{ color: "#c084fc", fontSize: "1.2rem" }}>{macro.foreignCurrency}</span>
+            </div>
+            <div className="kpi-card-flat" style={{ padding: "8px 12px" }}>
+              <span className="kpi-label">🏛️ Thể Chế XHCN</span>
+              <span className="kpi-val pix-num" style={{ color: "#f472b6", fontSize: "1.2rem" }}>{macro.policySupport}</span>
             </div>
 
-            {/* Spectator Iframe Map */}
+            {/* Voting Progress Pill */}
             <div
               style={{
-                border: "1px solid rgba(255,255,255,0.06)",
-                borderRadius: "16px",
-                overflow: "hidden",
-                background: "#000",
-                boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                background: "rgba(15, 23, 42, 0.8)",
+                border: "1px solid rgba(250, 204, 21, 0.3)",
+                borderRadius: "12px",
+                padding: "8px 14px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                minWidth: "160px",
               }}
             >
-              <iframe
-                ref={iframeRef}
-                src={typeof window !== "undefined" && window.location.pathname.startsWith("/HCM202") ? "/rpg/index.html?role=host" : "./rpg/index.html?role=host"}
-                onLoad={handleIframeLoad}
-                style={{ width: "100%", aspectRatio: "16/9", border: "none", display: "block" }}
-                title="RPG Spectator"
-              />
-            </div>
-
-            <div style={{ color: "#8b8680", fontSize: "0.78rem", display: "flex", alignItems: "center", gap: "4px" }}>
-              <IconBulb className="w-3.5 h-3.5 text-yellow-500" /> Kéo chuột hoặc phím mũi tên để quan sát toàn bộ các trạm trên bản đồ
+              <div style={{ fontSize: "0.72rem", color: "#94a3b8", textTransform: "uppercase", fontWeight: "bold" }}>
+                Đại Biểu Biểu Quyết
+              </div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+                <span style={{ fontSize: "1.25rem", fontWeight: "800", color: "var(--neon-gold)", fontFamily: "var(--font-mono)" }}>
+                  {submittedCount} / {totalPlayers}
+                </span>
+                <span style={{ fontSize: "0.75rem", color: submittedCount === totalPlayers && totalPlayers > 0 ? "#34d399" : "#94a3b8" }}>
+                  ({totalPlayers > 0 ? Math.round((submittedCount / totalPlayers) * 100) : 0}%)
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* CỘT PHẢI: MC DẪN DẮT, LEADERBOARD & ACTION BUTTON */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <div
-              className="narrative-widget"
-              style={{
-                background: "rgba(255,183,0,0.02)",
-                border: "1px solid rgba(255,183,0,0.1)",
-                borderRadius: "12px",
-                padding: "12px 14px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  color: "var(--neon-gold)",
-                  fontWeight: "bold",
-                  fontSize: "0.75rem",
-                  textTransform: "uppercase",
-                  marginBottom: "4px",
-                }}
-              >
-                <IconBulb className="w-3.5 h-3.5 text-yellow-500" /> BỐI CẢNH LỊCH SỬ
-              </div>
-              <p style={{ color: "#e1dbd6", fontStyle: "italic", fontSize: "0.82rem", margin: 0, lineHeight: "1.45" }}>
-                "{cycle.description}"
-              </p>
-            </div>
+          {/* 2. FULL-WIDTH THEATER GAME MAP (TO NHƯ MÀN HÌNH NGƯỜI CHƠI) */}
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              border: "2px solid rgba(255, 255, 255, 0.12)",
+              borderRadius: "20px",
+              overflow: "hidden",
+              background: "#000",
+              boxShadow: "0 14px 40px rgba(0,0,0,0.6)",
+            }}
+          >
+            <iframe
+              ref={iframeRef}
+              src={typeof window !== "undefined" && window.location.pathname.startsWith("/HCM202") ? "/rpg/index.html?role=host" : "./rpg/index.html?role=host"}
+              onLoad={handleIframeLoad}
+              style={{ width: "100%", aspectRatio: "16/9", border: "none", display: "block" }}
+              title="RPG Spectator Theater"
+            />
 
-            {/* Tiến độ nộp phiếu */}
+            {/* In-game Floating HUD Overlay (Top-Left): Phase badge */}
             <div
               style={{
-                background: "rgba(0,0,0,0.3)",
-                border: "1px solid rgba(255,255,255,0.06)",
+                position: "absolute",
+                top: "14px",
+                left: "14px",
+                background: "rgba(0, 0, 0, 0.75)",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
                 borderRadius: "10px",
-                padding: "10px 12px",
+                padding: "6px 12px",
                 display: "flex",
-                justifyContent: "space-between",
                 alignItems: "center",
+                gap: "8px",
+                pointerEvents: "none",
+                zIndex: 5,
               }}
             >
-              <span style={{ fontSize: "0.8rem", color: "#94a3b8" }}>Tiến độ nộp quyết định:</span>
-              <span style={{ fontWeight: "bold", color: "var(--neon-gold)", fontFamily: "var(--font-mono)", fontSize: "0.95rem" }}>
-                {submittedCount} / {totalPlayers}
+              <span style={{ fontSize: "0.9rem" }}>{getPhaseIcon(currentPhaseId, "w-4 h-4")}</span>
+              <span style={{ fontSize: "0.78rem", fontWeight: "bold", color: "#fff" }}>
+                Chặng {currentPhaseId.replace("phase_", "")}: {cycle.title}
               </span>
             </div>
 
-            <Leaderboard max={5} />
-
-            <button
-              className="btn-cyber"
+            {/* In-game Floating HUD Overlay (Bottom-Bar Controls & Camera Hint) */}
+            <div
               style={{
-                width: "100%",
-                padding: "10px",
-                fontSize: "0.85rem",
-                fontWeight: "bold",
-                background: "rgba(16, 185, 129, 0.15)",
-                border: "1px solid rgba(16, 185, 129, 0.5)",
-                color: "#34d399",
-                borderRadius: "10px",
+                position: "absolute",
+                bottom: "12px",
+                left: "12px",
+                right: "12px",
                 display: "flex",
+                justifyContent: "space-between",
                 alignItems: "center",
-                justifyContent: "center",
-                gap: "6px",
-                cursor: "pointer",
+                background: "rgba(10, 15, 29, 0.88)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
+                borderRadius: "12px",
+                padding: "8px 14px",
+                zIndex: 10,
+                flexWrap: "wrap",
+                gap: "8px",
               }}
-              onClick={handleSpawnExtraItems}
             >
-              <span>🌱</span>
-              <span>THẢ THÊM TƯ LIỆU CHO CẢ LỚP (+5)</span>
-            </button>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8rem", color: "#cbd5e1" }}>
+                <IconBulb className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                <span>Kéo chuột hoặc phím mũi tên để lia camera quan sát toàn bộ đại biểu trên bản đồ</span>
+              </div>
 
-            <button
-              className="btn-cyber btn-cyber-blue"
-              style={{ width: "100%", padding: "14px", fontSize: "0.95rem", fontWeight: "800" }}
-              onClick={handleResolvePhase}
-            >
-              <IconBolt className="w-4 h-4 text-yellow-400 mr-1.5 inline-block" />
-              Khóa & Đánh Giá Quyết Định Ngay
-            </button>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <button
+                  className="btn-cyber"
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: "0.78rem",
+                    fontWeight: "bold",
+                    background: "rgba(16, 185, 129, 0.2)",
+                    border: "1px solid rgba(16, 185, 129, 0.6)",
+                    color: "#34d399",
+                    borderRadius: "8px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    cursor: "pointer",
+                  }}
+                  onClick={handleSpawnExtraItems}
+                  title="Thêm tư liệu văn kiện trên bản đồ"
+                >
+                  <span>🌱</span>
+                  <span>Thả thêm tư liệu (+5)</span>
+                </button>
+
+                <button
+                  className="btn-cyber btn-cyber-blue"
+                  style={{
+                    padding: "8px 18px",
+                    fontSize: "0.85rem",
+                    fontWeight: "800",
+                    borderRadius: "8px",
+                    boxShadow: "0 0 15px rgba(56, 189, 248, 0.35)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    cursor: "pointer",
+                  }}
+                  onClick={handleResolvePhase}
+                >
+                  <IconBolt className="w-4 h-4 text-yellow-300 inline-block" />
+                  <span>Khóa & Đánh Giá Quyết Định Ngay</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. DOCKED BOTTOM DASHBOARD: 2 CỘT CÂN ĐỐI PHÍA DƯỚI BẢN ĐỒ */}
+          <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "16px", marginTop: "4px" }}>
+            {/* Cột trái: Trọng tâm lý luận & Phân bổ quyết định */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {/* Box 1: Bối cảnh & Mục tiêu Chương 5 */}
+              <div
+                className="narrative-widget"
+                style={{
+                  background: "rgba(255,183,0,0.03)",
+                  border: "1px solid rgba(255,183,0,0.15)",
+                  borderRadius: "14px",
+                  padding: "14px 16px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    color: "var(--neon-gold)",
+                    fontWeight: "bold",
+                    fontSize: "0.78rem",
+                    textTransform: "uppercase",
+                    marginBottom: "6px",
+                  }}
+                >
+                  <IconBulb className="w-4 h-4 text-yellow-400" /> TRỌNG TÂM CHIẾN LƯỢC CHƯƠNG 5 (CHẶNG {currentPhaseId.replace("phase_", "")})
+                </div>
+                <p style={{ color: "#e2e8f0", fontSize: "0.85rem", margin: 0, lineHeight: "1.5" }}>
+                  "{cycle.description}"
+                </p>
+              </div>
+
+              {/* Box 2: Tình hình nộp quyết định theo từng phương án */}
+              <div
+                style={{
+                  background: "rgba(15, 23, 42, 0.6)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: "14px",
+                  padding: "14px 16px",
+                }}
+              >
+                <div style={{ fontSize: "0.8rem", fontWeight: "bold", color: "#94a3b8", textTransform: "uppercase", marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span>📊 Tình hình biểu quyết phương án</span>
+                  <span style={{ color: "var(--neon-gold)", fontFamily: "var(--font-mono)" }}>{submittedCount}/{totalPlayers} phiếu</span>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {cycle.options.map((opt, idx) => {
+                    const stats = voteStats.counts[opt.id] || { count: 0, percent: 0 };
+                    return (
+                      <div
+                        key={opt.id}
+                        style={{
+                          background: "rgba(255, 255, 255, 0.03)",
+                          border: "1px solid rgba(255, 255, 255, 0.06)",
+                          borderRadius: "10px",
+                          padding: "10px 12px",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                          <span style={{ fontWeight: "bold", fontSize: "0.82rem", color: "#f1f5f9" }}>
+                            {String.fromCharCode(65 + idx)}. {opt.title}
+                          </span>
+                          <span style={{ fontWeight: "800", fontFamily: "var(--font-mono)", fontSize: "0.85rem", color: stats.count > 0 ? "var(--neon-green)" : "#64748b" }}>
+                            {stats.count} phiếu ({stats.percent}%)
+                          </span>
+                        </div>
+                        {/* Mini progress bar */}
+                        <div style={{ width: "100%", height: "6px", background: "rgba(0,0,0,0.4)", borderRadius: "3px", overflow: "hidden" }}>
+                          <div
+                            style={{
+                              width: `${stats.percent}%`,
+                              height: "100%",
+                              background: "linear-gradient(90deg, #38bdf8, #34d399)",
+                              borderRadius: "3px",
+                              transition: "width 0.4s ease",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Cột phải: Bảng xếp hạng và danh sách đại biểu */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <Leaderboard max={7} title="BẢNG XẾP HẠNG ĐIỂM CÔNG VỤ (TOP 7)" />
+            </div>
           </div>
         </div>
       )}
@@ -755,11 +1011,11 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
             {/* Macro KPIs Impact Grid */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "10px" }}>
               {[
-                { label: "🌾 Lương Thực", key: "foodSecurity", val: res.macro?.foodSecurity, delta: res.macroDelta?.foodSecurity },
-                { label: "🏭 Công Nghiệp", key: "industrialOutput", val: res.macro?.industrialOutput, delta: res.macroDelta?.industrialOutput },
-                { label: "🤝 Ổn Định", key: "socialStability", val: res.macro?.socialStability, delta: res.macroDelta?.socialStability },
-                { label: "💵 Ngoại Tệ", key: "foreignCurrency", val: res.macro?.foreignCurrency, delta: res.macroDelta?.foreignCurrency },
-                { label: "🏛️ Thể Chế", key: "policySupport", val: res.macro?.policySupport, delta: res.macroDelta?.policySupport },
+                { label: "🌾 Nông Dân", key: "foodSecurity", val: res.macro?.foodSecurity, delta: res.macroDelta?.foodSecurity },
+                { label: "🏭 Công Nhân", key: "industrialOutput", val: res.macro?.industrialOutput, delta: res.macroDelta?.industrialOutput },
+                { label: "🤝 Khối Liên Minh", key: "socialStability", val: res.macro?.socialStability, delta: res.macroDelta?.socialStability },
+                { label: "💡 Trí Thức & DN", key: "foreignCurrency", val: res.macro?.foreignCurrency, delta: res.macroDelta?.foreignCurrency },
+                { label: "🏛️ Thể Chế XHCN", key: "policySupport", val: res.macro?.policySupport, delta: res.macroDelta?.policySupport },
               ].map((m) => (
                 <div key={m.key} className="kpi-card-flat" style={{ padding: "10px" }}>
                   <span className="kpi-label">{m.label}</span>
@@ -777,25 +1033,25 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
             {(agri || ind) && (
               <div style={{ background: "rgba(15,23,42,0.9)", border: "1px solid rgba(250, 204, 21, 0.3)", borderRadius: "16px", padding: "16px" }}>
                 <div style={{ color: "#facc15", fontWeight: "800", fontSize: "0.95rem", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <IconBulb className="w-4 h-4 text-yellow-400" /> MÔ HÌNH TOÁN KINH TẾ & PHÂN BỔ:
+                  <IconBulb className="w-4 h-4 text-yellow-400" /> MÔ HÌNH PHÂN BỔ NGUỒN LỰC & CHỈ SỐ PHÁT TRIỂN:
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", fontSize: "0.82rem", color: "#e2e8f0" }}>
                   {agri && (
                     <div style={{ background: "rgba(0,0,0,0.3)", padding: "10px", borderRadius: "8px" }}>
-                      <strong style={{ color: "#34d399" }}>Nông nghiệp (Hàm Ya):</strong>
-                      <div>• Tỷ lệ khoán sản phẩm (Ie): {agri.Ie} (θ kiểm soát: {agri.theta})</div>
+                      <strong style={{ color: "#34d399" }}>Phát triển Nông thôn & Giai cấp Nông dân:</strong>
+                      <div>• Tỷ lệ khuyến khích sản xuất (Ie): {agri.Ie} (θ kiểm soát: {agri.theta})</div>
                       <div>• Lao động tập trung (Lc): {agri.Lc}%</div>
-                      <div>• Hệ số sản lượng (Ya): <span style={{ color: "#34d399", fontWeight: "bold" }}>{agri.YaPercent}%</span></div>
+                      <div>• Hệ số hiệu quả nông nghiệp (Ya): <span style={{ color: "#34d399", fontWeight: "bold" }}>{agri.YaPercent}%</span></div>
                     </div>
                   )}
                   {ind && (
                     <div style={{ background: "rgba(0,0,0,0.3)", padding: "10px", borderRadius: "8px" }}>
-                      <strong style={{ color: "#38bdf8" }}>Công nghiệp (Kế hoạch 3 phần):</strong>
-                      <div>• P1(Pháp lệnh): {Math.round(ind.P1 * 100)}% | P2(Tự cân đối): {Math.round(ind.P2 * 100)}% | P3(Phụ thêm): {Math.round(ind.P3 * 100)}%</div>
-                      <div>• Chỉ số hiệu quả (Ei): <span style={{ color: "#38bdf8", fontWeight: "bold" }}>{ind.Ei}</span></div>
+                      <strong style={{ color: "#38bdf8" }}>Phân bổ Nguồn lực Liên minh 3 Khối:</strong>
+                      <div>• P1 (Công nghiệp - Nhà nước): {Math.round(ind.P1 * 100)}% | P2 (Nông nghiệp - Hợp tác): {Math.round(ind.P2 * 100)}% | P3 (Trí thức & Doanh nhân): {Math.round(ind.P3 * 100)}%</div>
+                      <div>• Chỉ số hiệu quả liên minh (Ei): <span style={{ color: "#38bdf8", fontWeight: "bold" }}>{ind.Ei}</span></div>
                       {ind.administrativePenalty && (
                         <div style={{ color: "#f87171", fontWeight: "bold", marginTop: "4px" }}>
-                          ⚠️ Phạt hành chính do P1 &lt; 40%
+                          ⚠️ Cảnh báo: Tỷ trọng P1 &lt; 40% làm suy yếu vai trò nòng cốt nhà nước
                         </div>
                       )}
                     </div>
@@ -819,29 +1075,47 @@ export const HostView = ({ gameState = {}, dbConnected = false, onResetRole }) =
       {gameState.status === "finished" && (
         <div style={{ textAlign: "center" }}>
           <h2 className="minigame-title" style={{ display: "inline-flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
-            <IconTrophy className="w-10 h-10 text-yellow-500 animate-bounce" /> HOÀN THÀNH MÔ PHỎNG LỊCH SỬ 1978–1981
+            <IconTrophy className="w-10 h-10 text-yellow-500 animate-bounce" /> HOÀN THÀNH 3 CHẶNG MÔ PHỎNG CHIẾN LƯỢC XÃ HỘI
           </h2>
-          <p className="minigame-subtitle">Tổng kết 4 chu kỳ quyết định của toàn cơ quan</p>
+          <p className="minigame-subtitle">Tổng kết 3 chu kỳ quyết định chiến lược cơ cấu xã hội & liên minh giai cấp</p>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "12px", margin: "24px 0" }}>
-            <div className="kpi-card-flat"><span className="kpi-label">🌾 Lương Thực</span><span className="kpi-val pix-num">{macro.foodSecurity}</span></div>
-            <div className="kpi-card-flat"><span className="kpi-label">🏭 Công Nghiệp</span><span className="kpi-val pix-num">{macro.industrialOutput}</span></div>
-            <div className="kpi-card-flat"><span className="kpi-label">🤝 Ổn Định XH</span><span className="kpi-val pix-num">{macro.socialStability}</span></div>
-            <div className="kpi-card-flat"><span className="kpi-label">💵 Ngoại Tệ</span><span className="kpi-val pix-num">{macro.foreignCurrency}</span></div>
-            <div className="kpi-card-flat"><span className="kpi-label">🏛️ Thể Chế</span><span className="kpi-val pix-num">{macro.policySupport}</span></div>
+          <div className="mission-card" style={{ margin: "24px 0", padding: "20px" }}>
+            <div className="mission-label" style={{ marginBottom: "16px", textAlign: "center" }}>📊 TỔNG KẾT CHỈ SỐ CƠ CẤU XÃ HỘI – GIAI CẤP</div>
+            {[
+              { icon: "🌾", label: "Giai Cấp Nông Dân", val: macro.foodSecurity, color: "#34d399" },
+              { icon: "🏭", label: "Giai Cấp Công Nhân", val: macro.industrialOutput, color: "#38bdf8" },
+              { icon: "🤝", label: "Khối Liên Minh Công – Nông – Trí Thức", val: macro.socialStability, color: "#fbbf24" },
+              { icon: "💡", label: "Đội Ngũ Trí Thức & Doanh Nhân", val: macro.foreignCurrency, color: "#c084fc" },
+              { icon: "🏛️", label: "Thể Chế XHCN & Định Hướng", val: macro.policySupport, color: "#f472b6" },
+            ].map((item, idx) => (
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "10px" }}>
+                <span style={{ fontSize: "1.3rem", width: "30px", textAlign: "center" }}>{item.icon}</span>
+                <span style={{ minWidth: "260px", fontSize: "0.85rem", color: "#94a3b8", fontWeight: 600 }}>{item.label}</span>
+                <div style={{ flex: 1, height: "18px", background: "rgba(30,41,59,0.8)", borderRadius: "9px", overflow: "hidden", position: "relative" }}>
+                  <div style={{
+                    width: `${Math.min(Math.max((item.val || 0), 0), 100)}%`,
+                    height: "100%",
+                    background: `linear-gradient(90deg, ${item.color}66, ${item.color})`,
+                    borderRadius: "9px",
+                    transition: "width 0.6s ease"
+                  }} />
+                </div>
+                <span className="pix-num" style={{ minWidth: "40px", textAlign: "right", color: item.color, fontWeight: 800, fontSize: "1.1rem" }}>{item.val}</span>
+              </div>
+            ))}
           </div>
 
           <Leaderboard max={10} title="BẢNG XẾP HẠNG CHI TIẾT (TOP 10)" />
 
           <div className="mission-card" style={{ marginTop: "24px", textAlign: "left" }}>
-            <div className="mission-label">BÀI HỌC KINH TẾ CHÍNH TRỊ</div>
+            <div className="mission-label">BÀI HỌC LÝ LUẬN VÀ THỰC TIỄN (CHƯƠNG 5)</div>
             <div className="mission-text">
-              Thực tiễn sinh động giai đoạn 1978–1981 đã chứng minh rằng: khi mô hình tập trung quan liêu bộc lộ khuyết tật, những sáng kiến từ cơ sở (khoán sản phẩm, tự chủ sản xuất, cơ chế giá thị trường) đã tạo xung lực mạnh mẽ để mở đường cho Đổi Mới toàn diện 1986.
+              Cơ cấu kinh tế nhiều thành phần và quá trình CNH-HĐH là cơ sở quy định sự biến đổi của cơ cấu xã hội - giai cấp. Trong thời kỳ quá độ, các giai cấp vừa đấu tranh vừa liên minh, từng bước xích lại gần nhau. Khối liên minh vững chắc giữa Giai cấp Công nhân, Giai cấp Nông dân và Đội ngũ Trí thức dưới sự lãnh đạo của Đảng là động lực then chốt đảm bảo độc lập dân tộc và định hướng xã hội chủ nghĩa!
             </div>
           </div>
 
           <div style={{ display: "flex", gap: "20px", marginTop: "30px" }}>
-            <button className="btn-cyber" style={{ flex: 1 }} onClick={handleStartGame}>Chơi lại từ Phase 1</button>
+            <button className="btn-cyber" style={{ flex: 1 }} onClick={handleStartGame}>Chơi lại từ Chặng 1</button>
             <button className="btn-cyber btn-cyber-blue" style={{ flex: 1 }} onClick={handleResetGame}>Về phòng chờ</button>
           </div>
         </div>

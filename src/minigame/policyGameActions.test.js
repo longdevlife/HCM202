@@ -36,10 +36,10 @@ test('buildResolvePhasePatch updates macro, results, and player scores', () => {
     phaseStatus: 'active'
   };
   const decisions = {
-    p1: { playerId: 'p1', roleId: 'doan_xa_agriculture', phaseId: 'phase_1', optionId: 'try_harvest_contract', taskCompleted: true, autoSubmitted: false }
+    p1: { playerId: 'p1', roleId: 'worker_leader', phaseId: 'phase_1', optionId: 'opt_p1_toandien', taskCompleted: true, autoSubmitted: false }
   };
   const players = {
-    p1: { name: 'Player 1', roleId: 'doan_xa_agriculture', score: 10 }
+    p1: { name: 'Player 1', roleId: 'worker_leader', score: 10 }
   };
 
   const patch = buildResolvePhasePatch(state, 'phase_1', decisions, players);
@@ -61,14 +61,14 @@ test('buildResolvePhasePatch writes deterministic defaults for players who timed
     decisionEndsAt: 120000,
   };
   const patch = buildResolvePhasePatch(state, 'phase_1', {}, {
-    p1: { roleId: 'doan_xa_agriculture', score: 0 },
+    p1: { roleId: 'worker_leader', score: 0 },
   });
 
   assert.deepEqual(patch['decisions/phase_1/p1'], {
     playerId: 'p1',
-    roleId: 'doan_xa_agriculture',
+    roleId: 'worker_leader',
     phaseId: 'phase_1',
-    optionId: 'keep_piecework',
+    optionId: 'opt_p1_toandien',
     taskCompleted: false,
     autoSubmitted: true,
     submittedAt: 120000,
@@ -97,13 +97,13 @@ test('buildNextPhasePatch transitions to phase_2 and ends at finished', () => {
   assert.equal(nextPatch1['gameState/status'], 'phase_2');
   assert.equal(nextPatch1['gameState/phaseStatus'], 'active');
 
-  const statePhase4 = {
+  const statePhase3 = {
     ...createInitialPolicyState(),
-    status: 'phase_4',
-    phaseId: 'phase_4',
+    status: 'phase_3',
+    phaseId: 'phase_3',
     phaseStatus: 'resolved'
   };
-  const finishPatch = buildNextPhasePatch(statePhase4, 50000);
+  const finishPatch = buildNextPhasePatch(statePhase3, 50000);
   assert.equal(finishPatch['gameState/status'], 'finished');
   assert.equal(finishPatch['gameState/phaseStatus'], 'idle');
 });

@@ -37,13 +37,14 @@ const toSnapY = (worldY) => (worldY / MAP_HEIGHT) * 540;
 
 // URL Parameters for Character Customization
 const searchParams = new URLSearchParams(window.location.search);
-const initialCharacterId = searchParams.get("character") || "male_reception";
+const initialCharacterId = searchParams.get("character") || searchParams.get("roleId") || "worker_leader";
 const initialGender = searchParams.get("gender") || (initialCharacterId.startsWith("female") ? "female" : "male");
 const initialPhaseParam = searchParams.get("phase");
 
-// Audio Synthesizer (Web Audio API)
+// Audio System
 let audioCtx = null;
 let soundEnabled = true;
+let bgmEnabled = false; // Default OFF as requested by user
 
 function getAudioContext() {
   if (!audioCtx && (window.AudioContext || window.webkitAudioContext)) {
@@ -72,6 +73,68 @@ function playTone(freq, type = "square", duration = 0.12, startGain = 0.15) {
     osc.start();
     osc.stop(ctx.currentTime + duration);
   } catch (_) {}
+}
+
+// ----------------------------------------------------
+// 🎵 BACKGROUND MUSIC: LOVELY GARDEN (PIXABAY TRACK 540008)
+// Only plays when enabled and during active gameplay; pauses when Host resolves phase!
+// ----------------------------------------------------
+let lovelyGardenAudio = null;
+
+function getLovelyGardenAudio() {
+  if (!lovelyGardenAudio && typeof Audio !== "undefined") {
+    try {
+      lovelyGardenAudio = new Audio("./lovely-garden.mp3");
+      lovelyGardenAudio.loop = true;
+      lovelyGardenAudio.volume = 0.35;
+      lovelyGardenAudio.addEventListener("error", () => {
+        if (lovelyGardenAudio && lovelyGardenAudio.src.indexOf("/lovely-garden.mp3") === -1) {
+          lovelyGardenAudio.src = "/lovely-garden.mp3";
+        }
+      });
+    } catch (e) {
+      console.warn("Audio creation error:", e);
+    }
+  }
+  return lovelyGardenAudio;
+}
+
+function startBgm() {
+  if (options.role === "host") return; // Host music is managed directly by HostView.jsx
+  if (!soundEnabled || !bgmEnabled) return;
+  // If phase is resolved, Host has stopped the situation -> NO MUSIC!
+  if (state.phaseStatus === "resolved") {
+    stopBgm();
+    return;
+  }
+
+  const audio = getLovelyGardenAudio();
+  if (audio) {
+    audio.play().catch(() => {});
+  }
+}
+
+function stopBgm() {
+  if (lovelyGardenAudio) {
+    try {
+      lovelyGardenAudio.pause();
+    } catch (_) {}
+  }
+}
+
+function toggleBgm(forceState) {
+  if (typeof forceState === "boolean") {
+    bgmEnabled = forceState;
+  } else {
+    bgmEnabled = !bgmEnabled;
+  }
+  if (!bgmEnabled) {
+    stopBgm();
+  } else {
+    startBgm();
+  }
+  postToParent({ type: "BGM_STATE", muted: !bgmEnabled });
+  return bgmEnabled;
 }
 
 const sfx = {
@@ -111,259 +174,267 @@ const sfx = {
   freeze: () => {
     playTone(220, "sawtooth", 0.3, 0.2);
   },
+  boost: () => {
+    [440, 554, 659, 880, 1108].forEach((f, i) => {
+      setTimeout(() => playTone(f, "sawtooth", 0.08, 0.14), i * 35);
+    });
+  },
+  shield: () => {
+    playTone(330, "sine", 0.1, 0.2);
+    setTimeout(() => playTone(660, "triangle", 0.15, 0.25), 50);
+  },
+  carHonk: () => {
+    // Dual-tone retro-modern automotive horn "BÍP BÍP!"
+    playTone(440, "sawtooth", 0.12, 0.26);
+    playTone(554.37, "sawtooth", 0.12, 0.26);
+    setTimeout(() => {
+      playTone(440, "sawtooth", 0.14, 0.28);
+      playTone(554.37, "sawtooth", 0.14, 0.28);
+    }, 130);
+  },
 };
 
 // ----------------------------------------------------
-// VNR-T17 HISTORICAL BUILDINGS & LANDMARK TEMPLATES (1978–1981)
+// CHƯƠNG 5: CƠ CẤU XÃ HỘI - GIAI CẤP & LIÊN MINH GIAI TẦNG
 // ----------------------------------------------------
 const BUILDING_TEMPLATES = {
-  // Phase 1 (1978: Hải Phòng - Nông nghiệp)
-  bldg_doan_xa: {
-    id: "bldg_doan_xa",
-    name: "HTX NÔNG NGHIỆP ĐOÀN XÁ",
-    sub: "Thực Nghiệm Khoán Chui Hải Phòng 1978",
-    icon: "🌾",
-    actionLabel: "Khảo sát thực địa khoán",
-    type: "coop",
-    themeColor: "#15803d",
-    accentColor: "#4ade80",
+  // ==================== CHẶNG 1: KHÁI LUẬN CCXH & CCXH-GC ====================
+  bldg_ccxh_central: {
+    id: "bldg_ccxh_central",
+    name: "TRUNG TÂM KHẢO SÁT CƠ CẤU XÃ HỘI",
+    sub: "Viện Hàn Lâm Khoa Học Xã Hội - Trạm Trung Tâm",
+    icon: "🏛️",
+    actionLabel: "Khảo sát hệ thống CCXH",
+    type: "academy",
+    themeColor: "#0f766e",
+    accentColor: "#2dd4bf",
   },
-  bldg_rice_field: {
-    id: "bldg_rice_field",
-    name: "CÁNH ĐỒNG LÚA MÙA VỤ",
-    sub: "Khoán Sản Phẩm Đến Nhóm & Người Lao Động",
-    icon: "🌾",
-    actionLabel: "Khảo sát mùa vụ",
-    type: "field",
-    themeColor: "#ca8a04",
-    accentColor: "#facc15",
+  bldg_demographics: {
+    id: "bldg_demographics",
+    name: "VIỆN DÂN CƯ & LAO ĐỘNG NGHỀ NGHIỆP",
+    sub: "Thống Kê Cơ Cấu Dân Cư & Biến Động Nghề Nghiệp",
+    icon: "👥",
+    actionLabel: "Khảo sát dân cư & nghề",
+    type: "demographics",
+    themeColor: "#0369a1",
+    accentColor: "#38bdf8",
   },
-  bldg_granary: {
-    id: "bldg_granary",
-    name: "KHO LƯƠNG THỰC & THÓC GIỐNG",
-    sub: "Dữ Liệu Thu Hoạch Vượt Khoán Nông Hộ",
-    icon: "🧺",
-    actionLabel: "Kiểm kê kho thóc",
-    type: "granary",
+  bldg_production_means: {
+    id: "bldg_production_means",
+    name: "CƠ QUAN QUẢN LÝ TƯ LIỆU SẢN XUẤT",
+    sub: "Giám Sát Quan Hệ Sở Hữu & Quản Lý Lao Động",
+    icon: "⚙️",
+    actionLabel: "Kiểm tra quan hệ TLSX",
+    type: "production",
     themeColor: "#b45309",
     accentColor: "#fbbf24",
   },
-  bldg_tractor: {
-    id: "bldg_tractor",
-    name: "TRẠM MÁY KÉO & NÔNG CỤ",
-    sub: "Tập Trung Tư Liệu Sản Xuất",
-    icon: "🚜",
-    actionLabel: "Kiểm tra máy móc",
-    type: "tractor",
+  bldg_benefit_distribution: {
+    id: "bldg_benefit_distribution",
+    name: "TRUNG TÂM PHÂN PHỐI LỢI ÍCH & AN SINH",
+    sub: "Địa Vị Chính Trị - Xã Hội & Phân Phối Thu Nhập",
+    icon: "⚖️",
+    actionLabel: "Khảo sát phân phối an sinh",
+    type: "distribution",
+    themeColor: "#15803d",
+    accentColor: "#4ade80",
+  },
+  bldg_social_management: {
+    id: "bldg_social_management",
+    name: "TÒA NHÀ TỔ CHỨC QUẢN LÝ XÃ HỘI",
+    sub: "Quan Hệ Điều Hành & Tổ Chức Lao Động Xã Hội",
+    icon: "📋",
+    actionLabel: "Khảo sát quản lý",
+    type: "management",
     themeColor: "#0284c7",
     accentColor: "#38bdf8",
   },
 
-  // Phase 2 (1979: TP.HCM - Dệt Thành Công)
-  bldg_thanh_cong: {
-    id: "bldg_thanh_cong",
-    name: "XÍ NGHIỆP DỆT THÀNH CÔNG",
-    sub: "Đột Phá Tự Cân Đối Sản Xuất 1979",
-    icon: "🏭",
-    actionLabel: "Kiểm tra xưởng dệt",
-    type: "factory",
-    themeColor: "#0369a1",
-    accentColor: "#38bdf8",
+  // ==================== CHẶNG 2: VỊ TRÍ CCXH-GC & TÁC ĐỘNG TƯƠNG HỖ ====================
+  bldg_class_relations: {
+    id: "bldg_class_relations",
+    name: "VIỆN QUAN HỆ GIAI TẦNG & ĐẠI ĐOÀN KẾT",
+    sub: "Vị Trí Trung Tâm Chi Phối Cơ Cấu Xã Hội",
+    icon: "🏛️",
+    actionLabel: "Khảo sát vị trí CCXH-GC",
+    type: "unity",
+    themeColor: "#b91c1c",
+    accentColor: "#f87171",
   },
-  bldg_yarn_warehouse: {
-    id: "bldg_yarn_warehouse",
-    name: "KHO BÔNG SỢI NHẬP KHẨU",
-    sub: "Tự Cân Đối Nguyên Liệu Sản Xuất",
-    icon: "🧶",
-    actionLabel: "Nhập kho bông sợi",
-    type: "warehouse",
-    themeColor: "#059669",
-    accentColor: "#34d399",
+  bldg_ethnic_board: {
+    id: "bldg_ethnic_board",
+    name: "CƠ QUAN BAN DÂN TỘC TRUNG ƯƠNG",
+    sub: "Đoàn Kết 54 Dân Tộc & Tác Động Tương Hỗ",
+    icon: "🏔️",
+    actionLabel: "Khảo sát cơ cấu dân tộc",
+    type: "ethnic",
+    themeColor: "#c2410c",
+    accentColor: "#fb923c",
   },
-  bldg_port: {
-    id: "bldg_port",
-    name: "BẾN CẢNG XUẤT NHẬP KHẨU",
-    sub: "Giao Thương & Hợp Tác Ngoại Thương",
-    icon: "🚢",
-    actionLabel: "Kiểm tra hàng xuất khẩu",
-    type: "port",
-    themeColor: "#0891b2",
+  bldg_religious_board: {
+    id: "bldg_religious_board",
+    name: "TÒA NHÀ TÔN GIÁO & ĐỜI SỐNG TÂM LINH",
+    sub: "Tôn Trọng Tín Ngưỡng & Hòa Hợp Xã Hội",
+    icon: "🕊️",
+    actionLabel: "Khảo sát cơ cấu tôn giáo",
+    type: "religion",
+    themeColor: "#7c3aed",
+    accentColor: "#c084fc",
+  },
+  bldg_political_economy: {
+    id: "bldg_political_economy",
+    name: "VIỆN KINH TẾ - CHÍNH TRỊ TRUNG ƯƠNG",
+    sub: "Giai Cấp Gắn Với Sở Hữu TLSX & Kinh Tế",
+    icon: "🏢",
+    actionLabel: "Phân tích nền tảng kinh tế",
+    type: "pol_econ",
+    themeColor: "#0e7490",
     accentColor: "#22d3ee",
   },
-  bldg_director_office: {
-    id: "bldg_director_office",
-    name: "VĂN PHÒNG GIÁM ĐỐC (BÀ THI)",
-    sub: "Chỉ Đạo Phá Rào Tìm Nguồn Gạo & Sợi",
-    icon: "🏢",
-    actionLabel: "Họp ban giám đốc",
-    type: "office",
-    themeColor: "#b91c1c",
-    accentColor: "#f87171",
-  },
 
-  // Phase 3 (1980: Long An & Khảo Sát TW)
-  bldg_tw_survey: {
-    id: "bldg_tw_survey",
-    name: "TRỤ SỞ ĐOÀN KHẢO SÁT TW",
-    sub: "Đối Thoại Thực Tiễn Với Lãnh Đạo",
-    icon: "📋",
-    actionLabel: "Trình bày báo cáo",
-    type: "survey",
-    themeColor: "#b45309",
-    accentColor: "#fbbf24",
-  },
-  bldg_long_an_gov: {
-    id: "bldg_long_an_gov",
-    name: "ỦY BAN NHÂN DÂN TỈNH LONG AN",
-    sub: "Mô Hình Bù Giá Vào Lương",
-    icon: "🏛️",
-    actionLabel: "Thảo luận cơ chế giá",
-    type: "long_an",
-    themeColor: "#b91c1c",
-    accentColor: "#f87171",
-  },
-  bldg_rice_market: {
-    id: "bldg_rice_market",
-    name: "CHỢ ĐẦU MỐI LÚA GẠO TÂN AN",
-    sub: "Thị Trường & Lưu Thông Tự Do",
-    icon: "🏪",
-    actionLabel: "Khảo sát giá chợ",
-    type: "market",
-    themeColor: "#15803d",
-    accentColor: "#4ade80",
-  },
-  bldg_river_port: {
-    id: "bldg_river_port",
-    name: "BẾN SÔNG VÀM CỎ TÂY",
-    sub: "Vận Tải Lương Thực Liên Tỉnh",
-    icon: "⚓",
-    actionLabel: "Ghe thuyền chở gạo",
-    type: "river_port",
-    themeColor: "#0284c7",
-    accentColor: "#38bdf8",
-  },
-
-  // Phase 4 (1981: Hà Nội - Hội Nghị Thể Chế)
-  bldg_policy_hall: {
-    id: "bldg_policy_hall",
-    name: "HỘI TRƯỜNG THỂ CHẾ HÓA 1981",
-    sub: "Ban Hành Chỉ Thị 100 & Quyết Định 25-CP",
-    icon: "🏛️",
-    actionLabel: "Phân bổ chỉ tiêu",
-    type: "hall",
-    themeColor: "#b91c1c",
+  // ==================== CHẶNG 3: QUY LUẬT BIẾN ĐỔI & LIÊN MINH GIAI CẤP ====================
+  bldg_alliance_hall: {
+    id: "bldg_alliance_hall",
+    name: "HỘI TRƯỜNG LIÊN MINH GIAI CẤP CHIẾN LƯỢC",
+    sub: "Hội Nghị Biểu Quyết Chiến Lược Liên Minh",
+    icon: "🤝",
+    actionLabel: "Hội nghị biểu quyết",
+    type: "alliance_hall",
+    themeColor: "#dc2626",
     accentColor: "#facc15",
   },
-  bldg_planning_committee: {
-    id: "bldg_planning_committee",
-    name: "ỦY BAN KẾ HOẠCH NHÀ NƯỚC",
-    sub: "Cơ Chế Kế Hoạch 3 Phần P1-P2-P3",
-    icon: "📊",
-    actionLabel: "Phê duyệt kế hoạch",
-    type: "committee",
-    themeColor: "#0369a1",
-    accentColor: "#38bdf8",
+  bldg_hightech_industry: {
+    id: "bldg_hightech_industry",
+    name: "TỔ HỢP CÔNG NGHIỆP CÔNG NGHỆ CAO",
+    sub: "Giai Cấp Công Nhân Tiên Phong Hiện Đại Hóa",
+    icon: "🏭",
+    actionLabel: "Khảo sát công nghiệp 4.0",
+    type: "industry_tech",
+    themeColor: "#1d4ed8",
+    accentColor: "#60a5fa",
   },
-  bldg_econ_institute: {
-    id: "bldg_econ_institute",
-    name: "VIỆN NGHIÊN CỨU QUẢN LÝ KINH TẾ",
-    sub: "Đánh Giá Thực Tiễn & Lý Luận Đổi Mới",
-    icon: "📑",
-    actionLabel: "Nghiên cứu thể chế",
-    type: "institute",
-    themeColor: "#059669",
-    accentColor: "#34d399",
+  bldg_eco_agriculture: {
+    id: "bldg_eco_agriculture",
+    name: "VÙNG NÔNG NGHIỆP SINH THÁI HIỆN ĐẠI",
+    sub: "Giai Cấp Nông Dân & Nông Thôn Văn Minh",
+    icon: "🌾",
+    actionLabel: "Khảo sát nông nghiệp số",
+    type: "eco_agri",
+    themeColor: "#16a34a",
+    accentColor: "#86efac",
   },
-  bldg_monument: {
-    id: "bldg_monument",
-    name: "TƯỢNG ĐÀI KHỞI SỰ ĐỔI MỚI",
-    sub: "Ghi Dấu Bước Chuyển Lịch Sử 1978–1981",
-    icon: "🎖️",
-    actionLabel: "Chiêm ngưỡng di sản",
-    type: "monument",
+  bldg_innovation_hub: {
+    id: "bldg_innovation_hub",
+    name: "TRUNG TÂM ĐỔI MỚI SÁNG TẠO QUỐC GIA",
+    sub: "Đội Ngũ Trí Thức & Kinh Tế Tri Thức Số",
+    icon: "💡",
+    actionLabel: "Khảo sát kinh tế tri thức",
+    type: "innovation",
+    themeColor: "#9333ea",
+    accentColor: "#d8b4fe",
+  },
+  bldg_enterprise_center: {
+    id: "bldg_enterprise_center",
+    name: "TÒA NHÀ DOANH NHÂN & DOANH NGHIỆP",
+    sub: "Đội Ngũ Doanh Nhân & Kinh Tế Đa Thành Phần",
+    icon: "🏢",
+    actionLabel: "Khảo sát tầng lớp doanh nhân",
+    type: "enterprise",
     themeColor: "#d97706",
     accentColor: "#fde047",
   },
 
-  // Fallbacks
-  bldg_reception: { id: "bldg_reception", name: "TRỤ SỞ LÀM VIỆC", sub: "Văn phòng cơ quan", icon: "📋", actionLabel: "Khảo sát", type: "reception", themeColor: "#0284c7", accentColor: "#38bdf8" },
-  bldg_server: { id: "bldg_server", name: "KHO LƯU TRỮ", sub: "Tài liệu kinh tế", icon: "💻", actionLabel: "Tra cứu", type: "server", themeColor: "#059669", accentColor: "#34d399" },
-  bldg_stamp: { id: "bldg_stamp", name: "CƠ QUAN PHÊ DUYỆT", sub: "Duyệt văn bản", icon: "🏛️", actionLabel: "Đóng dấu", type: "stamp", themeColor: "#b91c1c", accentColor: "#f87171" },
-  bldg_inspection: { id: "bldg_inspection", name: "BAN THANH TRA", sub: "Kiểm tra thực địa", icon: "⚖️", actionLabel: "Kiểm tra", type: "inspection", themeColor: "#d97706", accentColor: "#fbbf24" },
-  bldg_portal: { id: "bldg_portal", name: "TRUNG TÂM HỘI NGHỊ", sub: "Tổng kết công vụ", icon: "🏛️", actionLabel: "Báo cáo", type: "gate", themeColor: "#0891b2", accentColor: "#22d3ee" },
-  bldg_feedback: { id: "bldg_feedback", name: "NHÀ VĂN HÓA", sub: "Ý kiến nhân dân", icon: "🏡", actionLabel: "Đối thoại", type: "feedback", themeColor: "#db2777", accentColor: "#f472b6" },
+  // Backward-compatibility aliases
+  bldg_doan_xa: { id: "bldg_doan_xa", name: "TRUNG TÂM KHẢO SÁT CƠ CẤU XÃ HỘI", sub: "Viện Hàn Lâm Khoa Học Xã Hội", icon: "🏛️", actionLabel: "Khảo sát", type: "academy", themeColor: "#0f766e", accentColor: "#2dd4bf" },
+  bldg_rice_field: { id: "bldg_rice_field", name: "VIỆN DÂN CƯ & LAO ĐỘNG NGHỀ NGHIỆP", sub: "Thống Kê Cơ Cấu Dân Cư & Nghề", icon: "👥", actionLabel: "Khảo sát", type: "demographics", themeColor: "#0369a1", accentColor: "#38bdf8" },
+  bldg_granary: { id: "bldg_granary", name: "CƠ QUAN QUẢN LÝ TƯ LIỆU SẢN XUẤT", sub: "Quan Hệ Sở Hữu TLSX", icon: "⚙️", actionLabel: "Kiểm kê", type: "production", themeColor: "#b45309", accentColor: "#fbbf24" },
+  bldg_tractor: { id: "bldg_tractor", name: "TRUNG TÂM PHÂN PHỐI LỢI ÍCH", sub: "Địa Vị Xã Hội & An Sinh", icon: "⚖️", actionLabel: "Kiểm tra", type: "distribution", themeColor: "#15803d", accentColor: "#4ade80" },
+  bldg_thanh_cong: { id: "bldg_thanh_cong", name: "VIỆN QUAN HỆ GIAI TẦNG & ĐẠI ĐOÀN KẾT", sub: "Vị Trí Trung Tâm Chi Phối", icon: "🏛️", actionLabel: "Khảo sát", type: "unity", themeColor: "#b91c1c", accentColor: "#f87171" },
+  bldg_yarn_warehouse: { id: "bldg_yarn_warehouse", name: "CƠ QUAN BAN DÂN TỘC TRUNG ƯƠNG", sub: "Đoàn Kết Các Dân Tộc", icon: "🏔️", actionLabel: "Khảo sát", type: "ethnic", themeColor: "#c2410c", accentColor: "#fb923c" },
+  bldg_port: { id: "bldg_port", name: "TÒA NHÀ TÔN GIÁO & ĐỜI SỐNG TÂM LINH", sub: "Tín Ngưỡng & Xã Hội", icon: "🕊️", actionLabel: "Khảo sát", type: "religion", themeColor: "#7c3aed", accentColor: "#c084fc" },
+  bldg_director_office: { id: "bldg_director_office", name: "VIỆN KINH TẾ - CHÍNH TRỊ TRUNG ƯƠNG", sub: "Cơ Sở Kinh Tế & Địa Vị Xã Hội", icon: "🏢", actionLabel: "Đối thoại", type: "pol_econ", themeColor: "#0e7490", accentColor: "#22d3ee" },
+  bldg_tw_survey: { id: "bldg_tw_survey", name: "HỘI TRƯỜNG LIÊN MINH GIAI CẤP", sub: "Chiến Lược Liên Minh", icon: "🤝", actionLabel: "Biểu quyết", type: "alliance_hall", themeColor: "#dc2626", accentColor: "#facc15" },
+  bldg_long_an_gov: { id: "bldg_long_an_gov", name: "TỔ HỢP CÔNG NGHIỆP CÔNG NGHỆ CAO", sub: "Công Nhân Hiện Đại Hóa", icon: "🏭", actionLabel: "Khảo sát", type: "industry_tech", themeColor: "#1d4ed8", accentColor: "#60a5fa" },
+  bldg_rice_market: { id: "bldg_rice_market", name: "VÙNG NÔNG NGHIỆP SINH THÁI", sub: "Nông Dân & Nông Thôn Văn Minh", icon: "🌾", actionLabel: "Khảo sát", type: "eco_agri", themeColor: "#16a34a", accentColor: "#86efac" },
+  bldg_river_port: { id: "bldg_river_port", name: "TRUNG TÂM ĐỔI MỚI SÁNG TẠO", sub: "Trí Thức & Kinh Tế Tri Thức", icon: "💡", actionLabel: "Khảo sát", type: "innovation", themeColor: "#9333ea", accentColor: "#d8b4fe" },
+  bldg_policy_hall: { id: "bldg_policy_hall", name: "HỘI TRƯỜNG LIÊN MINH GIAI CẤP", sub: "Hội Nghị Chiến Lược", icon: "🤝", actionLabel: "Biểu quyết", type: "alliance_hall", themeColor: "#dc2626", accentColor: "#facc15" },
+  bldg_planning_committee: { id: "bldg_planning_committee", name: "TỔ HỢP CÔNG NGHIỆP CÔNG NGHỆ CAO", sub: "Công Nhân Tiên Phong", icon: "🏭", actionLabel: "Khảo sát", type: "industry_tech", themeColor: "#1d4ed8", accentColor: "#60a5fa" },
+  bldg_econ_institute: { id: "bldg_econ_institute", name: "TRUNG TÂM ĐỔI MỚI SÁNG TẠO", sub: "Trí Thức Số", icon: "💡", actionLabel: "Khảo sát", type: "innovation", themeColor: "#9333ea", accentColor: "#d8b4fe" },
+  bldg_monument: { id: "bldg_monument", name: "TÒA NHÀ DOANH NHÂN & DOANH NGHIỆP", sub: "Doanh Nhân Năng Động", icon: "🏢", actionLabel: "Khảo sát", type: "enterprise", themeColor: "#d97706", accentColor: "#fde047" },
 };
 
 // ----------------------------------------------------
-// 4 HISTORICAL PHASE MAP LAYOUTS (1978–1981)
+// BẢN ĐỒ 3 CHẶNG CHƯƠNG 5 (KHÁI LUẬN, VỊ TRÍ, LIÊN MINH)
 // ----------------------------------------------------
 const PHASE_MAPS = {
   phase_1: {
-    name: "HỢP TÁC XÃ ĐOÀN XÁ (HẢI PHÒNG - 1978)",
-    theme: "rural_coop",
-    groundColor: "#1c331a",
-    roadColor: "#854d0e",
-    laneColor: "#facc15",
+    name: "TRUNG TÂM KHẢO SÁT CƠ CẤU XÃ HỘI (CHẶNG 1)",
+    theme: "ccxh_academy",
+    groundColor: "#0f172a",
+    roadColor: "#1e293b",
+    laneColor: "#38bdf8",
+    // Layout: "Học viện" — 1 tòa chính giữa phía Bắc + 4 tòa phụ ở 4 góc
     buildings: [
-      { id: "bldg_doan_xa", x: 1200, y: 240, w: 580, h: 280, stationX: 1200, stationY: 360, radius: 90 },
-      { id: "bldg_rice_field", x: 380, y: 240, w: 420, h: 260, stationX: 380, stationY: 350, radius: 80 },
-      { id: "bldg_granary", x: 2020, y: 240, w: 420, h: 260, stationX: 2020, stationY: 350, radius: 80 },
-      { id: "bldg_tractor", x: 380, y: 1120, w: 420, h: 260, stationX: 380, stationY: 1000, radius: 80 },
-      { id: "bldg_granary", x: 1200, y: 1120, w: 520, h: 260, stationX: 1200, stationY: 1000, radius: 85 },
-      { id: "bldg_rice_field", x: 2020, y: 1120, w: 420, h: 260, stationX: 2020, stationY: 1000, radius: 80 },
+      { id: "bldg_ccxh_central",        x: 1200, y: 260,  w: 620, h: 280, stationX: 1200, stationY: 380, radius: 95 },
+      { id: "bldg_demographics",         x: 280,  y: 280,  w: 380, h: 240, stationX: 280,  stationY: 380, radius: 80 },
+      { id: "bldg_benefit_distribution", x: 2120, y: 280,  w: 380, h: 240, stationX: 2120, stationY: 380, radius: 80 },
+      { id: "bldg_production_means",     x: 280,  y: 1100, w: 380, h: 260, stationX: 280,  stationY: 990, radius: 80 },
+      { id: "bldg_social_management",    x: 1200, y: 1100, w: 520, h: 260, stationX: 1200, stationY: 990, radius: 85 },
+      { id: "bldg_benefit_distribution", x: 2120, y: 1100, w: 380, h: 260, stationX: 2120, stationY: 990, radius: 80 },
     ],
   },
   phase_2: {
-    name: "XÍ NGHIỆP DỆT THÀNH CÔNG (TP. HỒ CHÍ MINH - 1979)",
-    theme: "factory_zone",
-    groundColor: "#1e293b",
-    roadColor: "#0f172a",
-    laneColor: "#38bdf8",
+    name: "VIỆN QUAN HỆ GIAI TẦNG & KHỐI ĐẠI ĐOÀN KẾT (CHẶNG 2)",
+    theme: "unity_center",
+    groundColor: "#2b0f12",
+    roadColor: "#450a0a",
+    laneColor: "#facc15",
+    // Layout: "Quảng trường" — 2 tòa lớn hai bên trục chính + 4 tòa nhỏ rải rác
     buildings: [
-      { id: "bldg_thanh_cong", x: 1200, y: 240, w: 600, h: 280, stationX: 1200, stationY: 360, radius: 95 },
-      { id: "bldg_yarn_warehouse", x: 380, y: 240, w: 420, h: 260, stationX: 380, stationY: 350, radius: 80 },
-      { id: "bldg_director_office", x: 2020, y: 240, w: 420, h: 260, stationX: 2020, stationY: 350, radius: 80 },
-      { id: "bldg_port", x: 380, y: 1120, w: 420, h: 260, stationX: 380, stationY: 1000, radius: 80 },
-      { id: "bldg_yarn_warehouse", x: 1200, y: 1120, w: 520, h: 260, stationX: 1200, stationY: 1000, radius: 85 },
-      { id: "bldg_port", x: 2020, y: 1120, w: 420, h: 260, stationX: 2020, stationY: 1000, radius: 80 },
+      { id: "bldg_class_relations",  x: 700,  y: 280,  w: 540, h: 260, stationX: 700,  stationY: 390, radius: 90 },
+      { id: "bldg_ethnic_board",     x: 1700, y: 280,  w: 540, h: 260, stationX: 1700, stationY: 390, radius: 90 },
+      { id: "bldg_religious_board",  x: 200,  y: 240,  w: 280, h: 220, stationX: 200,  stationY: 330, radius: 70 },
+      { id: "bldg_political_economy",x: 2200, y: 240,  w: 280, h: 220, stationX: 2200, stationY: 330, radius: 70 },
+      { id: "bldg_ethnic_board",     x: 500,  y: 1100, w: 440, h: 260, stationX: 500,  stationY: 990, radius: 80 },
+      { id: "bldg_religious_board",  x: 1900, y: 1100, w: 440, h: 260, stationX: 1900, stationY: 990, radius: 80 },
     ],
   },
   phase_3: {
-    name: "ĐOÀN KHẢO SÁT TRUNG ƯƠNG & TỈNH LONG AN (1980)",
-    theme: "survey_delta",
-    groundColor: "#143126",
-    roadColor: "#78350f",
-    laneColor: "#facc15",
+    name: "QUẢNG TRƯỜNG LIÊN MINH GIAI CẤP & ĐỔI MỚI SÁNG TẠO (CHẶNG 3)",
+    theme: "alliance_metro",
+    groundColor: "#022c22",
+    roadColor: "#0f172a",
+    laneColor: "#10b981",
+    // Layout: "Siêu Đô Thị CNH-HĐH" — 3 cột x 2 tầng cân đối hoàn hảo, tách biệt trục đại lộ
     buildings: [
-      { id: "bldg_tw_survey", x: 1200, y: 240, w: 600, h: 280, stationX: 1200, stationY: 360, radius: 95 },
-      { id: "bldg_long_an_gov", x: 380, y: 240, w: 420, h: 260, stationX: 380, stationY: 350, radius: 80 },
-      { id: "bldg_rice_market", x: 2020, y: 240, w: 420, h: 260, stationX: 2020, stationY: 350, radius: 80 },
-      { id: "bldg_river_port", x: 380, y: 1120, w: 420, h: 260, stationX: 380, stationY: 1000, radius: 80 },
-      { id: "bldg_rice_market", x: 1200, y: 1120, w: 520, h: 260, stationX: 1200, stationY: 1000, radius: 85 },
-      { id: "bldg_long_an_gov", x: 2020, y: 1120, w: 420, h: 260, stationX: 2020, stationY: 1000, radius: 80 },
+      { id: "bldg_hightech_industry", x: 275,  y: 280,  w: 360, h: 240, stationX: 275,  stationY: 410, radius: 80 },
+      { id: "bldg_alliance_hall",     x: 1200, y: 250,  w: 640, h: 280, stationX: 1200, stationY: 390, radius: 95 },
+      { id: "bldg_eco_agriculture",   x: 2125, y: 280,  w: 360, h: 240, stationX: 2125, stationY: 410, radius: 80 },
+      { id: "bldg_innovation_hub",    x: 275,  y: 1080, w: 360, h: 260, stationX: 275,  stationY: 960, radius: 80 },
+      { id: "bldg_enterprise_center", x: 1200, y: 1080, w: 560, h: 260, stationX: 1200, stationY: 960, radius: 85 },
+      { id: "bldg_political_economy", x: 2125, y: 1080, w: 360, h: 260, stationX: 2125, stationY: 960, radius: 80 },
     ],
   },
   phase_4: {
-    name: "HỘI NGHỊ THỂ CHẾ HÓA CHÍNH SÁCH KINH TẾ (HÀ NỘI - 1981)",
-    theme: "policy_hall",
-    groundColor: "#1c1917",
-    roadColor: "#0c0a09",
-    laneColor: "#f59e0b",
+    name: "QUẢNG TRƯỜNG LIÊN MINH GIAI CẤP & ĐỔI MỚI SÁNG TẠO (CHẶNG 3)",
+    theme: "alliance_metro",
+    groundColor: "#022c22",
+    roadColor: "#0f172a",
+    laneColor: "#10b981",
     buildings: [
-      { id: "bldg_policy_hall", x: 1200, y: 240, w: 640, h: 290, stationX: 1200, stationY: 365, radius: 100 },
-      { id: "bldg_planning_committee", x: 380, y: 240, w: 420, h: 260, stationX: 380, stationY: 350, radius: 80 },
-      { id: "bldg_econ_institute", x: 2020, y: 240, w: 420, h: 260, stationX: 2020, stationY: 350, radius: 80 },
-      { id: "bldg_monument", x: 380, y: 1120, w: 420, h: 260, stationX: 380, stationY: 1000, radius: 80 },
-      { id: "bldg_planning_committee", x: 1200, y: 1120, w: 520, h: 260, stationX: 1200, stationY: 1000, radius: 85 },
-      { id: "bldg_monument", x: 2020, y: 1120, w: 420, h: 260, stationX: 2020, stationY: 1000, radius: 80 },
+      { id: "bldg_hightech_industry", x: 275,  y: 280,  w: 360, h: 240, stationX: 275,  stationY: 410, radius: 80 },
+      { id: "bldg_alliance_hall",     x: 1200, y: 250,  w: 640, h: 280, stationX: 1200, stationY: 390, radius: 95 },
+      { id: "bldg_eco_agriculture",   x: 2125, y: 280,  w: 360, h: 240, stationX: 2125, stationY: 410, radius: 80 },
+      { id: "bldg_innovation_hub",    x: 275,  y: 1080, w: 360, h: 260, stationX: 275,  stationY: 960, radius: 80 },
+      { id: "bldg_enterprise_center", x: 1200, y: 1080, w: 560, h: 260, stationX: 1200, stationY: 960, radius: 85 },
+      { id: "bldg_political_economy", x: 2125, y: 1080, w: 360, h: 260, stationX: 2125, stationY: 960, radius: 80 },
     ],
   },
 };
 
 function getActivePhaseKey() {
   if (state.phase === "phase_2" || state.phase === "situation_2") return "phase_2";
-  if (state.phase === "phase_3") return "phase_3";
-  if (state.phase === "phase_4" || state.phase === "finished") return "phase_4";
+  if (state.phase === "phase_3" || state.phase === "phase_4" || state.phase === "finished") return "phase_3";
   return "phase_1";
 }
 
@@ -444,232 +515,204 @@ function resolveSolidBuildingCollisions(x, y, radius = 14) {
 // DYNAMIC MULTI-STEP DOSSIER & DELIVERY QUEST DEFINITIONS
 // ----------------------------------------------------
 const DOSSIER_QUEST_CONFIGS = {
-  // ==================== PHASE 1 (1978 - HTX ĐOÀN XÁ) ====================
-  // 1. Cánh đồng lúa -> Kho thóc giống
-  bldg_rice_field: {
-    questKey: "bldg_rice_field",
-    title: "Vận Chuyển Thóc Vượt Khoán",
-    icon: "🌾",
-    color: "#ca8a04",
-    steps: [
-      {
-        bldgId: "bldg_granary",
-        instruction: "Vận chuyển 10 bao thóc vượt khoán về Kho Lương Thực & Thóc Giống",
-        actionText: "Nhập kho thóc",
-      },
-    ],
-  },
-  // 2. Trạm máy kéo & nông cụ -> Cánh đồng lúa
-  bldg_tractor: {
-    questKey: "bldg_tractor",
-    title: "Tiếp Tế Xăng Dầu & Nông Cụ",
-    icon: "🚜",
-    color: "#0284c7",
-    steps: [
-      {
-        bldgId: "bldg_rice_field",
-        instruction: "Chuyển dầu máy và lưỡi cày máy kéo ra Cánh Đồng Lúa Đoàn Xá",
-        actionText: "Tiếp tế đồng ruộng",
-      },
-    ],
-  },
-  // 3. Kho thóc giống -> Trụ sở HTX Đoàn Xá
-  bldg_granary: {
-    questKey: "bldg_granary",
-    title: "Phân Phối Thóc Giống Vụ Đông",
-    icon: "🌱",
-    color: "#16a34a",
-    steps: [
-      {
-        bldgId: "bldg_doan_xa",
-        instruction: "Chuyển giống lúa mới ngắn ngày chịu hạn về Trụ Sở HTX Đoàn Xá",
-        actionText: "Giao giống lúa",
-      },
-    ],
-  },
-
-  // ==================== PHASE 2 (1979 - DỆT THÀNH CÔNG) ====================
-  // 1. Bến cảng ngoại thương -> Xưởng Dệt Thành Công
-  bldg_port: {
-    questKey: "bldg_port",
-    title: "Cung Ứng Bông Sợi Ngoại Thương",
-    icon: "🧵",
-    color: "#38bdf8",
-    steps: [
-      {
-        bldgId: "bldg_thanh_cong",
-        instruction: "Chuyển kiện sợi dệt nhập khẩu từ bến cảng đến Xí Nghiệp Dệt Thành Công",
-        actionText: "Giao sợi cho máy dệt",
-      },
-    ],
-  },
-  // 2. Văn phòng giám đốc -> Bến cảng
-  bldg_director_office: {
-    questKey: "bldg_director_office",
-    title: "Hợp Đồng Bảo Lãnh Ngoại Tệ",
-    icon: "📑",
-    color: "#ef4444",
-    steps: [
-      {
-        bldgId: "bldg_port",
-        instruction: "Chuyển hồ sơ ủy thác xuất khẩu vải sang Bến Cảng để nhận bông sợi",
-        actionText: "Nộp hồ sơ bảo lãnh",
-      },
-    ],
-  },
-  // 3. Kho bông sợi -> Văn phòng giám đốc
-  bldg_yarn_warehouse: {
-    questKey: "bldg_yarn_warehouse",
-    title: "Báo Cáo Sản Lượng Vải Tự Cân Đối",
-    icon: "📦",
-    color: "#34d399",
-    steps: [
-      {
-        bldgId: "bldg_director_office",
-        instruction: "Trình mẫu vải dệt tự cân đối vượt kế hoạch lên Văn Phòng Giám Đốc",
-        actionText: "Trình mẫu vải",
-      },
-    ],
-  },
-
-  // ==================== PHASE 3 (1980 - LONG AN & ĐOÀN KHẢO SÁT TW) ====================
-  // 1. Chợ gạo Tân An -> Trụ sở Khảo sát TW
-  bldg_rice_market: {
-    questKey: "bldg_rice_market",
-    title: "Báo Cáo Khảo Sát Giá Gạo Thị Trường",
-    icon: "📋",
-    color: "#f59e0b",
-    steps: [
-      {
-        bldgId: "bldg_tw_survey",
-        instruction: "Trình sổ tay khảo sát chênh lệch giá gạo tự do tại Trụ Sở Khảo Sát TW",
-        actionText: "Trình nộp báo cáo",
-      },
-    ],
-  },
-  // 2. Bến sông Vàm Cỏ Tây -> Chợ gạo Tân An
-  bldg_river_port: {
-    questKey: "bldg_river_port",
-    title: "Vận Tải Gạo Miền Tây Liên Tỉnh",
-    icon: "⚓",
-    color: "#0284c7",
-    steps: [
-      {
-        bldgId: "bldg_rice_market",
-        instruction: "Vận chuyển 50 tấn gạo ghe miền Tây vào Chợ Đầu Mối Tân An",
-        actionText: "Bốc dỡ gạo lên chợ",
-      },
-    ],
-  },
-  // 3. UBND Tỉnh Long An -> Trụ sở Khảo sát TW
-  bldg_long_an_gov: {
-    questKey: "bldg_long_an_gov",
-    title: "Đề Án 'Bù Giá Vào Lương'",
-    icon: "🏛️",
-    color: "#f87171",
-    steps: [
-      {
-        bldgId: "bldg_tw_survey",
-        instruction: "Chuyển đề án thí điểm bỏ tem phiếu, bù giá vào lương của Long An cho Đoàn TW",
-        actionText: "Trình đề án cải cách",
-      },
-    ],
-  },
-
-  // ==================== PHASE 4 (1981 - THỂ CHẾ HÓA CHÍNH SÁCH) ====================
-  // 1. Viện Kinh Tế -> Hội Trường Thể Chế
-  bldg_econ_institute: {
-    questKey: "bldg_econ_institute",
-    title: "Luận Cứ Thể Chế Hóa Chỉ Thị 100",
-    icon: "📜",
-    color: "#34d399",
-    steps: [
-      {
-        bldgId: "bldg_policy_hall",
-        instruction: "Trình bản tổng kết kinh nghiệm khoán sản phẩm nông nghiệp vào Hội Trường 1981",
-        actionText: "Trình nộp dự thảo",
-      },
-    ],
-  },
-  // 2. Ủy ban Kế hoạch Nhà nước -> Viện Kinh Tế
-  bldg_planning_committee: {
-    questKey: "bldg_planning_committee",
-    title: "Hướng Dẫn Kế Hoạch 3 Phần (QĐ 25-CP)",
+  // ==================== CHẶNG 1: KHÁI LUẬN CCXH & CCXH-GC ====================
+  bldg_demographics: {
+    questKey: "bldg_demographics",
+    title: "Chuyển Giao Dữ Liệu Dân Cư & Nghề Nghiệp",
     icon: "📊",
     color: "#38bdf8",
     steps: [
       {
-        bldgId: "bldg_econ_institute",
-        instruction: "Chuyển dự thảo phân bổ P1-P2-P3 cho Viện Nghiên Cứu Quản Lý Kinh Tế",
-        actionText: "Chuyển dự thảo P1-P3",
+        bldgId: "bldg_ccxh_central",
+        instruction: "Chuyển giao báo cáo biến động cơ cấu dân cư & nghề nghiệp về Trung Tâm Khảo Sát",
+        actionText: "Bàn giao dữ liệu dân cư",
       },
     ],
   },
-  // 3. Tượng đài khởi sự -> Hội Trường Thể Chế
-  bldg_monument: {
-    questKey: "bldg_monument",
-    title: "Hồ Sơ Di Sản 'Xé Rào' Lịch Sử",
-    icon: "🎖️",
+  bldg_production_means: {
+    questKey: "bldg_production_means",
+    title: "Hồ Sơ Quan Hệ Sở Hữu & TLSX",
+    icon: "⚙️",
+    color: "#f59e0b",
+    steps: [
+      {
+        bldgId: "bldg_ccxh_central",
+        instruction: "Chuyển hồ sơ giám sát quan hệ sở hữu tư liệu sản xuất về Trung Tâm Khảo Sát",
+        actionText: "Nộp hồ sơ sở hữu TLSX",
+      },
+    ],
+  },
+  bldg_benefit_distribution: {
+    questKey: "bldg_benefit_distribution",
+    title: "Phương Án Phân Phối Lợi Ích & An Sinh",
+    icon: "⚖️",
+    color: "#10b981",
+    steps: [
+      {
+        bldgId: "bldg_demographics",
+        instruction: "Chuyển phương án phân phối thu nhập và an sinh xã hội sang Viện Dân Cư & Lao Động",
+        actionText: "Chuyển giao phương án an sinh",
+      },
+    ],
+  },
+
+  // ==================== CHẶNG 2: VỊ TRÍ CCXH-GC & TÁC ĐỘNG TƯƠNG HỖ ====================
+  bldg_ethnic_board: {
+    questKey: "bldg_ethnic_board",
+    title: "Báo Cáo Cơ Cấu Dân Tộc & Đoàn Kết Xã Hội",
+    icon: "🏔️",
+    color: "#fb923c",
+    steps: [
+      {
+        bldgId: "bldg_class_relations",
+        instruction: "Chuyển báo cáo tác động biện chứng giữa giai tầng và 54 dân tộc về Viện Quan Hệ Giai Tầng",
+        actionText: "Nộp báo cáo dân tộc",
+      },
+    ],
+  },
+  bldg_religious_board: {
+    questKey: "bldg_religious_board",
+    title: "Tư Liệu Tôn Giáo & Đời Sống Tâm Linh",
+    icon: "🕊️",
+    color: "#c084fc",
+    steps: [
+      {
+        bldgId: "bldg_class_relations",
+        instruction: "Chuyển tư liệu chính sách tự do tín ngưỡng và hòa hợp giai tầng về Viện Quan Hệ Giai Tầng",
+        actionText: "Nộp tư liệu tôn giáo",
+      },
+    ],
+  },
+  bldg_political_economy: {
+    questKey: "bldg_political_economy",
+    title: "Luận Điểm Vị Trí Trung Tâm Của CCXH-GC",
+    icon: "🏢",
+    color: "#22d3ee",
+    steps: [
+      {
+        bldgId: "bldg_class_relations",
+        instruction: "Chuyển bản phân tích vị trí hàng đầu chi phối của cơ cấu giai cấp về Viện Quan Hệ Giai Tầng",
+        actionText: "Trình luận điểm vị trí trung tâm",
+      },
+    ],
+  },
+
+  // ==================== CHẶNG 3: QUY LUẬT BIẾN ĐỔI & LIÊN MINH GIAI CẤP ====================
+  bldg_hightech_industry: {
+    questKey: "bldg_hightech_industry",
+    title: "Kế Hoạch Tiên Phong CNH - HĐH (Công Nhân)",
+    icon: "🏭",
+    color: "#60a5fa",
+    steps: [
+      {
+        bldgId: "bldg_alliance_hall",
+        instruction: "Chuyển dự thảo vai trò tiên phong của Giai cấp Công nhân lên Hội Trường Liên Minh",
+        actionText: "Đệ trình kế hoạch công nhân",
+      },
+    ],
+  },
+  bldg_eco_agriculture: {
+    questKey: "bldg_eco_agriculture",
+    title: "Chiến Lược Nông Nghiệp Sinh Thái (Nông Dân)",
+    icon: "🌾",
+    color: "#4ade80",
+    steps: [
+      {
+        bldgId: "bldg_alliance_hall",
+        instruction: "Chuyển đề án phát triển nông nghiệp sinh thái hiện đại của Giai cấp Nông dân lên Hội Trường",
+        actionText: "Đệ trình chiến lược nông dân",
+      },
+    ],
+  },
+  bldg_innovation_hub: {
+    questKey: "bldg_innovation_hub",
+    title: "Đề Án Kinh Tế Tri Thức Số (Trí Thức)",
+    icon: "💡",
+    color: "#d8b4fe",
+    steps: [
+      {
+        bldgId: "bldg_alliance_hall",
+        instruction: "Chuyển đề án phát triển kinh tế số & đổi mới sáng tạo của Đội ngũ Trí thức lên Hội Trường",
+        actionText: "Đệ trình đề án trí thức",
+      },
+    ],
+  },
+  bldg_enterprise_center: {
+    questKey: "bldg_enterprise_center",
+    title: "Bản Cam Kết Đổi Mới Của Đội Ngũ Doanh Nhân",
+    icon: "🏢",
     color: "#fde047",
     steps: [
       {
-        bldgId: "bldg_policy_hall",
-        instruction: "Chuyển tư liệu thực tiễn 1978–1981 vào Hội đồng biểu quyết chính sách",
-        actionText: "Nộp sử liệu bước chuyển",
+        bldgId: "bldg_alliance_hall",
+        instruction: "Chuyển cam kết đầu tư và liên kết của Tầng lớp Doanh nhân mới lên Hội Trường Liên Minh",
+        actionText: "Đệ trình cam kết doanh nhân",
       },
     ],
   },
+
+  // Backward-compatibility quest aliases
+  bldg_rice_field: { questKey: "bldg_rice_field", title: "Khảo Sát Dân Cư & Nghề Nghiệp", icon: "👥", color: "#38bdf8", steps: [{ bldgId: "bldg_doan_xa", instruction: "Chuyển hồ sơ cơ cấu dân cư về Trung Tâm Khảo Sát", actionText: "Giao hồ sơ" }] },
+  bldg_tractor: { questKey: "bldg_tractor", title: "Giám Sát Tư Liệu Sản Xuất", icon: "⚙️", color: "#f59e0b", steps: [{ bldgId: "bldg_doan_xa", instruction: "Chuyển hồ sơ sở hữu tư liệu sản xuất về Trung Tâm Khảo Sát", actionText: "Nộp hồ sơ" }] },
+  bldg_granary: { questKey: "bldg_granary", title: "Phân Phối Lợi Ích & An Sinh", icon: "⚖️", color: "#10b981", steps: [{ bldgId: "bldg_doan_xa", instruction: "Chuyển phương án phân phối an sinh về Trung Tâm", actionText: "Giao phương án" }] },
+  bldg_port: { questKey: "bldg_port", title: "Báo Cáo Tôn Giáo & Đoàn Kết", icon: "🕊️", color: "#c084fc", steps: [{ bldgId: "bldg_thanh_cong", instruction: "Chuyển báo cáo hòa hợp giai tầng về Viện Quan Hệ", actionText: "Nộp báo cáo" }] },
+  bldg_director_office: { questKey: "bldg_director_office", title: "Phân Tích Cơ Sở Kinh Tế", icon: "🏢", color: "#22d3ee", steps: [{ bldgId: "bldg_thanh_cong", instruction: "Chuyển luận cứ kinh tế chính trị về Viện Quan Hệ", actionText: "Trình luận cứ" }] },
+  bldg_yarn_warehouse: { questKey: "bldg_yarn_warehouse", title: "Hồ Sơ 54 Dân Tộc", icon: "🏔️", color: "#fb923c", steps: [{ bldgId: "bldg_thanh_cong", instruction: "Chuyển dữ liệu dân tộc về Viện Quan Hệ Giai Tầng", actionText: "Giao dữ liệu" }] },
+  bldg_rice_market: { questKey: "bldg_rice_market", title: "Kế Hoạch Nông Dân Chiến Lược", icon: "🌾", color: "#4ade80", steps: [{ bldgId: "bldg_tw_survey", instruction: "Chuyển dự thảo nông dân lên Hội Trường Liên Minh", actionText: "Trình dự thảo" }] },
+  bldg_river_port: { questKey: "bldg_river_port", title: "Đề Án Trí Thức Sáng Tạo", icon: "💡", color: "#d8b4fe", steps: [{ bldgId: "bldg_tw_survey", instruction: "Chuyển đề án trí thức lên Hội Trường Liên Minh", actionText: "Trình đề án" }] },
+  bldg_long_an_gov: { questKey: "bldg_long_an_gov", title: "Kế Hoạch Công Nhân Tiên Phong", icon: "🏭", color: "#60a5fa", steps: [{ bldgId: "bldg_tw_survey", instruction: "Chuyển kế hoạch công nhân lên Hội Trường Liên Minh", actionText: "Trình kế hoạch" }] },
+  bldg_policy_hall: { questKey: "bldg_policy_hall", title: "Văn Kiện Liên Minh Toàn Thể", icon: "🤝", color: "#facc15", steps: [{ bldgId: "bldg_alliance_hall", instruction: "Bàn giao biểu quyết lên Hội Trường", actionText: "Biểu quyết" }] },
 };
 
 // ----------------------------------------------------
-// HISTORICAL CITIZENS IN NEED (NHIỆM VỤ TRỢ GIÚP DÂN THỰC ĐỊA)
+// CITIZENS IN NEED THEMATIC MISSIONS (HỖ TRỢ ĐỒNG BÀO THỰC ĐỊA)
 // ----------------------------------------------------
 const HISTORICAL_CITIZENS_CONFIG = {
   phase_1: [
     {
       id: "citizen_p1_1",
-      name: "Bác Ba Nông Dân",
-      sub: "Xã viên thiếu thóc giống vụ đông",
+      name: "Điều Tra Viên Thống Kê",
+      sub: "Cần bảng hướng dẫn phân loại cơ cấu xã hội",
       x: 1620,
       y: 840,
-      needText: "Xin cấp thóc giống ngắn ngày chịu hạn!",
-      resolvedText: "Đã cấp phát 2 bao thóc giống chịu hạn cho gia đình Bác Ba (+8đ)!",
+      needText: "Xin mẫu phân loại các loại hình cơ cấu: dân cư, nghề nghiệp, giai cấp!",
+      resolvedText: "Đã cung cấp bộ tiêu chuẩn khảo sát 5 loại hình cơ cấu xã hội (+8đ)!",
       scoreDelta: 8,
     },
   ],
   phase_2: [
     {
       id: "citizen_p2_1",
-      name: "Cô Hoa Thợ Dệt",
-      sub: "Công nhân cần gạo trợ cấp gia đình",
+      name: "Đại Biểu Đồng Bào Dân Tộc",
+      sub: "Cần tài liệu chính sách khối đại đoàn kết toàn dân",
       x: 820,
       y: 840,
-      needText: "Xin mua gạo theo giá tự cân đối của nhà máy!",
-      resolvedText: "Đã trích quỹ phúc lợi xí nghiệp hỗ trợ gia đình Cô Hoa (+8đ)!",
+      needText: "Xin tài liệu định hướng gắn kết giai cấp với cơ cấu dân tộc, tôn giáo!",
+      resolvedText: "Đã trao tài liệu định hướng gắn kết giai tầng và khối đại đoàn kết (+8đ)!",
       scoreDelta: 8,
     },
   ],
   phase_3: [
     {
       id: "citizen_p3_1",
-      name: "Bác Năm Thương Hồ",
-      sub: "Ghe chở 20 tấn gạo bị kẹt tại chốt kiểm soát",
+      name: "Kỹ Sư Công Nghệ Trẻ",
+      sub: "Cần kết nối sáng tạo với công đoàn và nông hội",
       x: 1620,
       y: 840,
-      needText: "Xin giấy giới thiệu khảo sát thực tế để thông quan gạo!",
-      resolvedText: "Đã cấp giấy thông hành thực nghiệm lưu thông tự do cho Bác Năm (+8đ)!",
+      needText: "Xin nghị quyết liên minh công nhân - nông dân - trí thức và doanh nhân!",
+      resolvedText: "Đã chuyển giao chương trình hợp tác liên minh đa tầng lớp (+8đ)!",
       scoreDelta: 8,
     },
   ],
   phase_4: [
     {
       id: "citizen_p4_1",
-      name: "Cán Bộ Hợp Tác Xã Cơ Sở",
-      sub: "Cần mẫu biểu hướng dẫn Chỉ thị 100",
-      x: 820,
+      name: "Kỹ Sư Công Nghệ Trẻ",
+      sub: "Cần kết nối sáng tạo với công đoàn và nông hội",
+      x: 1620,
       y: 840,
-      needText: "Xin bản mẫu khoán sản phẩm đến nhóm và người lao động!",
-      resolvedText: "Đã trao tay tập tài liệu hướng dẫn Chỉ thị 100 (+8đ)!",
+      needText: "Xin nghị quyết liên minh công nhân - nông dân - trí thức và doanh nhân!",
+      resolvedText: "Đã chuyển giao chương trình hợp tác liên minh đa tầng lớp (+8đ)!",
       scoreDelta: 8,
     },
   ],
@@ -712,33 +755,33 @@ function spawnFloatingText(x, y, text, color = "#ffdf6e") {
 }
 
 // ----------------------------------------------------
-// DEDICATED HISTORICAL THEMATIC COLLECTIBLE SPAWNS (1978–1981)
+// DEDICATED CHAPTER 5 THEMATIC COLLECTIBLE SPAWNS
 // ----------------------------------------------------
 const movingHazardsState = new Map();
 
 
 // ----------------------------------------------------
-// HISTORICAL NPCS BY PHASE (1978–1981)
+// CHAPTER 5 EXPERTS & NPCS BY PHASE
 // ----------------------------------------------------
 const HISTORICAL_NPCS_DATA = {
   phase_1: [
     {
-      id: "npc_p1_farmer",
-      name: "Bác Hai Lúa",
-      sub: "Xã viên HTX Đoàn Xá (1978)",
-      icon: "👨‍🌾",
-      avatarColor: "#059669",
+      id: "npc_p1_theorist",
+      name: "GS. Nguyễn Văn An",
+      sub: "Lý luận Xã hội học Mác - Lênin",
+      icon: "📚",
+      avatarColor: "#0284c7",
       gender: "male",
       x: 600,
       y: 520,
       radius: 24,
     },
     {
-      id: "npc_p1_secretary",
-      name: "Đ/c Đoàn Duy Thành",
-      sub: "Bí Thư Thành Ủy Hải Phòng",
-      icon: "👨‍💼",
-      avatarColor: "#dc2626",
+      id: "npc_p1_statistician",
+      name: "Chuyên Viên Thống Kê",
+      sub: "Nghiên cứu Khảo sát Giai tầng",
+      icon: "📊",
+      avatarColor: "#15803d",
       gender: "male",
       x: 1480,
       y: 520,
@@ -747,22 +790,22 @@ const HISTORICAL_NPCS_DATA = {
   ],
   phase_2: [
     {
-      id: "npc_p2_ba_thi",
-      name: "Bà Ba Thi (Nguyễn Thị Ráo)",
-      sub: "Giám Đốc Lương Thực TP.HCM",
-      icon: "👩‍💼",
-      avatarColor: "#db2777",
-      gender: "female",
+      id: "npc_p2_moderator",
+      name: "Ban Dân Tộc - Tôn Giáo",
+      sub: "Chính sách Đại đoàn kết TW",
+      icon: "🤝",
+      avatarColor: "#b91c1c",
+      gender: "male",
       x: 600,
       y: 520,
       radius: 24,
     },
     {
-      id: "npc_p2_engineer",
-      name: "Kỹ Sư Dệt Thành Công",
-      sub: "Xí Nghiệp Dệt Thành Công",
-      icon: "🏭",
-      avatarColor: "#0284c7",
+      id: "npc_p2_theorist_note",
+      name: "Chuyên Gia Phương Pháp Luận",
+      sub: "Hội đồng Lý luận TW",
+      icon: "⚖️",
+      avatarColor: "#d97706",
       gender: "male",
       x: 1480,
       y: 520,
@@ -771,23 +814,23 @@ const HISTORICAL_NPCS_DATA = {
   ],
   phase_3: [
     {
-      id: "npc_p3_chin_can",
-      name: "Đ/c Chín Cần",
-      sub: "Bí Thư Tỉnh Ủy Long An",
-      icon: "🏛️",
-      avatarColor: "#b91c1c",
+      id: "npc_p3_union_leader",
+      name: "Đại Biểu Công Đoàn CNH",
+      sub: "Tiên phong Công nhân CNH",
+      icon: "⚙️",
+      avatarColor: "#0284c7",
       gender: "male",
-      x: 600,
+      x: 470,
       y: 520,
       radius: 24,
     },
     {
-      id: "npc_p3_tw_inspector",
-      name: "Trưởng Đoàn Khảo Sát",
-      sub: "Đoàn Khảo Sát TW 1980",
-      icon: "📋",
-      avatarColor: "#d97706",
-      gender: "male",
+      id: "npc_p3_innovator",
+      name: "TS. Lê Thị Mai Lan",
+      sub: "Kinh tế tri thức & Đổi mới",
+      icon: "💡",
+      avatarColor: "#7c3aed",
+      gender: "female",
       x: 1480,
       y: 520,
       radius: 24,
@@ -795,23 +838,23 @@ const HISTORICAL_NPCS_DATA = {
   ],
   phase_4: [
     {
-      id: "npc_p4_theorist",
-      name: "Chuyên Gia Kinh Tế",
-      sub: "Viện Nghiên Cứu QLKT 1981",
-      icon: "📚",
-      avatarColor: "#7c2d12",
+      id: "npc_p3_union_leader",
+      name: "Đại Biểu Công Đoàn CNH",
+      sub: "Tiên phong Công nhân CNH",
+      icon: "⚙️",
+      avatarColor: "#0284c7",
       gender: "male",
-      x: 600,
+      x: 470,
       y: 520,
       radius: 24,
     },
     {
-      id: "npc_p4_delegate",
-      name: "Đại Biểu Hội Nghị",
-      sub: "Hội Nghị Thể Chế Hóa 1981",
-      icon: "🏛️",
-      avatarColor: "#991b1b",
-      gender: "male",
+      id: "npc_p3_innovator",
+      name: "TS. Lê Thị Mai Lan",
+      sub: "Kinh tế tri thức & Đổi mới",
+      icon: "💡",
+      avatarColor: "#7c3aed",
+      gender: "female",
       x: 1480,
       y: 520,
       radius: 24,
@@ -833,82 +876,81 @@ const answeredNpcIds = new Set();
 
 const PHASE_COLLECTIBLES_CONFIG = {
   phase_1: [
-    // 🌾 LÚA KHOÁN (1978): Nằm dọc các tuyến đường, bờ ruộng và quảng trường Đoàn Xá
-    { id: "p1_rice_1", type: "rice_sheaf", label: "Lúa Khoán", x: 380, y: 440, message: "🌾 Gặt lúa vượt khoán cánh đồng Tây! (+2đ)" },
-    { id: "p1_rice_2", type: "rice_sheaf", label: "Lúa Khoán", x: 750, y: 440, message: "🌾 Lúa khoán sản phẩm nông hộ! (+2đ)" },
-    { id: "p1_rice_3", type: "rice_sheaf", label: "Lúa Khoán", x: 1200, y: 440, message: "🌾 Thửa ruộng mẫu Đoàn Xá Hải Phòng! (+2đ)" },
-    { id: "p1_rice_4", type: "rice_sheaf", label: "Lúa Khoán", x: 1650, y: 440, message: "🌾 Thu hoạch lúa mùa vụ mới! (+2đ)" },
-    { id: "p1_rice_5", type: "rice_sheaf", label: "Lúa Khoán", x: 2020, y: 440, message: "🌾 Lúa vượt khoán chia về hộ gia đình! (+2đ)" },
-    { id: "p1_rice_6", type: "rice_sheaf", label: "Lúa Khoán", x: 750, y: 700, message: "🌾 Đổi mới phương thức quản trị khoán! (+2đ)" },
-    { id: "p1_rice_7", type: "rice_sheaf", label: "Lúa Khoán", x: 1650, y: 700, message: "🌾 Thóc giống chất lượng cao! (+2đ)" },
-    { id: "p1_rice_8", type: "rice_sheaf", label: "Lúa Khoán", x: 380, y: 920, message: "🌾 Lúa mùa chiêm Hải Phòng! (+2đ)" },
-    { id: "p1_rice_9", type: "rice_sheaf", label: "Lúa Khoán", x: 1200, y: 920, message: "🌾 Thóc nộp kho hợp tác xã đủ định ngạch! (+2đ)" },
-    { id: "p1_rice_10", type: "rice_sheaf", label: "Lúa Khoán", x: 2020, y: 920, message: "🌾 Thóc dư thừa bán theo giá thỏa thuận! (+2đ)" },
+    // 📊 HỒ SƠ KHẢO SÁT CƠ CẤU XÃ HỘI (PHASE 1)
+    { id: "p1_ccxh_1", type: "ccxh_survey_data", label: "Hồ Sơ CCXH", x: 380, y: 440, message: "📊 Thu thập dữ liệu Cơ cấu xã hội - Dân cư! (+2đ)" },
+    { id: "p1_ccxh_2", type: "ccxh_survey_data", label: "Hồ Sơ CCXH", x: 750, y: 440, message: "📊 Dữ liệu Cơ cấu xã hội - Dân tộc & Tôn giáo! (+2đ)" },
+    { id: "p1_ccxh_3", type: "ccxh_survey_data", label: "Hồ Sơ CCXH", x: 1200, y: 440, message: "📊 Khảo sát Cơ cấu xã hội - Giai cấp cốt lõi! (+2đ)" },
+    { id: "p1_ccxh_4", type: "ccxh_survey_data", label: "Hồ Sơ CCXH", x: 1650, y: 440, message: "📊 Tài liệu Địa vị kinh tế - xã hội của các tập đoàn! (+2đ)" },
+    { id: "p1_ccxh_5", type: "ccxh_survey_data", label: "Hồ Sơ CCXH", x: 2020, y: 440, message: "📊 Báo cáo Quan hệ sở hữu Tư liệu sản xuất! (+2đ)" },
+    { id: "p1_ccxh_6", type: "ccxh_survey_data", label: "Hồ Sơ CCXH", x: 750, y: 700, message: "📊 Phân tích Vai trò trong tổ chức lao động xã hội! (+2đ)" },
+    { id: "p1_ccxh_7", type: "ccxh_survey_data", label: "Hồ Sơ CCXH", x: 1650, y: 700, message: "📊 Dữ liệu Hình thức & Quy mô phân phối lợi ích! (+2đ)" },
+    { id: "p1_ccxh_8", type: "ccxh_survey_data", label: "Hồ Sơ CCXH", x: 380, y: 920, message: "📊 Hồ sơ Cơ cấu xã hội - Nghề nghiệp đa dạng! (+2đ)" },
+    { id: "p1_ccxh_9", type: "ccxh_survey_data", label: "Hồ Sơ CCXH", x: 1200, y: 920, message: "📊 Xu hướng xích lại gần nhau giữa các giai tầng! (+2đ)" },
+    { id: "p1_ccxh_10", type: "ccxh_survey_data", label: "Hồ Sơ CCXH", x: 2020, y: 920, message: "📊 Dữ liệu Khảo sát thực tiễn Cơ cấu xã hội hoàn tất! (+2đ)" },
   ],
   phase_2: [
-    // 🧵 SỢI BÔNG (1979): Nằm dọc tuyến phố Dệt Thành Công & Bến Cảng
-    { id: "p2_yarn_1", type: "yarn_spool", label: "Sợi Bông", x: 380, y: 440, message: "🧵 Nhập kho bông sợi tự cân đối! (+2đ)" },
-    { id: "p2_yarn_2", type: "yarn_spool", label: "Sợi Bông", x: 750, y: 440, message: "🧵 Kiểm kê sợi dệt Kế hoạch 3 phần! (+2đ)" },
-    { id: "p2_yarn_3", type: "yarn_spool", label: "Sợi Bông", x: 1200, y: 440, message: "🧵 Cung cấp sợi cho máy dệt Thành Công! (+2đ)" },
-    { id: "p2_yarn_4", type: "yarn_spool", label: "Sợi Bông", x: 1650, y: 440, message: "🧵 Hoàn tất lô vải xuất khẩu! (+2đ)" },
-    { id: "p2_yarn_5", type: "yarn_spool", label: "Sợi Bông", x: 2020, y: 440, message: "🧵 Báo cáo giám đốc: Đã đủ sợi dệt! (+2đ)" },
-    { id: "p2_yarn_6", type: "yarn_spool", label: "Sợi Bông", x: 750, y: 700, message: "🧵 Sợi tự cân đối xuất khẩu P2! (+2đ)" },
-    { id: "p2_yarn_7", type: "yarn_spool", label: "Sợi Bông", x: 1650, y: 700, message: "🧵 Thoi sợi dệt phụ thêm đời sống P3! (+2đ)" },
-    { id: "p2_yarn_8", type: "yarn_spool", label: "Sợi Bông", x: 380, y: 920, message: "🧵 Kiện bông nhập khẩu cập Bến Cảng! (+2đ)" },
-    { id: "p2_yarn_9", type: "yarn_spool", label: "Sợi Bông", x: 1200, y: 920, message: "🧵 Tiếp nhận nguyên liệu ngoại thương! (+2đ)" },
-    { id: "p2_yarn_10", type: "yarn_spool", label: "Sợi Bông", x: 2020, y: 920, message: "🧵 Container sợi cập cảng TP.HCM! (+2đ)" },
+    // 📜 TÀI LIỆU BIẾN ĐỔI CCXH-GC (PHASE 2)
+    { id: "p2_doc_1", type: "class_structure_doc", label: "Biến Đổi CCXH", x: 380, y: 440, message: "📜 Dữ liệu Giai cấp Công nhân - lực lượng tiên phong! (+2đ)" },
+    { id: "p2_doc_2", type: "class_structure_doc", label: "Biến Đổi CCXH", x: 750, y: 440, message: "📜 Dữ liệu Giai cấp Nông dân - chủ thể nông nghiệp & NTM! (+2đ)" },
+    { id: "p2_doc_3", type: "class_structure_doc", label: "Biến Đổi CCXH", x: 1200, y: 440, message: "📜 Dữ liệu Đội ngũ Trí thức - nguồn lực kinh tế tri thức! (+2đ)" },
+    { id: "p2_doc_4", type: "class_structure_doc", label: "Biến Đổi CCXH", x: 1650, y: 440, message: "📜 Dữ liệu Đội ngũ Doanh nhân - phát triển kinh tế bền vững! (+2đ)" },
+    { id: "p2_doc_5", type: "class_structure_doc", label: "Biến Đổi CCXH", x: 2020, y: 440, message: "📜 Dữ liệu Đội ngũ Thanh niên - rường cột nước nhà! (+2đ)" },
+    { id: "p2_doc_6", type: "class_structure_doc", label: "Biến Đổi CCXH", x: 750, y: 700, message: "📜 Dữ liệu Đội ngũ Phụ nữ - bình đẳng và tiến bộ xã hội! (+2đ)" },
+    { id: "p2_doc_7", type: "class_structure_doc", label: "Biến Đổi CCXH", x: 1650, y: 700, message: "📜 Báo cáo Biến đổi CCXH gắn với kinh tế nhiều thành phần! (+2đ)" },
+    { id: "p2_doc_8", type: "class_structure_doc", label: "Biến Đổi CCXH", x: 380, y: 920, message: "📜 Dữ liệu Tính quy luật trong biến đổi cơ cấu xã hội! (+2đ)" },
+    { id: "p2_doc_9", type: "class_structure_doc", label: "Biến Đổi CCXH", x: 1200, y: 920, message: "📜 Báo cáo Mức độ phân hóa xã hội và định hướng tiến bộ! (+2đ)" },
+    { id: "p2_doc_10", type: "class_structure_doc", label: "Biến Đổi CCXH", x: 2020, y: 920, message: "📜 Tổng hợp Biến đổi cơ cấu xã hội - giai cấp Việt Nam! (+2đ)" },
   ],
   phase_3: [
-    // 📋 BÁO CÁO TW (1980): Nằm trên 3 Cầu sông Vàm Cỏ & Trục đường Bờ Bắc/Bờ Nam Long An
-    { id: "p3_doc_1", type: "survey_doc", label: "Báo Cáo TW", x: 380, y: 460, message: "📋 Khảo sát thực tiễn tại UBND Tỉnh Long An! (+2đ)" },
-    { id: "p3_doc_2", type: "survey_doc", label: "Báo Cáo TW", x: 750, y: 460, message: "📋 Ghi nhận ý kiến tiểu thương bãi bỏ trạm gác! (+2đ)" },
-    { id: "p3_doc_3", type: "survey_doc", label: "Báo Cáo TW", x: 1200, y: 460, message: "📋 Báo cáo thực tiễn với Đoàn Khảo Sát TW! (+2đ)" },
-    { id: "p3_doc_4", type: "survey_doc", label: "Báo Cáo TW", x: 1650, y: 460, message: "📋 Đề án bù giá vào lương tỉnh Long An! (+2đ)" },
-    { id: "p3_doc_5", type: "survey_doc", label: "Báo Cáo TW", x: 2020, y: 460, message: "📋 Khảo sát giá gạo tự do tại Chợ Tân An! (+2đ)" },
-    { id: "p3_doc_6", type: "survey_doc", label: "Báo Cáo TW", x: 480, y: 700, message: "📋 Dữ liệu lưu thông lương thực trên cầu Tây! (+2đ)" },
-    { id: "p3_doc_7", type: "survey_doc", label: "Báo Cáo TW", x: 1200, y: 700, message: "📋 Dữ liệu lưu thông lương thực trên cầu chính! (+2đ)" },
-    { id: "p3_doc_8", type: "survey_doc", label: "Báo Cáo TW", x: 1920, y: 700, message: "📋 Dữ liệu lưu thông lương thực trên cầu Đông! (+2đ)" },
-    { id: "p3_doc_9", type: "survey_doc", label: "Báo Cáo TW", x: 380, y: 920, message: "📋 Ghe thuyền chở gạo cập bến Vàm Cỏ Tây! (+2đ)" },
-    { id: "p3_doc_10", type: "survey_doc", label: "Báo Cáo TW", x: 1200, y: 920, message: "📋 Thu mua lúa gạo theo giá thỏa thuận thực tế! (+2đ)" },
+    // ⭐ VĂN KIỆN LIÊN MINH GIAI CẤP, TẦNG LỚP (PHASE 3)
+    { id: "p3_all_1", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 275, y: 460, message: "⭐ Nội dung Chính trị: Giữ vững vai trò lãnh đạo của Đảng! (+2đ)" },
+    { id: "p3_all_2", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 610, y: 440, message: "⭐ Xây dựng Nhà nước pháp quyền XHCN của Nhân dân! (+2đ)" },
+    { id: "p3_all_3", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 1200, y: 460, message: "⭐ Nội dung Kinh tế: Cơ sở vững chắc nhất của khối liên minh! (+2đ)" },
+    { id: "p3_all_4", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 1790, y: 440, message: "⭐ Hợp tác Công nghiệp - Nông nghiệp - Dịch vụ - KHCN! (+2đ)" },
+    { id: "p3_all_5", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 2125, y: 460, message: "⭐ Kết hợp hài hòa các quan hệ lợi ích kinh tế! (+2đ)" },
+    { id: "p3_all_6", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 320, y: 670, message: "⭐ Nội dung Văn hóa: Nền văn hóa tiên tiến, đậm đà bản sắc! (+2đ)" },
+    { id: "p3_all_7", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 1200, y: 670, message: "⭐ Nội dung Xã hội: An sinh xã hội, giảm nghèo bền vững! (+2đ)" },
+    { id: "p3_all_8", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 2080, y: 670, message: "⭐ Phương hướng: Đẩy mạnh CNH-HĐH gắn với kinh tế tri thức! (+2đ)" },
+    { id: "p3_all_9", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 275, y: 890, message: "⭐ Phương hướng: Hoàn thiện thể chế kinh tế thị trường XHCN! (+2đ)" },
+    { id: "p3_all_10", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 1200, y: 890, message: "⭐ Toàn văn: Tăng cường khối đại đoàn kết toàn dân tộc! (+2đ)" },
   ],
   phase_4: [
-    // 📜 CHỈ THỊ 100 & QUYẾT ĐỊNH 25-CP (1981): Nằm tại các trục đường thể chế
-    { id: "p4_res_1", type: "directive_100", label: "Chỉ Thị 100", x: 380, y: 440, message: "📜 Tiếp nhận Dự thảo Đổi mới Quản lý Kinh tế! (+2đ)" },
-    { id: "p4_res_2", type: "directive_100", label: "Chỉ Thị 100", x: 750, y: 440, message: "📜 Góp ý lý luận của Viện Nghiên Cứu Quản Lý! (+2đ)" },
-    { id: "p4_res_3", type: "directive_100", label: "Chỉ Thị 100", x: 1200, y: 440, message: "📜 Bản thảo Chỉ thị 100 Ban Bí thư 1/1981! (+2đ)" },
-    { id: "p4_res_4", type: "directive_100", label: "Chỉ Thị 100", x: 1650, y: 440, message: "📜 Dự thảo Quyết định 25-CP Chính phủ 1/1981! (+2đ)" },
-    { id: "p4_res_5", type: "directive_100", label: "Chỉ Thị 100", x: 2020, y: 440, message: "📜 Đề xuất phân bổ Kế hoạch 3 phần P1-P2-P3! (+2đ)" },
-    { id: "p4_res_6", type: "directive_100", label: "Chỉ Thị 100", x: 750, y: 700, message: "📜 Kế hoạch chỉ tiêu pháp lệnh Nhà nước P1! (+2đ)" },
-    { id: "p4_res_7", type: "directive_100", label: "Chỉ Thị 100", x: 1650, y: 700, message: "📜 Cơ chế tự cân đối kinh doanh tự chủ P2! (+2đ)" },
-    { id: "p4_res_8", type: "directive_100", label: "Chỉ Thị 100", x: 380, y: 920, message: "📜 Động lực phát triển sản xuất phụ gia đình P3! (+2đ)" },
-    { id: "p4_res_9", type: "directive_100", label: "Chỉ Thị 100", x: 1200, y: 920, message: "📜 Văn kiện Thể chế hóa thành công bước chuyển lịch sử! (+2đ)" },
-    { id: "p4_res_10", type: "directive_100", label: "Chỉ Thị 100", x: 2020, y: 920, message: "📜 Xung lực mở đường cho Đổi Mới toàn diện! (+2đ)" },
+    // Phase 4 (Đại biểu/Thể chế hóa kế thừa Phase 3)
+    { id: "p4_res_1", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 275, y: 460, message: "⭐ Nội dung Chính trị: Bản lĩnh và lập trường giai cấp công nhân! (+2đ)" },
+    { id: "p4_res_2", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 610, y: 440, message: "⭐ Cơ sở kinh tế: Thống nhất lợi ích giai cấp và xã hội! (+2đ)" },
+    { id: "p4_res_3", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 1200, y: 460, message: "⭐ Đại biểu Trí thức đóng góp sáng kiến KHCN! (+2đ)" },
+    { id: "p4_res_4", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 1790, y: 440, message: "⭐ Đại biểu Doanh nhân cam kết đầu tư sản xuất bền vững! (+2đ)" },
+    { id: "p4_res_5", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 2125, y: 460, message: "⭐ Đại biểu Nông dân phát triển nông nghiệp công nghệ cao! (+2đ)" },
+    { id: "p4_res_6", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 320, y: 670, message: "⭐ Đại biểu Công nhân làm chủ dây chuyền hiện đại! (+2đ)" },
+    { id: "p4_res_7", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 1200, y: 670, message: "⭐ Phát huy sức mạnh khối Đại đoàn kết toàn dân tộc! (+2đ)" },
+    { id: "p4_res_8", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 2080, y: 670, message: "⭐ Xây dựng hệ thống chính trị trong sạch, vững mạnh! (+2đ)" },
+    { id: "p4_res_9", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 275, y: 890, message: "⭐ Văn kiện Đồng thuận toàn diện giữa các giai tầng! (+2đ)" },
+    { id: "p4_res_10", type: "alliance_charter", label: "Văn Kiện Liên Minh", x: 1200, y: 890, message: "⭐ Hoàn thành xuất sắc sứ mệnh lịch sử của liên minh! (+2đ)" },
   ],
 };
 
-// ----------------------------------------------------
 // ----------------------------------------------------
 // DYNAMIC PATROLS, HISTORICAL HAZARDS & FREEZE TRAPS ❄️
 // ----------------------------------------------------
 const PHASE_HAZARDS_CONFIG = {
   phase_1: [
-    { id: "h_p1_pest", type: "pest", label: "Sâu Bệnh Ruộng Lúa", message: "Sâu bệnh hoành hành làm sụt giảm năng suất! (-3đ)", x: 780, y: 700, vx: 80, vy: 35, radius: 22 },
-    { id: "h_p1_drought", type: "drought", label: "Luồng Hạn Hán", message: "Hạn hán gay gắt đe dọa mùa màng! (-3đ)", x: 1620, y: 700, vx: -75, vy: -45, radius: 22 },
-    { id: "h_p1_freeze", type: "freeze_trap", label: "Bẫy Đóng Băng Quan Liêu", message: "❄️ Bị đóng băng trong cơ chế quan liêu 2.5s! (-3đ)", x: 1200, y: 700, vx: 45, vy: 0, radius: 24 },
+    { id: "h_p1_bias", type: "bias_prejudice", label: "Bẫy Định Kiến Xã Hội", message: "Định kiến sai lệch về cơ cấu giai cấp! (-3đ)", x: 780, y: 700, vx: 80, vy: 35, radius: 22 },
+    { id: "h_p1_imbalance", type: "imbalance_dist", label: "Mất Cân Đối Phân Phối", message: "Mất cân đối trong phân phối lợi ích xã hội! (-3đ)", x: 1620, y: 700, vx: -75, vy: -45, radius: 22 },
+    { id: "h_p1_freeze", type: "freeze_trap", label: "Bẫy Đóng Băng Giáo Điều", message: "❄️ Bị kẹt trong tư duy giáo điều máy móc 2.5s! (-3đ)", x: 1200, y: 700, vx: 45, vy: 0, radius: 24 },
   ],
   phase_2: [
-    { id: "h_p2_inspect", type: "bureaucracy", label: "Thanh Tra Chỉ Tiêu", message: "Bị thanh tra cơ chế quan liêu giữ lại! (-3đ)", x: 920, y: 680, vx: 90, vy: 0, radius: 24 },
-    { id: "h_p2_power", type: "power_out", label: "Sự Cố Mất Điện", message: "Mất điện đột xuất đình đốn máy dệt! (-3đ)", x: 1480, y: 680, vx: -85, vy: 50, radius: 22 },
-    { id: "h_p2_freeze", type: "freeze_trap", label: "Bẫy Đóng Băng Phân Bổ", message: "❄️ Bị đóng băng thiếu nguyên liệu sợi 2.5s! (-3đ)", x: 1200, y: 700, vx: -50, vy: 35, radius: 24 },
+    { id: "h_p2_divide", type: "class_divide", label: "Bẫy Chia Rẽ Giai Tầng", message: "Âm mưu chia rẽ mối quan hệ giữa các giai tầng! (-3đ)", x: 920, y: 680, vx: 90, vy: 0, radius: 24 },
+    { id: "h_p2_polarize", type: "polarization", label: "Phân Hóa Giàu Nghèo", message: "Phân hóa giàu nghèo thiếu kiểm soát! (-3đ)", x: 1480, y: 680, vx: -85, vy: 50, radius: 22 },
+    { id: "h_p2_freeze", type: "freeze_trap", label: "Bẫy Cục Bộ Bè Phái", message: "❄️ Tư tưởng cục bộ địa phương làm tê liệt 2.5s! (-3đ)", x: 1200, y: 700, vx: -50, vy: 35, radius: 24 },
   ],
   phase_3: [
-    { id: "h_p3_chk1", type: "checkpoint", label: "Trạm Gác Ngăn Sông", message: "Trạm gác 'Ngăn sông cấm chợ' chặn đường! (-3đ)", x: 800, y: 460, vx: 90, vy: 0, radius: 24 },
-    { id: "h_p3_chk2", type: "checkpoint", label: "Đội Kiểm Soát Gạo", message: "Kiểm soát lưu thông lúa gạo liên tỉnh! (-3đ)", x: 1600, y: 460, vx: -85, vy: 0, radius: 24 },
-    { id: "h_p3_freeze", type: "freeze_trap", label: "Bẫy Đóng Băng Ngăn Sông", message: "❄️ Bị đóng băng tại trạm kiểm soát 2.5s! (-3đ)", x: 1200, y: 700, vx: 0, vy: 50, radius: 24 },
+    { id: "h_p3_sabotage", type: "alliance_sabotage", label: "Bẫy Phá Hoại Liên Minh", message: "Tư tưởng đối kháng làm suy yếu khối liên minh! (-3đ)", x: 610, y: 380, vx: 0, vy: 65, radius: 24 },
+    { id: "h_p3_bureaucracy", type: "bureaucracy", label: "Tệ Quan Liêu Lãng Phí", message: "Tệ quan liêu, xa rời thực tiễn dân sinh! (-3đ)", x: 1790, y: 380, vx: 0, vy: -65, radius: 24 },
+    { id: "h_p3_freeze", type: "freeze_trap", label: "Bẫy Trì Trệ Thể Chế", message: "❄️ Trì trệ thể chế làm chậm nhịp độ phát triển 2.5s! (-3đ)", x: 880, y: 670, vx: 55, vy: 0, radius: 24 },
   ],
   phase_4: [
-    { id: "h_p4_debate", type: "debate", label: "Áp Lực Kế Hoạch Cứng", message: "Áp lực chỉ tiêu pháp lệnh cứng nhắc! (-3đ)", x: 900, y: 700, vx: 75, vy: -45, radius: 24 },
-    { id: "h_p4_freeze", type: "freeze_trap", label: "Bẫy Đóng Băng Giáo Điều", message: "❄️ Bị đóng băng tư duy giáo điều 2.5s! (-3đ)", x: 1500, y: 700, vx: -65, vy: 40, radius: 24 },
+    { id: "h_p4_debate", type: "alliance_sabotage", label: "Nguy Cơ Xa Rời Mục Tiêu", message: "Nguy cơ chệch hướng định hướng XHCN! (-3đ)", x: 610, y: 920, vx: 0, vy: 60, radius: 24 },
+    { id: "h_p4_freeze", type: "freeze_trap", label: "Bẫy Đóng Băng Thể Chế", message: "❄️ Chậm trễ hoàn thiện thể chế kinh tế 2.5s! (-3đ)", x: 1520, y: 670, vx: -55, vy: 0, radius: 24 },
   ],
 };
 
@@ -935,23 +977,28 @@ function getRandomWalkableLocation(phaseKey, minDistance = 55) {
     let candidateX, candidateY;
 
     if (phaseKey === "phase_3") {
-      // Phase 3: North road, South road, or 3 Bridge Corridors
+      // Phase 3: Horizontal Boulevard, West Avenue, East Avenue, or Central Promenade
       const zone = Math.floor(Math.random() * 5);
       if (zone === 0) {
+        // Horizontal Expressway
         candidateX = 140 + Math.random() * (MAP_WIDTH - 280);
-        candidateY = 390 + Math.random() * 90;
+        candidateY = 630 + Math.random() * 80;
       } else if (zone === 1) {
-        candidateX = 140 + Math.random() * (MAP_WIDTH - 280);
-        candidateY = 860 + Math.random() * 90;
+        // West Vertical Avenue (x = 610)
+        candidateX = 610 + (Math.random() - 0.5) * 50;
+        candidateY = 160 + Math.random() * 1080;
       } else if (zone === 2) {
-        candidateX = 410 + (Math.random() - 0.5) * 60;
-        candidateY = 380 + Math.random() * 600;
+        // East Vertical Avenue (x = 1790)
+        candidateX = 1790 + (Math.random() - 0.5) * 50;
+        candidateY = 160 + Math.random() * 1080;
       } else if (zone === 3) {
-        candidateX = 1170 + (Math.random() - 0.5) * 60;
-        candidateY = 380 + Math.random() * 600;
+        // North Promenade Forecourts
+        candidateX = 140 + Math.random() * (MAP_WIDTH - 280);
+        candidateY = 430 + Math.random() * 70;
       } else {
-        candidateX = 1930 + (Math.random() - 0.5) * 60;
-        candidateY = 380 + Math.random() * 600;
+        // South Promenade Forecourts
+        candidateX = 140 + Math.random() * (MAP_WIDTH - 280);
+        candidateY = 870 + Math.random() * 70;
       }
     } else {
       // Phases 1, 2, 4: Wide array across 6 major zones
@@ -990,14 +1037,6 @@ function getRandomWalkableLocation(phaseKey, minDistance = 55) {
 
     // Check collision with solid buildings
     if (isPositionBlockedByBuilding(candidateX, candidateY, 35)) continue;
-
-    // In Phase 3, ensure not in river water outside bridges
-    if (phaseKey === "phase_3" && candidateY >= 550 && candidateY <= 790) {
-      const onBridge = (candidateX >= 380 && candidateX <= 500) ||
-                       (candidateX >= 1140 && candidateX <= 1260) ||
-                       (candidateX >= 1900 && candidateX <= 2020);
-      if (!onBridge) continue;
-    }
 
     // Anti-clumping check: verify not too close to any existing active item
     let tooClose = false;
@@ -1060,13 +1099,13 @@ function triggerEmergencyCrisis(phaseKey) {
   state.screenShakeIntensity = 6;
 
   const crisisTitles = {
-    phase_1: "⚡ SỰ CỐ 1978: Cứu hạn khẩn cấp ruộng lúa Đoàn Xá trước bão! (+10đ/kiện)",
-    phase_2: "⚡ SỰ CỐ 1979: Tàu chở sợi bông cập cảng cần bốc dỡ khẩn cấp! (+10đ/kiện)",
-    phase_3: "⚡ SỰ CỐ 1980: Đoàn Khảo Sát TW cần gấp số liệu giá gạo thực tế! (+10đ/kiện)",
-    phase_4: "⚡ SỰ CỐ 1981: Hội nghị bắt đầu biểu quyết Chỉ thị 100! (+10đ/kiện)",
+    phase_1: "⚡ SỰ KIỆN: Xuất hiện Văn Kiện Cương Lĩnh Đặc Biệt (+10đ)!",
+    phase_2: "⚡ SỰ KIỆN: Xuất hiện Báo Cáo Quan Hệ Giai Tầng Đặc Biệt (+10đ)!",
+    phase_3: "⚡ SỰ KIỆN: Xuất hiện Nghị Quyết Đại Hội Liên Minh Đặc Biệt (+10đ)!",
+    phase_4: "⚡ SỰ KIỆN: Xuất hiện Nghị Quyết Đại Hội Liên Minh Đặc Biệt (+10đ)!",
   };
 
-  const bannerText = crisisTitles[phaseKey] || "⚡ SỰ CỐ THỰC ĐỊA KHẨN CẤP (+10đ/kiện)";
+  const bannerText = crisisTitles[phaseKey] || "⚡ SỰ KIỆN: Xuất hiện Văn Kiện Khẩn Cấp (+10đ)!";
   spawnFloatingText(state.player.x, state.player.y - 40, bannerText, "#facc15");
 
   const spawnPoints = [
@@ -1081,8 +1120,8 @@ function triggerEmergencyCrisis(phaseKey) {
     movingHazardsState.set(cId, {
       id: cId,
       type: "crisis_pkg",
-      label: "Kiện Cứu Trợ",
-      message: `⭐ Thu gom Kiện Cứu Trợ Lịch Sử Khẩn Cấp (+10đ)!`,
+      label: "Hòm Văn Kiện Đặc Biệt",
+      message: `⭐ Tiếp nhận Văn Kiện Cương Lĩnh Đặc Biệt (+10đ)!`,
       kind: "item",
       scoreValue: 10,
       x: pt.x,
@@ -1227,10 +1266,10 @@ function updateMovingHazards(deltaSeconds) {
     if (hazard.trailTimer >= 0.25) {
       hazard.trailTimer = 0;
       const auraColor = (
-        hazard.type === "rice_sheaf" ? "#facc15" :
-        hazard.type === "yarn_spool" ? "#38bdf8" :
-        hazard.type === "survey_doc" ? "#fbbf24" :
-        hazard.type === "directive_100" ? "#f87171" : "#fef08a"
+        hazard.type === "ccxh_survey_data" ? "#38bdf8" :
+        hazard.type === "class_structure_doc" ? "#f59e0b" :
+        hazard.type === "alliance_charter" ? "#ef4444" :
+        hazard.type === "crisis_pkg" ? "#fbbf24" : "#fef08a"
       );
       particles.push({
         x: hazard.x + (Math.random() - 0.5) * 12,
@@ -1281,8 +1320,17 @@ const state = {
   comboCount: 0,
   lastItemCollectedAt: 0,
   sprintTimer: 0,
+  workerShield: true,
+  dashCooldown: 0,
+  lastSpeedPadAt: 0,
   crisisTriggeredForPhase: new Set(),
+  dizzyTimer: 0,
+  carHitCooldown: 0,
 };
+
+if (typeof window !== "undefined") {
+  window.__rpg_game = { camera, state, options, canvas };
+}
 
 const remotePlayerRenderState = new Map();
 
@@ -1312,8 +1360,8 @@ function updatePlayerFromSnapshot() {
     x: shouldAnchorPosition ? toWorldX(remote.x) : state.player.x,
     y: shouldAnchorPosition ? toWorldY(remote.y) : state.player.y,
     id: options.playerId,
-    characterId: remote.character || state.player.characterId,
-    gender: remote.gender || (remote.character?.startsWith("female") ? "female" : state.player.gender),
+    characterId: remote.character || remote.roleId || state.player.characterId,
+    gender: remote.gender || ((remote.character || remote.roleId)?.startsWith("female") ? "female" : state.player.gender),
     radius: 14,
     localPositionInitialized: state.player.localPositionInitialized || shouldAnchorPosition,
   };
@@ -1482,8 +1530,8 @@ function executePlayerAction() {
   if (options.role !== "player") return;
   getAudioContext();
 
-  // WHEN FROZEN: Strict lock, do nothing until timer expires!
-  if (state.frozen || state.freezeTimer > 0) return;
+  // WHEN FROZEN OR DIZZY: Strict lock, do nothing until timer expires!
+  if (state.frozen || state.freezeTimer > 0 || state.dizzyTimer > 0) return;
 
   
   // Check Nearby Historical NPC Dialogue:
@@ -1530,10 +1578,10 @@ function executePlayerAction() {
 
   // 1. POLICY SIMULATION STATION INTERACTION:
   if (state.policyStation && !state.taskCompletedByPlayer) {
-    const stX = toWorldX(state.policyStation.x);
-    const stY = toWorldY(state.policyStation.y);
+    const stX = state.policyStation.stationX !== undefined ? state.policyStation.stationX : toWorldX(state.policyStation.x);
+    const stY = state.policyStation.stationY !== undefined ? state.policyStation.stationY : toWorldY(state.policyStation.y);
     const dist = Math.hypot(state.player.x - stX, state.player.y - stY);
-    if (dist <= (state.policyStation.radius || 40) + state.player.radius + 35) {
+    if (dist <= (state.policyStation.radius || 45) + state.player.radius + 50) {
       state.taskCompletedByPlayer = true;
       postToParent({
         type: "POLICY_STATION_INTERACT",
@@ -1685,6 +1733,22 @@ function handleEntityInteraction(entity, now = performance.now(), mHazardRef = n
     targetRef.lastHitAt = now;
     if (entity !== targetRef) entity.lastHitAt = now;
 
+    // WORKER SHIELD PERK: Blocks 1 hazard hit per phase
+    if (state.player.characterId === "worker_leader" && state.workerShield) {
+      state.workerShield = false;
+      sfx.shield();
+      state.screenShakeTimer = 0.15;
+      state.screenShakeIntensity = 3;
+      spawnParticles(state.player.x, state.player.y, "#38bdf8", 30, 110, "star");
+      spawnFloatingText(
+        state.player.x,
+        state.player.y - 20,
+        "🛡️ KHIÊN TIÊN PHONG: ĐÃ CHỐNG ĐỠ BẪY AN TOÀN!",
+        "#38bdf8"
+      );
+      return;
+    }
+
     const isFreezeTrap = entity.type === "freeze_trap" || entity.type === "ice_trap" || (entity.label && entity.label.includes("Đóng Băng"));
     if (isFreezeTrap) {
       state.freezeTimer = 2.5;
@@ -1731,6 +1795,12 @@ function handleEntityInteraction(entity, now = performance.now(), mHazardRef = n
   state.lastItemCollectedAt = now;
 
   let baseDelta = entity.scoreValue || 2;
+  // FARMER EXTRA BOUNTY PERK: +1 bonus point on harvesting data
+  if (state.player.characterId === "farmer_strategic") {
+    baseDelta += 1;
+    spawnFloatingText(state.player.x, state.player.y - 14, "🌾 NÔNG DÂN: +1đ NÔNG SẢN TRI THỨC!", "#4ade80");
+  }
+
   const isCrisis = entity.type === "crisis_pkg" || entity.type === "crisis_item";
 
   if (isCrisis) {
@@ -1754,13 +1824,16 @@ function handleEntityInteraction(entity, now = performance.now(), mHazardRef = n
     sfx.pickup();
   }
 
-  const itemType = entity.type || "rice_sheaf";
+  const currentPhase = getActivePhaseKey();
+  const itemType = entity.type || (
+    currentPhase === "phase_1" ? "ccxh_survey_data" :
+    currentPhase === "phase_2" ? "class_structure_doc" : "alliance_charter"
+  );
   const particleColor = (
     isCrisis ? "#facc15" :
-    itemType === "rice_sheaf" ? "#facc15" :
-    itemType === "yarn_spool" ? "#38bdf8" :
-    itemType === "survey_doc" ? "#fbbf24" :
-    itemType === "directive_100" ? "#ef4444" : "#4ade80"
+    itemType === "ccxh_survey_data" ? "#38bdf8" :
+    itemType === "class_structure_doc" ? "#f59e0b" :
+    itemType === "alliance_charter" ? "#ef4444" : "#4ade80"
   );
   spawnParticles(entity.x, entity.y, particleColor, isCrisis ? 35 : 24, isCrisis ? 140 : 110, "star");
 
@@ -1774,6 +1847,432 @@ function handleEntityInteraction(entity, now = performance.now(), mHazardRef = n
     scoreDelta: baseDelta,
     message: msg,
   });
+}
+
+// Speed Booster Pads on main thoroughfares (direction matching traffic)
+const SPEED_BOOSTER_PADS = [
+  { x: 420, y: 700, w: 95, h: 36, label: "⚡ TĂNG TỐC >>>" },
+  { x: 1200, y: 625, w: 95, h: 36, label: "<<< TĂNG TỐC ⚡" },
+  { x: 1950, y: 700, w: 95, h: 36, label: "⚡ TĂNG TỐC >>>" },
+];
+
+function drawSpeedBoosterPads(ctx, time) {
+  for (const pad of SPEED_BOOSTER_PADS) {
+    const pulse = Math.sin(time * 6 + pad.x) * 0.2 + 0.8;
+    ctx.save();
+    ctx.fillStyle = `rgba(56, 189, 248, ${0.16 * pulse})`;
+    ctx.fillRect(pad.x - pad.w / 2, pad.y - pad.h / 2, pad.w, pad.h);
+    ctx.strokeStyle = `rgba(56, 189, 248, ${0.85 * pulse})`;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(pad.x - pad.w / 2, pad.y - pad.h / 2, pad.w, pad.h);
+
+    ctx.fillStyle = `rgba(250, 204, 21, ${pulse})`;
+    ctx.font = "bold 10.5px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(pad.label, pad.x, pad.y + 4);
+    ctx.restore();
+  }
+}
+
+function triggerClassPerk() {
+  if (options.role !== "player" || state.frozen || state.freezeTimer > 0) return;
+  const charId = state.player.characterId;
+
+  if (charId === "entrepreneur_dynamic") {
+    if (state.dashCooldown > 0) {
+      spawnFloatingText(state.player.x, state.player.y - 18, `⏳ Hồi chiêu lướt: ${Math.ceil(state.dashCooldown)}s`, "#94a3b8");
+      return;
+    }
+    state.dashCooldown = 9.0;
+    state.sprintTimer = 3.5;
+    state.player.speedMultiplier = 1.45;
+    sfx.boost();
+    spawnParticles(state.player.x, state.player.y, "#fbbf24", 30, 140, "star");
+    spawnFloatingText(state.player.x, state.player.y - 22, "⚡ BỨT PHÁ DOANH NHÂN: +45% TỐC ĐỘ! 🚀", "#fde047");
+  } else if (charId === "worker_leader") {
+    spawnFloatingText(
+      state.player.x,
+      state.player.y - 18,
+      state.workerShield ? "🛡️ KHIÊN TIÊN PHONG: ĐANG SẴN SÀNG (Chống 1 bẫy)" : "🛡️ KHIÊN TIÊN PHONG: ĐÃ DÙNG TRONG CHẶNG NÀY",
+      "#38bdf8"
+    );
+  } else if (charId === "farmer_strategic") {
+    spawnFloatingText(state.player.x, state.player.y - 18, "🌾 ĐẶC QUYỀN NÔNG DÂN: TỰ ĐỘNG +1đ KHI THU THẬP", "#34d399");
+  } else if (charId === "intellectual_core") {
+    spawnFloatingText(state.player.x, state.player.y - 18, "💡 ĐẶC QUYỀN TRÍ THỨC: TỰ ĐỘNG LOẠI TRỪ 1 ĐÁP ÁN SAI TRONG ĐỐI THOẠI", "#c084fc");
+  }
+}
+
+// ----------------------------------------------------
+// 🚗 URBAN SMART TRAFFIC SIMULATION & VEHICLE PHYSICS
+// ----------------------------------------------------
+let activeTrafficVehicles = [];
+let lastTrafficPhase = null;
+
+function initPhaseTraffic(phaseKey) {
+  lastTrafficPhase = phaseKey;
+  if (phaseKey === "phase_1") {
+    return [
+      { id: "p1_wb1", axis: "horizontal", dir: "west", laneCoord: 625, x: 2200, y: 625, speed: 145, type: "bus", color: "#0f766e", w: 82, h: 32 },
+      { id: "p1_wb2", axis: "horizontal", dir: "west", laneCoord: 625, x: 900, y: 625, speed: 170, type: "sedan", color: "#f8fafc", w: 58, h: 26 },
+      { id: "p1_eb1", axis: "horizontal", dir: "east", laneCoord: 715, x: 300, y: 715, speed: 160, type: "taxi", color: "#10b981", w: 58, h: 26 },
+      { id: "p1_eb2", axis: "horizontal", dir: "east", laneCoord: 715, x: 1600, y: 715, speed: 185, type: "sedan", color: "#b91c1c", w: 58, h: 26 },
+      { id: "p1_sb1", axis: "vertical", dir: "south", laneCoord: 555, x: 555, y: 200, speed: 130, type: "van", color: "#ea580c", w: 28, h: 64 },
+      { id: "p1_nb1", axis: "vertical", dir: "north", laneCoord: 625, x: 625, y: 1100, speed: 140, type: "sedan", color: "#38bdf8", w: 26, h: 58 },
+      { id: "p1_sb2", axis: "vertical", dir: "south", laneCoord: 1595, x: 1595, y: 900, speed: 135, type: "taxi", color: "#10b981", w: 26, h: 58 },
+      { id: "p1_nb2", axis: "vertical", dir: "north", laneCoord: 1665, x: 1665, y: 400, speed: 145, type: "sedan", color: "#64748b", w: 26, h: 58 },
+    ];
+  } else if (phaseKey === "phase_2") {
+    return [
+      { id: "p2_wb1", axis: "horizontal", dir: "west", laneCoord: 625, x: 2100, y: 625, speed: 145, type: "bus", color: "#b45309", w: 82, h: 32 },
+      { id: "p2_wb2", axis: "horizontal", dir: "west", laneCoord: 625, x: 800, y: 625, speed: 175, type: "sedan", color: "#fef08a", w: 58, h: 26 },
+      { id: "p2_eb1", axis: "horizontal", dir: "east", laneCoord: 715, x: 200, y: 715, speed: 160, type: "taxi", color: "#10b981", w: 58, h: 26 },
+      { id: "p2_eb2", axis: "horizontal", dir: "east", laneCoord: 715, x: 1500, y: 715, speed: 180, type: "sedan", color: "#dc2626", w: 58, h: 26 },
+      { id: "p2_sb1", axis: "vertical", dir: "south", laneCoord: 1095, x: 1095, y: 250, speed: 135, type: "van", color: "#ea580c", w: 28, h: 64 },
+      { id: "p2_nb1", axis: "vertical", dir: "north", laneCoord: 1165, x: 1165, y: 1150, speed: 140, type: "sedan", color: "#38bdf8", w: 26, h: 58 },
+    ];
+  } else {
+    // Phase 3: Siêu Đô Thị Liên Minh CNH-HĐH (Strictly on Expressway & 2 Avenues)
+    return [
+      // Horizontal Expressway (Upper: y=625 Westbound, Lower: y=715 Eastbound)
+      { id: "p3_wb1", axis: "horizontal", dir: "west", laneCoord: 625, x: 2350, y: 625, speed: 140, type: "bus", color: "#0284c7", w: 82, h: 32 },
+      { id: "p3_wb2", axis: "horizontal", dir: "west", laneCoord: 625, x: 1050, y: 625, speed: 175, type: "sedan", color: "#f8fafc", w: 58, h: 26 },
+      { id: "p3_eb1", axis: "horizontal", dir: "east", laneCoord: 715, x: 250, y: 715, speed: 165, type: "taxi", color: "#10b981", w: 58, h: 26 },
+      { id: "p3_eb2", axis: "horizontal", dir: "east", laneCoord: 715, x: 1550, y: 715, speed: 190, type: "sedan", color: "#b91c1c", w: 58, h: 26 },
+      // West Avenue (Left: x=575 Southbound, Right: x=645 Northbound)
+      { id: "p3_sb1", axis: "vertical", dir: "south", laneCoord: 575, x: 575, y: 200, speed: 130, type: "van", color: "#ea580c", w: 28, h: 64 },
+      { id: "p3_nb1", axis: "vertical", dir: "north", laneCoord: 645, x: 645, y: 1150, speed: 135, type: "sedan", color: "#059669", w: 26, h: 58 },
+      // East Avenue (Left: x=1755 Southbound, Right: x=1825 Northbound)
+      { id: "p3_sb2", axis: "vertical", dir: "south", laneCoord: 1755, x: 1755, y: 850, speed: 140, type: "sedan", color: "#38bdf8", w: 26, h: 58 },
+      { id: "p3_nb2", axis: "vertical", dir: "north", laneCoord: 1825, x: 1825, y: 350, speed: 135, type: "taxi", color: "#10b981", w: 26, h: 58 },
+    ];
+  }
+}
+
+function updateTrafficVehicles(deltaSeconds) {
+  const phaseKey = getActivePhaseKey();
+  if (lastTrafficPhase !== phaseKey || !activeTrafficVehicles || activeTrafficVehicles.length === 0) {
+    activeTrafficVehicles = initPhaseTraffic(phaseKey);
+  }
+
+  const wrapMargin = 120;
+  for (const car of activeTrafficVehicles) {
+    if (car.axis === "horizontal") {
+      car.y = car.laneCoord; // Strictly locked to lane center!
+      if (car.dir === "west") {
+        car.x -= car.speed * deltaSeconds;
+        if (car.x < -wrapMargin) car.x = MAP_WIDTH + wrapMargin;
+      } else {
+        car.x += car.speed * deltaSeconds;
+        if (car.x > MAP_WIDTH + wrapMargin) car.x = -wrapMargin;
+      }
+    } else {
+      car.x = car.laneCoord; // Strictly locked to lane center!
+      if (car.dir === "north") {
+        car.y -= car.speed * deltaSeconds;
+        if (car.y < -wrapMargin) car.y = MAP_HEIGHT + wrapMargin;
+      } else {
+        car.y += car.speed * deltaSeconds;
+        if (car.y > MAP_HEIGHT + wrapMargin) car.y = -wrapMargin;
+      }
+    }
+  }
+}
+
+function checkTrafficCollisions(now) {
+  if (options.role !== "player" || !state.player) return;
+  if (state.frozen || state.freezeTimer > 0) return;
+  if (state.carHitCooldown > 0) return;
+
+  const px = state.player.x;
+  const py = state.player.y;
+  const pr = 14;
+
+  for (const car of activeTrafficVehicles) {
+    const carLeft = car.x - car.w / 2;
+    const carRight = car.x + car.w / 2;
+    const carTop = car.y - car.h / 2;
+    const carBottom = car.y + car.h / 2;
+
+    const closestX = Math.max(carLeft, Math.min(px, carRight));
+    const closestY = Math.max(carTop, Math.min(py, carBottom));
+    const distX = px - closestX;
+    const distY = py - closestY;
+
+    if (distX * distX + distY * distY < pr * pr) {
+      handleCarHit(car, now);
+      break;
+    }
+  }
+}
+
+function handleCarHit(car, now) {
+  // 1. Worker shield perk absorbs the collision
+  if (state.workerShield) {
+    state.workerShield = false;
+    sfx.shield();
+    spawnParticles(state.player.x, state.player.y, "#38bdf8", 30, 150, "star");
+    spawnFloatingText(state.player.x, state.player.y - 20, "🛡️ KHIÊN BẢO HỘ ĐÃ ĐỠ ĐÒN VA CHẠM XE!", "#38bdf8");
+    state.carHitCooldown = 1.8;
+    return;
+  }
+
+  // 2. Play automotive horn & screen shake
+  sfx.carHonk();
+  triggerScreenShake(9, 0.4);
+
+  // 3. Impact sparks
+  spawnParticles(state.player.x, state.player.y, "#ef4444", 25, 120, "star");
+  spawnParticles(state.player.x, state.player.y, "#facc15", 15, 80, "square");
+
+  // 4. Knockback to sidewalk curb
+  let targetX = state.player.x;
+  let targetY = state.player.y;
+  if (car.axis === "horizontal") {
+    if (car.y <= 670) {
+      targetY -= 48;
+    } else {
+      targetY += 48;
+    }
+  } else {
+    if (state.player.x <= car.x) {
+      targetX -= 48;
+    } else {
+      targetX += 48;
+    }
+  }
+  const resolved = resolveSolidBuildingCollisions(targetX, targetY, state.player.radius || 14);
+  state.player.x = Math.max(20, Math.min(MAP_WIDTH - 20, resolved.x));
+  state.player.y = Math.max(20, Math.min(MAP_HEIGHT - 20, resolved.y));
+
+  // 5. Stun & Invulnerability cooldown
+  state.dizzyTimer = 1.5;
+  state.carHitCooldown = 2.8;
+
+  // 6. Traffic fine & warning message
+  const msg = "💥 BỊ ĐỤNG XE! Chú ý an toàn giao thông (-1đ)";
+  spawnFloatingText(state.player.x, state.player.y - 32, msg, "#f87171");
+  postToParent({
+    type: "POLICY_ITEM_COLLECT",
+    itemId: `traffic_hit_${Date.now()}`,
+    itemType: "traffic_violation",
+    scoreDelta: -1,
+    message: msg,
+  });
+}
+
+function drawPixelCar(ctx, car, time) {
+  const { x, y, w, h, dir, type, color } = car;
+  ctx.save();
+
+  // 1. Volumetric Headlight Beams (Projected onto dark asphalt)
+  const beamLen = 110;
+  const beamSpread = 26;
+  ctx.save();
+  if (dir === "east") {
+    const startX = x + w / 2;
+    const grad = ctx.createLinearGradient(startX, y, startX + beamLen, y);
+    grad.addColorStop(0, "rgba(254, 240, 138, 0.35)");
+    grad.addColorStop(1, "rgba(254, 240, 138, 0)");
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(startX, y - 8);
+    ctx.lineTo(startX + beamLen, y - 8 - beamSpread);
+    ctx.lineTo(startX + beamLen, y + 8 + beamSpread);
+    ctx.lineTo(startX, y + 8);
+    ctx.closePath();
+    ctx.fill();
+  } else if (dir === "west") {
+    const startX = x - w / 2;
+    const grad = ctx.createLinearGradient(startX, y, startX - beamLen, y);
+    grad.addColorStop(0, "rgba(254, 240, 138, 0.35)");
+    grad.addColorStop(1, "rgba(254, 240, 138, 0)");
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(startX, y - 8);
+    ctx.lineTo(startX - beamLen, y - 8 - beamSpread);
+    ctx.lineTo(startX - beamLen, y + 8 + beamSpread);
+    ctx.lineTo(startX, y + 8);
+    ctx.closePath();
+    ctx.fill();
+  } else if (dir === "south") {
+    const startY = y + h / 2;
+    const grad = ctx.createLinearGradient(x, startY, x, startY + beamLen);
+    grad.addColorStop(0, "rgba(254, 240, 138, 0.35)");
+    grad.addColorStop(1, "rgba(254, 240, 138, 0)");
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(x - 8, startY);
+    ctx.lineTo(x - 8 - beamSpread, startY + beamLen);
+    ctx.lineTo(x + 8 + beamSpread, startY + beamLen);
+    ctx.lineTo(x + 8, startY);
+    ctx.closePath();
+    ctx.fill();
+  } else if (dir === "north") {
+    const startY = y - h / 2;
+    const grad = ctx.createLinearGradient(x, startY, x, startY - beamLen);
+    grad.addColorStop(0, "rgba(254, 240, 138, 0.35)");
+    grad.addColorStop(1, "rgba(254, 240, 138, 0)");
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(x - 8, startY);
+    ctx.lineTo(x - 8 - beamSpread, startY - beamLen);
+    ctx.lineTo(x + 8 + beamSpread, startY - beamLen);
+    ctx.lineTo(x + 8, startY);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // 2. Ground Shadow
+  ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 2, w / 2 + 2, h / 2 + 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 3. Wheels
+  ctx.fillStyle = "#18181b";
+  if (car.axis === "horizontal") {
+    const wheelW = 10;
+    const wheelH = 4;
+    ctx.fillRect(x - w * 0.34, y - h / 2 - 1, wheelW, wheelH);
+    ctx.fillRect(x + w * 0.34 - wheelW, y - h / 2 - 1, wheelW, wheelH);
+    ctx.fillRect(x - w * 0.34, y + h / 2 - 3, wheelW, wheelH);
+    ctx.fillRect(x + w * 0.34 - wheelW, y + h / 2 - 3, wheelW, wheelH);
+  } else {
+    const wheelW = 4;
+    const wheelH = 10;
+    ctx.fillRect(x - w / 2 - 1, y - h * 0.34, wheelW, wheelH);
+    ctx.fillRect(x - w / 2 - 1, y + h * 0.34 - wheelH, wheelW, wheelH);
+    ctx.fillRect(x + w / 2 - 3, y - h * 0.34, wheelW, wheelH);
+    ctx.fillRect(x + w / 2 - 3, y + h * 0.34 - wheelH, wheelW, wheelH);
+  }
+
+  // 4. Car Body
+  const bx = x - w / 2;
+  const by = y - h / 2;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  if (ctx.roundRect) {
+    ctx.roundRect(bx, by, w, h, 6);
+  } else {
+    ctx.rect(bx, by, w, h);
+  }
+  ctx.fill();
+  ctx.strokeStyle = "#0f172a";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // 5. Cabin & Windows
+  if (car.axis === "horizontal") {
+    const cabW = type === "bus" ? w - 16 : w * 0.52;
+    const cabH = h - 6;
+    const cabX = dir === "east" ? bx + 12 : bx + w - 12 - cabW;
+    const cabY = by + 3;
+
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(cabX, cabY, cabW, cabH);
+
+    ctx.fillStyle = "#38bdf8";
+    if (dir === "east") {
+      ctx.fillRect(cabX + cabW - 5, cabY + 1, 4, cabH - 2);
+      ctx.fillRect(cabX + 1, cabY + 1, 3, cabH - 2);
+    } else {
+      ctx.fillRect(cabX + 1, cabY + 1, 4, cabH - 2);
+      ctx.fillRect(cabX + cabW - 4, cabY + 1, 3, cabH - 2);
+    }
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+    ctx.fillRect(cabX + cabW * 0.35, cabY + 1, 3, cabH - 2);
+
+    if (type === "taxi") {
+      ctx.fillStyle = "#facc15";
+      ctx.fillRect(x - 8, y - 4, 16, 8);
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 6px monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("TAXI", x, y);
+    } else if (type === "bus") {
+      ctx.fillStyle = "#0c4a6e";
+      ctx.fillRect(x - 16, y - 5, 32, 10);
+      ctx.fillStyle = "#38bdf8";
+      ctx.font = "bold 6.5px monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("BUS ELECTRIC", x, y);
+    }
+  } else {
+    const cabW = w - 6;
+    const cabH = type === "bus" ? h - 16 : h * 0.52;
+    const cabX = bx + 3;
+    const cabY = dir === "south" ? by + 12 : by + h - 12 - cabH;
+
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(cabX, cabY, cabW, cabH);
+
+    ctx.fillStyle = "#38bdf8";
+    if (dir === "south") {
+      ctx.fillRect(cabX + 1, cabY + cabH - 5, cabW - 2, 4);
+      ctx.fillRect(cabX + 1, cabY + 1, cabW - 2, 3);
+    } else {
+      ctx.fillRect(cabX + 1, cabY + 1, cabW - 2, 4);
+      ctx.fillRect(cabX + 1, cabY + cabH - 4, cabW - 2, 3);
+    }
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+    ctx.fillRect(cabX + 1, cabY + cabH * 0.35, cabW - 2, 3);
+
+    if (type === "taxi") {
+      ctx.fillStyle = "#facc15";
+      ctx.fillRect(x - 5, y - 6, 10, 12);
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 6px monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("TX", x, y);
+    }
+  }
+
+  // 6. Headlights & Taillights
+  if (dir === "east") {
+    ctx.fillStyle = "#fef08a";
+    ctx.fillRect(bx + w - 2, by + 3, 2, 5);
+    ctx.fillRect(bx + w - 2, by + h - 8, 2, 5);
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(bx, by + 3, 2, 5);
+    ctx.fillRect(bx, by + h - 8, 2, 5);
+  } else if (dir === "west") {
+    ctx.fillStyle = "#fef08a";
+    ctx.fillRect(bx, by + 3, 2, 5);
+    ctx.fillRect(bx, by + h - 8, 2, 5);
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(bx + w - 2, by + 3, 2, 5);
+    ctx.fillRect(bx + w - 2, by + h - 8, 2, 5);
+  } else if (dir === "south") {
+    ctx.fillStyle = "#fef08a";
+    ctx.fillRect(bx + 3, by + h - 2, 5, 2);
+    ctx.fillRect(bx + w - 8, by + h - 2, 5, 2);
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(bx + 3, by, 5, 2);
+    ctx.fillRect(bx + w - 8, by, 5, 2);
+  } else if (dir === "north") {
+    ctx.fillStyle = "#fef08a";
+    ctx.fillRect(bx + 3, by, 5, 2);
+    ctx.fillRect(bx + w - 8, by, 5, 2);
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(bx + 3, by + h - 2, 5, 2);
+    ctx.fillRect(bx + w - 8, by + h - 2, 5, 2);
+  }
+
+  ctx.restore();
+}
+
+function drawTrafficVehicles(ctx, time) {
+  if (!activeTrafficVehicles || activeTrafficVehicles.length === 0) return;
+  for (const car of activeTrafficVehicles) {
+    drawPixelCar(ctx, car, time);
+  }
 }
 
 function checkCollisions(now) {
@@ -1809,16 +2308,20 @@ function checkCollisions(now) {
     }
     const snapHazard = state.snapshot.hazards?.[id] || state.snapshot.traps?.[id];
     const isCollectible = mHazard.kind === "item" ||
+      mHazard.type === "ccxh_survey_data" ||
+      mHazard.type === "class_structure_doc" ||
+      mHazard.type === "alliance_charter" ||
+      mHazard.type === "crisis_pkg" ||
+      mHazard.type === "crisis_item" ||
       mHazard.type === "rice_sheaf" ||
       mHazard.type === "yarn_spool" ||
       mHazard.type === "survey_doc" ||
-      mHazard.type === "directive_100" ||
-      mHazard.type === "crisis_pkg";
+      mHazard.type === "directive_100";
 
     const dynamicEntity = {
       ...(snapHazard || {}),
       id,
-      type: mHazard.type || snapHazard?.type || "envelope",
+      type: mHazard.type || snapHazard?.type || "bias_prejudice",
       label: mHazard.label || snapHazard?.label || (isCollectible ? "Tư liệu" : "Rủi ro tuần tra"),
       message: mHazard.message || snapHazard?.message,
       kind: isCollectible ? "item" : (mHazard.kind || "hazard"),
@@ -1830,6 +2333,26 @@ function checkCollisions(now) {
     };
     handleEntityInteraction(dynamicEntity, now, mHazard);
   }
+
+  // 3. Innovation Speed Booster Pads check
+  if (options.role === "player" && !state.frozen && state.freezeTimer <= 0) {
+    for (const pad of SPEED_BOOSTER_PADS) {
+      if (Math.abs(state.player.x - pad.x) < 45 && Math.abs(state.player.y - pad.y) < 25) {
+        if (now - (state.lastSpeedPadAt || 0) > 4000) {
+          state.lastSpeedPadAt = now;
+          state.sprintTimer = 3.5;
+          state.player.speedMultiplier = 1.45;
+          sfx.boost();
+          spawnParticles(pad.x, pad.y, "#38bdf8", 25, 120, "star");
+          spawnFloatingText(state.player.x, state.player.y - 18, "⚡ ĐỆM TĂNG TỐC ĐỔI MỚI! +45% TỐC ĐỘ 🚀", "#38bdf8");
+        }
+        break;
+      }
+    }
+  }
+
+  // 4. Urban Traffic Vehicle Collisions
+  checkTrafficCollisions(now);
 }
 
 // ----------------------------------------------------
@@ -1841,238 +2364,590 @@ function drawCityGround() {
   const phaseKey = getActivePhaseKey();
 
   if (phaseKey === "phase_1") {
-    drawPhase1RuralMap(time);
+    drawPhase1CcxhMap(time);
   } else if (phaseKey === "phase_2") {
-    drawPhase2FactoryMap(time);
+    drawPhase2UnityMap(time);
   } else if (phaseKey === "phase_3") {
-    drawPhase3SurveyMap(time);
+    drawPhase3AllianceMap(time);
   } else {
-    drawPhase4PolicyHallMap(time);
+    drawPhase3AllianceMap(time);
   }
+
+  // Draw Innovation Speed Booster Pads on city roads
+  drawSpeedBoosterPads(context, time);
 }
 
 // ----------------------------------------------------
-// MAP 1: NÔNG THÔN HẢI PHÒNG & HTX ĐOÀN XÁ (PHASE 1 - 1978)
+// 🛣️ BEAUTIFUL PIXEL ROAD MARKINGS SYSTEM
 // ----------------------------------------------------
-function drawPhase1RuralMap(time) {
-  // 1. Lush Green Earth Ground
-  context.fillStyle = "#1e3a1e";
+
+function drawZebraCrosswalk(ctx, x, y, width, height, isVertical = false, stripeColor = "#f8fafc") {
+  ctx.save();
+  ctx.fillStyle = stripeColor;
+  if (!isVertical) {
+    const barW = 8;
+    const gap = 8;
+    const count = Math.floor((width - 4) / (barW + gap));
+    const startX = x + (width - (count * (barW + gap) - gap)) / 2;
+    for (let i = 0; i < count; i++) {
+      ctx.fillRect(startX + i * (barW + gap), y + 2, barW, height - 4);
+    }
+  } else {
+    const barH = 8;
+    const gap = 8;
+    const count = Math.floor((height - 4) / (barH + gap));
+    const startY = y + (height - (count * (barH + gap) - gap)) / 2;
+    for (let i = 0; i < count; i++) {
+      ctx.fillRect(x + 2, startY + i * (barH + gap), width - 4, barH);
+    }
+  }
+  ctx.restore();
+}
+
+function drawStopLine(ctx, x, y, length, isVertical = false, color = "#f8fafc") {
+  ctx.save();
+  ctx.fillStyle = color;
+  if (!isVertical) {
+    ctx.fillRect(x, y, length, 4);
+  } else {
+    ctx.fillRect(x, y, 4, length);
+  }
+  ctx.restore();
+}
+
+function drawRoadArrow(ctx, x, y, type = "straight", rotation = 0, color = "rgba(248, 250, 252, 0.75)") {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rotation);
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+
+  // Arrow shaft
+  ctx.fillRect(-2.5, -8, 5, 20);
+
+  // Arrow tip
+  ctx.beginPath();
+  ctx.moveTo(0, -18);
+  ctx.lineTo(-8, -8);
+  ctx.lineTo(8, -8);
+  ctx.closePath();
+  ctx.fill();
+
+  if (type === "turn_left") {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(-6, -2, -12, -7);
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-18, -7);
+    ctx.lineTo(-10, -13);
+    ctx.lineTo(-10, -1);
+    ctx.closePath();
+    ctx.fill();
+  } else if (type === "turn_right") {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(6, -2, 12, -7);
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(18, -7);
+    ctx.lineTo(10, -13);
+    ctx.lineTo(10, -1);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawHatchedJunction(ctx, x, y, w, h, color = "rgba(250, 204, 21, 0.35)") {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x, y, w, h);
+
+  ctx.beginPath();
+  const step = 20;
+  for (let offset = 0; offset <= w + h; offset += step) {
+    const x1 = Math.max(x, x + offset - h);
+    const y1 = Math.min(y + h, y + offset);
+    const x2 = Math.min(x + w, x + offset);
+    const y2 = Math.max(y, y + offset - w);
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+
+    const x3 = Math.max(x, x + offset - h);
+    const y3 = Math.max(y, y + h - offset);
+    const x4 = Math.min(x + w, x + offset);
+    const y4 = Math.min(y + h, y + 2 * h - offset);
+    ctx.moveTo(x3, y3);
+    ctx.lineTo(x4, y4);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawDoubleCenterLine(ctx, x1, y1, x2, y2, gap = 6, lineWidth = 2.5, color = "#facc15") {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  const isHoriz = Math.abs(y1 - y2) < 2;
+  ctx.beginPath();
+  if (isHoriz) {
+    ctx.moveTo(x1, y1 - gap / 2); ctx.lineTo(x2, y1 - gap / 2);
+    ctx.moveTo(x1, y1 + gap / 2); ctx.lineTo(x2, y1 + gap / 2);
+  } else {
+    ctx.moveTo(x1 - gap / 2, y1); ctx.lineTo(x1 - gap / 2, y2);
+    ctx.moveTo(x1 + gap / 2, y1); ctx.lineTo(x1 + gap / 2, y2);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ----------------------------------------------------
+// MAP 1: VIỆN HÀN LÂM KHẢO SÁT CƠ CẤU XÃ HỘI (PHASE 1)
+// ----------------------------------------------------
+function drawPhase1CcxhMap(time) {
+  // 1. Deep Slate Research Campus Pavement
+  context.fillStyle = "#0f172a";
   context.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
 
-  // 2. Golden Rice Paddy Plots with Animated Breezes
-  const plots = [
-    { x: 80, y: 80, w: 260, h: 480 },
-    { x: 520, y: 80, w: 580, h: 480 },
-    { x: 1300, y: 80, w: 580, h: 480 },
-    { x: 2060, y: 80, w: 260, h: 480 },
-    { x: 80, y: 780, w: 260, h: 490 },
-    { x: 520, y: 780, w: 580, h: 490 },
-    { x: 1300, y: 780, w: 580, h: 490 },
-    { x: 2060, y: 780, w: 260, h: 490 },
+  // 2. Academic Quadrant Courtyards — matching Phase 1 "Học viện" layout
+  const campusPlots = [
+    { x: 60,   y: 70,  w: 440, h: 480 },   // NW plot (around bldg at 280,280)
+    { x: 860,  y: 50,  w: 680, h: 500 },   // NC plot (around main bldg at 1200,260)
+    { x: 1900, y: 70,  w: 440, h: 480 },   // NE plot (around bldg at 2120,280)
+    { x: 60,   y: 780, w: 440, h: 520 },   // SW plot (around bldg at 280,1100)
+    { x: 910,  y: 780, w: 580, h: 520 },   // SC plot (around bldg at 1200,1100)
+    { x: 1900, y: 780, w: 440, h: 520 },   // SE plot (around bldg at 2120,1100)
   ];
 
-  for (const plot of plots) {
-    context.fillStyle = "#3a2512";
-    context.fillRect(plot.x - 6, plot.y - 6, plot.w + 12, plot.h + 12);
-    context.fillStyle = "#855a10";
+  for (const plot of campusPlots) {
+    context.fillStyle = "#1e293b";
     context.fillRect(plot.x, plot.y, plot.w, plot.h);
+    context.strokeStyle = "#334155";
+    context.lineWidth = 2;
+    context.strokeRect(plot.x, plot.y, plot.w, plot.h);
 
-    context.strokeStyle = "#ca8a04";
-    context.lineWidth = 1.5;
-    const wave = Math.sin(time * 3 + plot.x * 0.01) * 3;
-    for (let rx = plot.x + 14; rx < plot.x + plot.w; rx += 28) {
-      for (let ry = plot.y + 16; ry < plot.y + plot.h; ry += 32) {
-        context.beginPath();
-        context.moveTo(rx, ry);
-        context.lineTo(rx + wave, ry - 10);
-        context.stroke();
-      }
+    // Subtle grid pattern for academic surveying campus
+    context.strokeStyle = "rgba(51, 65, 85, 0.4)";
+    context.lineWidth = 1;
+    for (let gx = plot.x + 30; gx < plot.x + plot.w; gx += 40) {
+      context.beginPath(); context.moveTo(gx, plot.y); context.lineTo(gx, plot.y + plot.h); context.stroke();
+    }
+    for (let gy = plot.y + 30; gy < plot.y + plot.h; gy += 40) {
+      context.beginPath(); context.moveTo(plot.x, gy); context.lineTo(plot.x + plot.w, gy); context.stroke();
     }
   }
 
-  // 3. Earthen Village Roads
-  context.fillStyle = "#78350f";
-  context.fillRect(0, 580, MAP_WIDTH, 180);
-  context.fillRect(360, 0, 140, MAP_HEIGHT);
-  context.fillRect(1130, 0, 140, MAP_HEIGHT);
-  context.fillRect(1900, 0, 140, MAP_HEIGHT);
+  // 3. Wide Research Boulevards (horizontal + vertical corridors)
+  context.fillStyle = "#161f30";
+  context.fillRect(0, 580, MAP_WIDTH, 180);     // Horizontal main road y=580-760
+  context.fillRect(520, 0, 140, MAP_HEIGHT);    // Vertical road 1
+  context.fillRect(1560, 0, 140, MAP_HEIGHT);   // Vertical road 2
 
-  // Red Clay Brick Center Pathway
-  context.fillStyle = "#b45309";
-  context.fillRect(0, 650, MAP_WIDTH, 40);
-  context.fillRect(410, 0, 40, MAP_HEIGHT);
-  context.fillRect(1180, 0, 40, MAP_HEIGHT);
-  context.fillRect(1950, 0, 40, MAP_HEIGHT);
+  // Crisp Stone Curbs (Mép vỉa hè)
+  context.fillStyle = "#475569";
+  context.fillRect(0, 577, MAP_WIDTH, 4);
+  context.fillRect(0, 759, MAP_WIDTH, 4);
+  context.fillRect(517, 0, 4, MAP_HEIGHT);
+  context.fillRect(659, 0, 4, MAP_HEIGHT);
+  context.fillRect(1557, 0, 4, MAP_HEIGHT);
+  context.fillRect(1699, 0, 4, MAP_HEIGHT);
 
-  // 4. Irrigation Water Canal (Mương Thủy Lợi)
-  context.fillStyle = "#0284c7";
-  context.fillRect(0, 560, MAP_WIDTH, 20);
-  context.fillRect(0, 760, MAP_WIDTH, 20);
-  context.fillStyle = "#38bdf8";
-  for (let wx = 0; wx < MAP_WIDTH; wx += 90) {
-    const ripX = (wx + time * 40) % MAP_WIDTH;
-    context.fillRect(ripX, 568, 30, 4);
-    context.fillRect(ripX + 45, 768, 30, 4);
-  }
+  // Double Solid Yellow Centerlines (Vạch đôi liền vàng trung tâm)
+  drawDoubleCenterLine(context, 0, 670, 480, 670, 6, 2.5, "#facc15");
+  drawDoubleCenterLine(context, 700, 670, 1520, 670, 6, 2.5, "#facc15");
+  drawDoubleCenterLine(context, 1740, 670, MAP_WIDTH, 670, 6, 2.5, "#facc15");
 
-  // 5. Rustic Trees
-  drawPixelTree(200, 500, "oak", time);
-  drawPixelTree(1200, 500, "oak", time);
-  drawPixelTree(2200, 500, "oak", time);
-  drawPixelTree(200, 850, "oak", time);
-  drawPixelTree(1200, 850, "oak", time);
-  drawPixelTree(2200, 850, "oak", time);
-}
+  // Vertical Road Centerlines
+  drawDoubleCenterLine(context, 590, 0, 590, 540, 6, 2.5, "#facc15");
+  drawDoubleCenterLine(context, 590, 800, 590, MAP_HEIGHT, 6, 2.5, "#facc15");
+  drawDoubleCenterLine(context, 1630, 0, 1630, 540, 6, 2.5, "#facc15");
+  drawDoubleCenterLine(context, 1630, 800, 1630, MAP_HEIGHT, 6, 2.5, "#facc15");
 
-// ----------------------------------------------------
-// MAP 2: XÍ NGHIỆP DỆT THÀNH CÔNG (PHASE 2 - 1979)
-// ----------------------------------------------------
-function drawPhase2FactoryMap(time) {
-  // 1. Industrial Slate Factory Ground
-  context.fillStyle = "#1e293b";
-  context.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
-
-  // 2. Main Transport Boulevards & Corridors
-  context.fillStyle = "#0f172a";
-  context.fillRect(0, 580, MAP_WIDTH, 180);
-  context.fillRect(360, 0, 150, MAP_HEIGHT);
-  context.fillRect(1125, 0, 150, MAP_HEIGHT);
-  context.fillRect(1890, 0, 150, MAP_HEIGHT);
-
-  // Yellow/Black Industrial Safety Stripes
-  context.strokeStyle = "#eab308";
-  context.lineWidth = 4;
-  context.setLineDash([20, 20]);
+  // Lane Divider Dashes (Vạch đứt phân làn)
+  context.strokeStyle = "rgba(203, 213, 225, 0.55)";
+  context.lineWidth = 2;
+  context.setLineDash([18, 14]);
   context.beginPath();
-  context.moveTo(0, 670); context.lineTo(MAP_WIDTH, 670);
-  context.moveTo(435, 0); context.lineTo(435, MAP_HEIGHT);
-  context.moveTo(1200, 0); context.lineTo(1200, MAP_HEIGHT);
-  context.moveTo(1965, 0); context.lineTo(1965, MAP_HEIGHT);
+  context.moveTo(0, 625); context.lineTo(490, 625);
+  context.moveTo(690, 625); context.lineTo(1530, 625);
+  context.moveTo(1730, 625); context.lineTo(MAP_WIDTH, 625);
+  context.moveTo(0, 715); context.lineTo(490, 715);
+  context.moveTo(690, 715); context.lineTo(1530, 715);
+  context.moveTo(1730, 715); context.lineTo(MAP_WIDTH, 715);
   context.stroke();
   context.setLineDash([]);
 
-  // 3. Freight Rail Line for Raw Material Transport
-  context.fillStyle = "#475569";
-  context.fillRect(0, 770, MAP_WIDTH, 16);
-  context.fillStyle = "#78350f";
-  for (let rx = 0; rx < MAP_WIDTH; rx += 36) {
-    context.fillRect(rx, 764, 14, 28);
+  // Pedestrian Zebra Crossings & Stop Bars (Vạch qua đường & vạch dừng)
+  // Junction 1 (x: 590, y: 670)
+  drawZebraCrosswalk(context, 525, 544, 130, 26, false, "#f8fafc");
+  drawStopLine(context, 525, 574, 130, false, "#f8fafc");
+  drawZebraCrosswalk(context, 525, 770, 130, 26, false, "#f8fafc");
+  drawStopLine(context, 525, 766, 130, false, "#f8fafc");
+  drawZebraCrosswalk(context, 485, 585, 26, 170, true, "#f8fafc");
+  drawStopLine(context, 515, 585, 170, true, "#f8fafc");
+  drawZebraCrosswalk(context, 669, 585, 26, 170, true, "#f8fafc");
+  drawStopLine(context, 665, 585, 170, true, "#f8fafc");
+  drawHatchedJunction(context, 522, 582, 136, 176, "rgba(250, 204, 21, 0.3)");
+
+  // Junction 2 (x: 1630, y: 670)
+  drawZebraCrosswalk(context, 1565, 544, 130, 26, false, "#f8fafc");
+  drawStopLine(context, 1565, 574, 130, false, "#f8fafc");
+  drawZebraCrosswalk(context, 1565, 770, 130, 26, false, "#f8fafc");
+  drawStopLine(context, 1565, 766, 130, false, "#f8fafc");
+  drawZebraCrosswalk(context, 1525, 585, 26, 170, true, "#f8fafc");
+  drawStopLine(context, 1555, 585, 170, true, "#f8fafc");
+  drawZebraCrosswalk(context, 1709, 585, 26, 170, true, "#f8fafc");
+  drawStopLine(context, 1705, 585, 170, true, "#f8fafc");
+  drawHatchedJunction(context, 1562, 582, 136, 176, "rgba(250, 204, 21, 0.3)");
+
+  // Directional Lane Arrows
+  drawRoadArrow(context, 350, 625, "straight", -Math.PI / 2);
+  drawRoadArrow(context, 200, 715, "straight", Math.PI / 2);
+  drawRoadArrow(context, 1000, 625, "straight", -Math.PI / 2);
+  drawRoadArrow(context, 1150, 715, "straight", Math.PI / 2);
+  drawRoadArrow(context, 2100, 625, "straight", -Math.PI / 2);
+  drawRoadArrow(context, 1950, 715, "straight", Math.PI / 2);
+  drawRoadArrow(context, 555, 450, "straight", Math.PI);  // Southbound (Left lane)
+  drawRoadArrow(context, 625, 450, "straight", 0);        // Northbound (Right lane)
+  drawRoadArrow(context, 1595, 450, "straight", Math.PI); // Southbound (Left lane)
+  drawRoadArrow(context, 1665, 450, "straight", 0);       // Northbound (Right lane)
+
+  // 4. Campus Reflecting Pools — placed inside courtyards, away from roads
+  const pools = [
+    { x: 100,  y: 160, w: 130, h: 60 },  // NW courtyard pool
+    { x: 1920, y: 160, w: 130, h: 60 },  // NE courtyard pool
+    { x: 100,  y: 1200, w: 130, h: 60 }, // SW courtyard pool
+    { x: 1920, y: 1200, w: 130, h: 60 }, // SE courtyard pool
+  ];
+  for (const pool of pools) {
+    context.fillStyle = "#0c4a6e";
+    context.fillRect(pool.x, pool.y, pool.w, pool.h);
+    context.strokeStyle = "#38bdf8";
+    context.lineWidth = 2;
+    context.strokeRect(pool.x, pool.y, pool.w, pool.h);
+    const ripple = (time * 30) % pool.w;
+    context.fillStyle = "#38bdf8";
+    context.fillRect(pool.x + ripple, pool.y + pool.h / 2, 25, 3);
   }
-  context.fillStyle = "#94a3b8";
-  context.fillRect(0, 768, MAP_WIDTH, 4);
-  context.fillRect(0, 784, MAP_WIDTH, 4);
 
-  // 4. Warehouse Yards
-  drawSidewalk(60, 60, 280, 500, "standard");
-  drawSidewalk(530, 60, 570, 500, "standard");
-  drawSidewalk(1300, 60, 570, 500, "standard");
-  drawSidewalk(2060, 60, 280, 500, "standard");
+  // 5. Academic Campus Trees — placed at courtyard corners, OFF roads
+  drawPixelTree(100,  490, "oak", time);   // NW plot SW corner
+  drawPixelTree(460,  140, "oak", time);   // NW plot NE corner
+  drawPixelTree(1940, 490, "oak", time);   // NE plot SW corner
+  drawPixelTree(2300, 140, "oak", time);   // NE plot NE corner
+  drawPixelTree(100,  870, "oak", time);   // SW plot NW corner
+  drawPixelTree(2300, 870, "oak", time);   // SE plot NW corner
 
-  drawSidewalk(60, 800, 280, 500, "standard");
-  drawSidewalk(530, 800, 570, 500, "standard");
-  drawSidewalk(1300, 800, 570, 500, "standard");
-  drawSidewalk(2060, 800, 280, 500, "standard");
-
+  // Streetlamps along road edges (not on road center)
   const lamps = [
-    { x: 120, y: 550 }, { x: 480, y: 550 }, { x: 1240, y: 550 }, { x: 2000, y: 550 },
-    { x: 120, y: 810 }, { x: 480, y: 810 }, { x: 1240, y: 810 }, { x: 2000, y: 810 },
+    { x: 510, y: 570 }, { x: 670, y: 570 }, { x: 1550, y: 570 }, { x: 1710, y: 570 },
+    { x: 510, y: 770 }, { x: 670, y: 770 }, { x: 1550, y: 770 }, { x: 1710, y: 770 },
   ];
   for (const lp of lamps) drawStreetLamp(lp.x, lp.y, time);
 }
 
 // ----------------------------------------------------
-// MAP 3: ĐỒNG BẰNG LONG AN & KHẢO SÁT TW (PHASE 3 - 1980)
+// MAP 2: QUẢNG TRƯỜNG ĐẠI ĐOÀN KẾT & BIẾN ĐỔI CCXH-GC (PHASE 2)
 // ----------------------------------------------------
-function drawPhase3SurveyMap(time) {
-  // 1. Delta Soil & Greenery Ground
-  context.fillStyle = "#143d2b";
+function drawPhase2UnityMap(time) {
+  // 1. Warm Granite Stone Paving
+  context.fillStyle = "#1c1917";
   context.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
 
-  // 2. Vàm Cỏ River Channel (Sông Vàm Cỏ Tây)
-  context.fillStyle = "#0369a1";
-  context.fillRect(0, 560, MAP_WIDTH, 220);
-  context.fillStyle = "#38bdf8";
-  for (let wx = 0; wx < MAP_WIDTH; wx += 80) {
-    const curX = (wx + time * 35) % MAP_WIDTH;
-    context.fillRect(curX, 610, 45, 5);
-    context.fillRect(curX + 30, 680, 45, 5);
-    context.fillRect(curX + 60, 730, 35, 4);
+  // 2. Civic Forums — matching Phase 2 "Quảng trường" layout
+  const forums = [
+    { x: 40,   y: 60,  w: 320, h: 400 },   // NW small (around bldg 200,240)
+    { x: 400,  y: 60,  w: 620, h: 480 },   // N-left (around bldg 700,280)
+    { x: 1400, y: 60,  w: 620, h: 480 },   // N-right (around bldg 1700,280)
+    { x: 2040, y: 60,  w: 320, h: 400 },   // NE small (around bldg 2200,240)
+    { x: 250,  y: 780, w: 520, h: 520 },   // SW (around bldg 500,1100)
+    { x: 1650, y: 780, w: 520, h: 520 },   // SE (around bldg 1900,1100)
+  ];
+  for (const fm of forums) {
+    context.fillStyle = "#292524";
+    context.fillRect(fm.x, fm.y, fm.w, fm.h);
+    context.strokeStyle = "#44403c";
+    context.lineWidth = 2;
+    context.strokeRect(fm.x, fm.y, fm.w, fm.h);
   }
 
-  // 3. Wooden Bridges & River Docks
-  const bridges = [390, 1150, 1910];
-  for (const bx of bridges) {
-    context.fillStyle = "#78350f";
-    context.fillRect(bx, 550, 100, 240);
-    context.fillStyle = "#92400e";
-    for (let by = 550; by < 790; by += 16) {
-      context.fillRect(bx, by, 100, 2);
-    }
-    context.fillStyle = "#facc15";
-    context.fillRect(bx, 550, 6, 240);
-    context.fillRect(bx + 94, 550, 6, 240);
-  }
-
-  // 4. Sandy Delta Roads
-  context.fillStyle = "#854d0e";
-  context.fillRect(0, 360, MAP_WIDTH, 140);
-  context.fillRect(0, 840, MAP_WIDTH, 140);
-  context.fillRect(390, 0, 100, MAP_HEIGHT);
-  context.fillRect(1150, 0, 100, MAP_HEIGHT);
-  context.fillRect(1910, 0, 100, MAP_HEIGHT);
-
-  drawPixelTree(200, 320, "palm", time);
-  drawPixelTree(1000, 320, "palm", time);
-  drawPixelTree(1800, 320, "palm", time);
-  drawPixelTree(200, 960, "palm", time);
-  drawPixelTree(1000, 960, "palm", time);
-  drawPixelTree(1800, 960, "palm", time);
-}
-
-// ----------------------------------------------------
-// MAP 4: HỘI TRƯỜNG THỂ CHẾ HÓA 1981 (PHASE 4 - 1981)
-// ----------------------------------------------------
-function drawPhase4PolicyHallMap(time) {
-  // 1. Dark Imperial Marble Ground
-  context.fillStyle = "#18181b";
-  context.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
-
-  // 2. Grand Central Ceremonial Carpet (Red & Gold Trim - Clean Elegance)
-  context.fillStyle = "#7f1d1d";
-  context.fillRect(980, 0, 440, MAP_HEIGHT);
-  context.fillStyle = "#f59e0b";
-  context.fillRect(980, 0, 10, MAP_HEIGHT);
-  context.fillRect(1410, 0, 10, MAP_HEIGHT);
-  context.fillStyle = "rgba(245, 158, 11, 0.35)";
-  context.fillRect(1000, 0, 4, MAP_HEIGHT);
-  context.fillRect(1396, 0, 4, MAP_HEIGHT);
-
-  // 3. Polished Marble Boulevards
-  context.fillStyle = "#27272a";
+  // 3. Grand Ceremonial Red & Gold Boulevard (Trục Đại Lộ Đoàn Kết)
+  context.fillStyle = "#330808";
   context.fillRect(0, 580, MAP_WIDTH, 180);
-  context.fillRect(360, 0, 140, MAP_HEIGHT);
-  context.fillRect(1900, 0, 140, MAP_HEIGHT);
+  context.fillStyle = "#450a0a";
+  context.fillRect(0, 600, MAP_WIDTH, 140);
 
-  context.strokeStyle = "#facc15";
-  context.lineWidth = 2.5;
-  context.setLineDash([28, 18]);
+  // Ceremonial Golden Curb Trims
+  context.fillStyle = "#b45309";
+  context.fillRect(0, 577, MAP_WIDTH, 4);
+  context.fillRect(0, 759, MAP_WIDTH, 4);
+  context.fillStyle = "#f59e0b";
+  context.fillRect(0, 579, MAP_WIDTH, 2);
+  context.fillRect(0, 759, MAP_WIDTH, 2);
+
+  // Vertical Corridors
+  context.fillStyle = "#292524";
+  context.fillRect(1060, 0, 140, MAP_HEIGHT);   // Central vertical road
+  context.fillRect(800,  780, 140, MAP_HEIGHT - 780);  // SW-center corridor
+  context.fillStyle = "#78716c";
+  context.fillRect(1057, 0, 4, MAP_HEIGHT);
+  context.fillRect(1199, 0, 4, MAP_HEIGHT);
+
+  // Double Solid Gold Centerlines (Vạch đôi vàng hoàng gia)
+  drawDoubleCenterLine(context, 0, 670, 1020, 670, 6, 2.5, "#facc15");
+  drawDoubleCenterLine(context, 1240, 670, MAP_WIDTH, 670, 6, 2.5, "#facc15");
+  drawDoubleCenterLine(context, 1130, 0, 1130, 540, 6, 2.5, "#facc15");
+  drawDoubleCenterLine(context, 1130, 800, 1130, MAP_HEIGHT, 6, 2.5, "#facc15");
+
+  // Lane Divider Dashes
+  context.strokeStyle = "rgba(251, 191, 36, 0.45)";
+  context.lineWidth = 2;
+  context.setLineDash([20, 16]);
   context.beginPath();
-  context.moveTo(0, 670); context.lineTo(980, 670);
-  context.moveTo(1420, 670); context.lineTo(MAP_WIDTH, 670);
+  context.moveTo(0, 625); context.lineTo(1030, 625);
+  context.moveTo(1230, 625); context.lineTo(MAP_WIDTH, 625);
+  context.moveTo(0, 715); context.lineTo(1030, 715);
+  context.moveTo(1230, 715); context.lineTo(MAP_WIDTH, 715);
   context.stroke();
   context.setLineDash([]);
 
-  // 4. White Marble Colonnade Sidewalks
-  drawSidewalk(60, 60, 280, 500, "marble");
-  drawSidewalk(520, 60, 440, 500, "marble");
-  drawSidewalk(1440, 60, 440, 500, "marble");
-  drawSidewalk(2060, 60, 280, 500, "marble");
+  // Grand Ceremonial Pedestrian Crossings (Vạch sang đường lễ hội đỏ-vàng)
+  drawZebraCrosswalk(context, 1065, 544, 130, 26, false, "#fef08a");
+  drawStopLine(context, 1065, 574, 130, false, "#facc15");
+  drawZebraCrosswalk(context, 1065, 770, 130, 26, false, "#fef08a");
+  drawStopLine(context, 1065, 766, 130, false, "#facc15");
+  drawZebraCrosswalk(context, 1025, 585, 26, 170, true, "#fef08a");
+  drawStopLine(context, 1055, 585, 170, true, "#facc15");
+  drawZebraCrosswalk(context, 1209, 585, 26, 170, true, "#fef08a");
+  drawStopLine(context, 1205, 585, 170, true, "#facc15");
+  drawHatchedJunction(context, 1062, 582, 136, 176, "rgba(250, 204, 21, 0.4)");
 
-  drawSidewalk(60, 780, 280, 520, "marble");
-  drawSidewalk(520, 780, 440, 520, "marble");
-  drawSidewalk(1440, 780, 440, 520, "marble");
-  drawSidewalk(2060, 780, 280, 520, "marble");
+  // Directional Arrows in Gold
+  drawRoadArrow(context, 600, 625, "straight", -Math.PI / 2, "rgba(250, 204, 21, 0.7)");
+  drawRoadArrow(context, 450, 715, "straight", Math.PI / 2, "rgba(250, 204, 21, 0.7)");
+  drawRoadArrow(context, 1600, 625, "straight", -Math.PI / 2, "rgba(250, 204, 21, 0.7)");
+  drawRoadArrow(context, 1750, 715, "straight", Math.PI / 2, "rgba(250, 204, 21, 0.7)");
+  drawRoadArrow(context, 1095, 450, "straight", Math.PI, "rgba(250, 204, 21, 0.7)"); // Southbound (Left lane)
+  drawRoadArrow(context, 1165, 450, "straight", 0, "rgba(250, 204, 21, 0.7)");       // Northbound (Right lane)
+
+  // 4. Memorial Plazas — placed inside courtyard plots, NOT on roads
+  drawMemorialPlaza(700,  490, 55, "lotus");   // Inside N-left plot bottom
+  drawMemorialPlaza(1700, 490, 55, "lotus");   // Inside N-right plot bottom
+  drawMemorialPlaza(500,  870, 55, "lotus");   // Inside SW plot top area
+  drawMemorialPlaza(1900, 870, 55, "lotus");   // Inside SE plot top area
+
+  // 5. Civic Trees — placed at courtyard edges, NOT on roads
+  drawPixelTree(80,  410, "pine", time);    // NW plot bottom edge
+  drawPixelTree(2100, 410, "pine", time);   // NE plot bottom edge
+  drawPixelTree(320,  870, "pine", time);   // SW plot top-left
+  drawPixelTree(700,  1220, "pine", time);  // SW plot bottom
+  drawPixelTree(1720, 870, "pine", time);   // SE plot top
+  drawPixelTree(2100, 1220, "pine", time);  // SE plot bottom-right
+
+  // Streetlamps along boulevard edges
+  const lamps2 = [
+    { x: 1050, y: 570 }, { x: 1210, y: 570 }, { x: 400, y: 570 }, { x: 2000, y: 570 },
+    { x: 1050, y: 770 }, { x: 1210, y: 770 }, { x: 400, y: 770 }, { x: 2000, y: 770 },
+  ];
+  for (const lp of lamps2) drawStreetLamp(lp.x, lp.y, time);
 }
+
+// ----------------------------------------------------
+// MAP 3: SIÊU ĐÔ THỊ LIÊN MINH 4 KHỐI & CNH-HĐH (PHASE 3)
+// ----------------------------------------------------
+function drawPhase3AllianceMap(time) {
+  // 1. High-Tech Dark Carbon Metropolis Ground
+  context.fillStyle = "#090d16";
+  context.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+
+  // 2. High-Tech Sector Platforms (6 Districts matching the 6 Buildings)
+  // Perfectly balanced 3-column grid: West [50..500], Center [720..1680], East [1900..2350]
+  const sectors = [
+    // North Row (y: 40/50 to 550)
+    { x: 50,   y: 50,  w: 450, h: 500, color: "rgba(12, 74, 110, 0.45)",  border: "#0284c7", label: "KHU CÔNG NGHIỆP CÔNG NGHỆ CAO", accent: "#38bdf8" },
+    { x: 720,  y: 40,  w: 960, h: 510, color: "rgba(69, 10, 10, 0.45)",   border: "#ef4444", label: "ĐẠI HỘI TRƯỜNG LIÊN MINH CHIẾN LƯỢC", accent: "#facc15" },
+    { x: 1900, y: 50,  w: 450, h: 500, color: "rgba(6, 78, 59, 0.45)",   border: "#10b981", label: "VÙNG NÔNG NGHIỆP SINH THÁI HIỆN ĐẠI", accent: "#4ade80" },
+
+    // South Row (y: 790 to 1340)
+    { x: 50,   y: 790, w: 450, h: 550, color: "rgba(30, 27, 75, 0.45)",   border: "#a855f7", label: "TRUNG TÂM ĐỔI MỚI SÁNG TẠO SỐ", accent: "#c084fc" },
+    { x: 720,  y: 790, w: 960, h: 550, color: "rgba(24, 24, 27, 0.55)",   border: "#f59e0b", label: "TÒA NHÀ DOANH NHÂN & DOANH NGHIỆP", accent: "#fde047" },
+    { x: 1900, y: 790, w: 450, h: 550, color: "rgba(8, 47, 73, 0.45)",   border: "#38bdf8", label: "VIỆN KINH TẾ - CHÍNH TRỊ TRUNG ƯƠNG", accent: "#22d3ee" },
+  ];
+
+  for (const sec of sectors) {
+    // Platform Base
+    context.fillStyle = sec.color;
+    context.fillRect(sec.x, sec.y, sec.w, sec.h);
+    context.strokeStyle = sec.border;
+    context.lineWidth = 2.5;
+    context.strokeRect(sec.x, sec.y, sec.w, sec.h);
+
+    // Subtle Cyber Grid Pattern inside Platform
+    context.save();
+    context.strokeStyle = `${sec.border}1a`;
+    context.lineWidth = 1;
+    for (let gx = sec.x + 50; gx < sec.x + sec.w; gx += 50) {
+      context.beginPath(); context.moveTo(gx, sec.y); context.lineTo(gx, sec.y + sec.h); context.stroke();
+    }
+    for (let gy = sec.y + 50; gy < sec.y + sec.h; gy += 50) {
+      context.beginPath(); context.moveTo(sec.x, gy); context.lineTo(sec.x + sec.w, gy); context.stroke();
+    }
+
+    // High-Tech Cyber Corner Brackets (Góc vát dạ quang công nghệ cao)
+    const cLen = 22;
+    context.strokeStyle = sec.accent;
+    context.lineWidth = 3;
+    // Top-left
+    context.beginPath(); context.moveTo(sec.x, sec.y + cLen); context.lineTo(sec.x, sec.y); context.lineTo(sec.x + cLen, sec.y); context.stroke();
+    // Top-right
+    context.beginPath(); context.moveTo(sec.x + sec.w - cLen, sec.y); context.lineTo(sec.x + sec.w, sec.y); context.lineTo(sec.x + sec.w, sec.y + cLen); context.stroke();
+    // Bottom-left
+    context.beginPath(); context.moveTo(sec.x, sec.y + sec.h - cLen); context.lineTo(sec.x, sec.y + sec.h); context.lineTo(sec.x + cLen, sec.y + sec.h); context.stroke();
+    // Bottom-right
+    context.beginPath(); context.moveTo(sec.x + sec.w - cLen, sec.y + sec.h); context.lineTo(sec.x + sec.w, sec.y + sec.h); context.lineTo(sec.x + sec.w, sec.y + sec.h - cLen); context.stroke();
+    context.restore();
+  }
+
+  // 3. Smart Expressway Corridors (Mặt đường siêu đô thị hiện đại)
+  // Horizontal Expressway (y = 580..760, height 180)
+  // Two Vertical Avenues: West Avenue (x = 540..680) & East Avenue (x = 1720..1860)
+  context.fillStyle = "#0a0f1d";
+  context.fillRect(0, 580, MAP_WIDTH, 180);
+  context.fillRect(540, 0, 140, MAP_HEIGHT);
+  context.fillRect(1720, 0, 140, MAP_HEIGHT);
+
+  // Glowing Neon Cyan Curb Edges (Viền vỉa hè dạ quang)
+  context.fillStyle = "rgba(2, 132, 199, 0.85)";
+  context.fillRect(0, 577, MAP_WIDTH, 4);
+  context.fillRect(0, 759, MAP_WIDTH, 4);
+  context.fillRect(537, 0, 4, MAP_HEIGHT);
+  context.fillRect(679, 0, 4, MAP_HEIGHT);
+  context.fillRect(1717, 0, 4, MAP_HEIGHT);
+  context.fillRect(1859, 0, 4, MAP_HEIGHT);
+
+  // Double Solid Glowing Median Lines (Vạch đôi phân cách trung tâm phát sáng)
+  // Horizontal Boulevard
+  drawDoubleCenterLine(context, 0, 670, 500, 670, 6, 2.5, "#38bdf8");
+  drawDoubleCenterLine(context, 720, 670, 1680, 670, 6, 2.5, "#38bdf8");
+  drawDoubleCenterLine(context, 1900, 670, MAP_WIDTH, 670, 6, 2.5, "#38bdf8");
+
+  // Vertical Avenues Centerlines
+  drawDoubleCenterLine(context, 610, 0, 610, 540, 6, 2.5, "#38bdf8");
+  drawDoubleCenterLine(context, 610, 800, 610, MAP_HEIGHT, 6, 2.5, "#38bdf8");
+  drawDoubleCenterLine(context, 1790, 0, 1790, 540, 6, 2.5, "#38bdf8");
+  drawDoubleCenterLine(context, 1790, 800, 1790, MAP_HEIGHT, 6, 2.5, "#38bdf8");
+
+  // Animated Neon Cyan Data Busway Lane Dividers (Vạch đứt chuyển động nhịp nhàng theo chiều xe chạy)
+  context.save();
+  context.strokeStyle = "rgba(56, 189, 248, 0.75)";
+  context.lineWidth = 2.5;
+  context.setLineDash([26, 16]);
+
+  // Westbound upper lane (y = 625) -> Animate to West (left) matching traffic
+  context.lineDashOffset = time * 45;
+  context.beginPath();
+  context.moveTo(0, 625); context.lineTo(510, 625);
+  context.moveTo(710, 625); context.lineTo(1690, 625);
+  context.moveTo(1890, 625); context.lineTo(MAP_WIDTH, 625);
+  context.stroke();
+
+  // Eastbound lower lane (y = 715) -> Animate to East (right) matching traffic
+  context.lineDashOffset = -time * 45;
+  context.beginPath();
+  context.moveTo(0, 715); context.lineTo(510, 715);
+  context.moveTo(710, 715); context.lineTo(1690, 715);
+  context.moveTo(1890, 715); context.lineTo(MAP_WIDTH, 715);
+  context.stroke();
+
+  context.setLineDash([]);
+  context.restore();
+
+  // Smart High-Tech Pedestrian Crosswalks & Stop Bars (Vạch qua đường công nghệ cao)
+  // West Junction (x: 610, y: 670)
+  drawZebraCrosswalk(context, 545, 544, 130, 26, false, "#38bdf8");
+  drawStopLine(context, 545, 574, 130, false, "#38bdf8");
+  drawZebraCrosswalk(context, 545, 770, 130, 26, false, "#38bdf8");
+  drawStopLine(context, 545, 766, 130, false, "#38bdf8");
+  drawZebraCrosswalk(context, 505, 585, 26, 170, true, "#38bdf8");
+  drawStopLine(context, 535, 585, 170, true, "#38bdf8");
+  drawZebraCrosswalk(context, 689, 585, 26, 170, true, "#38bdf8");
+  drawStopLine(context, 685, 585, 170, true, "#38bdf8");
+  drawHatchedJunction(context, 542, 582, 136, 176, "rgba(56, 189, 248, 0.4)");
+
+  // East Junction (x: 1790, y: 670)
+  drawZebraCrosswalk(context, 1725, 544, 130, 26, false, "#38bdf8");
+  drawStopLine(context, 1725, 574, 130, false, "#38bdf8");
+  drawZebraCrosswalk(context, 1725, 770, 130, 26, false, "#38bdf8");
+  drawStopLine(context, 1725, 766, 130, false, "#38bdf8");
+  drawZebraCrosswalk(context, 1685, 585, 26, 170, true, "#38bdf8");
+  drawStopLine(context, 1715, 585, 170, true, "#38bdf8");
+  drawZebraCrosswalk(context, 1869, 585, 26, 170, true, "#38bdf8");
+  drawStopLine(context, 1865, 585, 170, true, "#38bdf8");
+  drawHatchedJunction(context, 1722, 582, 136, 176, "rgba(56, 189, 248, 0.4)");
+
+  // Directional Expressway Arrows (Đúng chiều Luật Giao Thông bên phải)
+  // Westbound Upper Lane (y = 625 -> Chạy sang Tây / Trái)
+  drawRoadArrow(context, 250, 625, "straight", -Math.PI / 2, "rgba(56, 189, 248, 0.75)");
+  drawRoadArrow(context, 910, 625, "straight", -Math.PI / 2, "rgba(56, 189, 248, 0.75)");
+  drawRoadArrow(context, 1200, 625, "straight", -Math.PI / 2, "rgba(56, 189, 248, 0.75)");
+  drawRoadArrow(context, 1490, 625, "straight", -Math.PI / 2, "rgba(56, 189, 248, 0.75)");
+  drawRoadArrow(context, 2150, 625, "straight", -Math.PI / 2, "rgba(56, 189, 248, 0.75)");
+  // Eastbound Lower Lane (y = 715 -> Chạy sang Đông / Phải)
+  drawRoadArrow(context, 250, 715, "straight", Math.PI / 2, "rgba(56, 189, 248, 0.75)");
+  drawRoadArrow(context, 910, 715, "straight", Math.PI / 2, "rgba(56, 189, 248, 0.75)");
+  drawRoadArrow(context, 1200, 715, "straight", Math.PI / 2, "rgba(56, 189, 248, 0.75)");
+  drawRoadArrow(context, 1490, 715, "straight", Math.PI / 2, "rgba(56, 189, 248, 0.75)");
+  drawRoadArrow(context, 2150, 715, "straight", Math.PI / 2, "rgba(56, 189, 248, 0.75)");
+  // West Avenue Arrows (x = 610)
+  drawRoadArrow(context, 575, 450, "straight", Math.PI, "rgba(56, 189, 248, 0.75)"); // Làn trái: Chạy xuống Nam (Southbound)
+  drawRoadArrow(context, 645, 450, "straight", 0, "rgba(56, 189, 248, 0.75)");       // Làn phải: Chạy lên Bắc (Northbound)
+  drawRoadArrow(context, 575, 920, "straight", Math.PI, "rgba(56, 189, 248, 0.75)"); // Làn trái: Chạy xuống Nam (Southbound)
+  drawRoadArrow(context, 645, 920, "straight", 0, "rgba(56, 189, 248, 0.75)");       // Làn phải: Chạy lên Bắc (Northbound)
+  // East Avenue Arrows (x = 1790)
+  drawRoadArrow(context, 1755, 450, "straight", Math.PI, "rgba(56, 189, 248, 0.75)"); // Làn trái: Chạy xuống Nam (Southbound)
+  drawRoadArrow(context, 1825, 450, "straight", 0, "rgba(56, 189, 248, 0.75)");       // Làn phải: Chạy lên Bắc (Northbound)
+  drawRoadArrow(context, 1755, 920, "straight", Math.PI, "rgba(56, 189, 248, 0.75)"); // Làn trái: Chạy xuống Nam (Southbound)
+  drawRoadArrow(context, 1825, 920, "straight", 0, "rgba(56, 189, 248, 0.75)");       // Làn phải: Chạy lên Bắc (Northbound)
+
+  // 5. Modern Smart Eco Trees — Placed strictly at sector perimeter corners (OFF roadways!)
+  // North Zone Courtyards
+  drawPixelTree(80,   480, "palm", time);
+  drawPixelTree(470,  480, "palm", time);
+  drawPixelTree(750,  480, "palm", time);
+  drawPixelTree(1650, 480, "palm", time);
+  drawPixelTree(1930, 480, "palm", time);
+  drawPixelTree(2320, 480, "palm", time);
+
+  // South Zone Courtyards
+  drawPixelTree(80,   850, "palm", time);
+  drawPixelTree(470,  850, "palm", time);
+  drawPixelTree(750,  850, "palm", time);
+  drawPixelTree(1650, 850, "palm", time);
+  drawPixelTree(1930, 850, "palm", time);
+  drawPixelTree(2320, 850, "palm", time);
+
+  // 6. Smart Urban Streetlamps along Road Curbs (NOT in roadway)
+  const lamps3 = [
+    // Along Horizontal Expressway Curbs
+    { x: 280,  y: 565 }, { x: 720,  y: 565 }, { x: 1080, y: 565 }, { x: 1320, y: 565 }, { x: 1680, y: 565 }, { x: 2120, y: 565 },
+    { x: 280,  y: 775 }, { x: 720,  y: 775 }, { x: 1080, y: 775 }, { x: 1320, y: 775 }, { x: 1680, y: 775 }, { x: 2120, y: 775 },
+    // Along West Avenue Curbs
+    { x: 525,  y: 280 }, { x: 695,  y: 280 }, { x: 525,  y: 1050 }, { x: 695,  y: 1050 },
+    // Along East Avenue Curbs
+    { x: 1705, y: 280 }, { x: 1875, y: 280 }, { x: 1705, y: 1050 }, { x: 1875, y: 1050 },
+  ];
+  for (const lp of lamps3) drawStreetLamp(lp.x, lp.y, time);
+}
+
+// Backward-compatibility aliases
+function drawPhase1RuralMap(time) { drawPhase1CcxhMap(time); }
+function drawPhase2FactoryMap(time) { drawPhase2UnityMap(time); }
+function drawPhase3SurveyMap(time) { drawPhase3AllianceMap(time); }
+function drawPhase4PolicyHallMap(time) { drawPhase3AllianceMap(time); }
 
 // ----------------------------------------------------
 // DEDICATED MEMORIAL COURTYARD PLAZA
@@ -2543,60 +3418,70 @@ function drawDistinctBuilding(bldg, time, isTarget) {
   context.fillRect(bx + 14, by + 18, bldg.w, bldg.h);
 
   switch (bldg.id) {
-    // Phase 1 (1978: Hải Phòng - Đoàn Xá)
+    // Phase 1 (Chương 5: Khảo Sát Cơ Cấu Xã Hội)
+    case "bldg_ccxh_central":
     case "bldg_doan_xa":
-      drawDoanXaBuilding(bx, by, bldg, time, isTarget);
+      drawCcxhCentralBuilding(bx, by, bldg, time, isTarget);
       break;
+    case "bldg_demographics":
     case "bldg_rice_field":
-      drawRiceFieldHutBuilding(bx, by, bldg, time, isTarget);
+      drawDemographicsBuilding(bx, by, bldg, time, isTarget);
       break;
+    case "bldg_production_means":
     case "bldg_granary":
-      drawGranaryBuilding(bx, by, bldg, time, isTarget);
+      drawProductionMeansBuilding(bx, by, bldg, time, isTarget);
       break;
+    case "bldg_benefit_distribution":
     case "bldg_tractor":
-      drawTractorStationBuilding(bx, by, bldg, time, isTarget);
+      drawBenefitDistributionBuilding(bx, by, bldg, time, isTarget);
       break;
 
-    // Phase 2 (1979: TP.HCM - Dệt Thành Công)
+    // Phase 2 (Chương 5: Biến Đổi Cơ Cấu Xã Hội - Giai Cấp)
+    case "bldg_social_management":
     case "bldg_thanh_cong":
-      drawThanhCongBuilding(bx, by, bldg, time, isTarget);
+      drawSocialManagementBuilding(bx, by, bldg, time, isTarget);
       break;
+    case "bldg_class_relations":
     case "bldg_yarn_warehouse":
-      drawYarnWarehouseBuilding(bx, by, bldg, time, isTarget);
+      drawClassRelationsBuilding(bx, by, bldg, time, isTarget);
       break;
+    case "bldg_ethnic_board":
     case "bldg_port":
-      drawPortBuilding(bx, by, bldg, time, isTarget);
+      drawEthnicBoardBuilding(bx, by, bldg, time, isTarget);
       break;
+    case "bldg_religious_board":
     case "bldg_director_office":
-      drawDirectorOfficeBuilding(bx, by, bldg, time, isTarget);
+      drawReligiousBoardBuilding(bx, by, bldg, time, isTarget);
       break;
 
-    // Phase 3 (1980: Long An & Khảo Sát TW)
+    // Phase 3 (Chương 5: Liên Minh Giai Cấp & CNH-HĐH)
+    case "bldg_political_economy":
     case "bldg_tw_survey":
-      drawTwSurveyBuilding(bx, by, bldg, time, isTarget);
+      drawPoliticalEconomyBuilding(bx, by, bldg, time, isTarget);
       break;
+    case "bldg_alliance_hall":
     case "bldg_long_an_gov":
-      drawLongAnGovBuilding(bx, by, bldg, time, isTarget);
+      drawAllianceHallBuilding(bx, by, bldg, time, isTarget);
       break;
+    case "bldg_hightech_industry":
     case "bldg_rice_market":
-      drawRiceMarketBuilding(bx, by, bldg, time, isTarget);
+      drawHighTechIndustryBuilding(bx, by, bldg, time, isTarget);
       break;
+    case "bldg_eco_agriculture":
     case "bldg_river_port":
-      drawRiverPortBuilding(bx, by, bldg, time, isTarget);
+      drawEcoAgricultureBuilding(bx, by, bldg, time, isTarget);
       break;
 
-    // Phase 4 (1981: Hà Nội - Hội Nghị Thể Chế)
+    // Phase 4 (Chương 5: Đổi Mới Sáng Tạo & Doanh Nghiệp)
+    case "bldg_innovation_hub":
     case "bldg_policy_hall":
-      drawPolicyHallBuilding(bx, by, bldg, time, isTarget);
+      drawInnovationHubBuilding(bx, by, bldg, time, isTarget);
       break;
+    case "bldg_enterprise_center":
     case "bldg_committee":
-      drawCommitteeBuilding(bx, by, bldg, time, isTarget);
-      break;
     case "bldg_institute":
-      drawInstituteBuilding(bx, by, bldg, time, isTarget);
-      break;
     case "bldg_monument":
-      drawMonumentBuilding(bx, by, bldg, time, isTarget);
+      drawEnterpriseCenterBuilding(bx, by, bldg, time, isTarget);
       break;
 
     default:
@@ -2917,6 +3802,612 @@ function drawCommunityDialoguePavilion(bx, by, bldg, time, isTarget) {
   context.fillText("KHÔNG GIAN TIẾP DÂN", bldg.stationX, ey + 26);
 }
 
+
+// ====================================================
+// CHƯƠNG 5: CÁC CÔNG TRÌNH KIẾN TRÚC CƠ CẤU XÃ HỘI & LIÊN MINH
+// ====================================================
+
+// 1. Viện Hàn Lâm Khảo Sát Cơ Cấu Xã Hội (Neoclassical Academic Dome, Colonnade, Survey Globe)
+function drawCcxhCentralBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#1e293b";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#38bdf8";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Mái vòm học thuật cổ điển xanh lam sapphire
+  context.fillStyle = "#0369a1";
+  context.beginPath();
+  context.arc(bldg.x, by + 10, bldg.w * 0.35, Math.PI, 0);
+  context.fill();
+  context.strokeStyle = "#38bdf8";
+  context.lineWidth = 2;
+  context.stroke();
+
+  // Đỉnh vòm: Quả cầu khảo sát cơ cấu xã hội xoay
+  const orbY = by - bldg.w * 0.35 + 10;
+  context.fillStyle = "#facc15";
+  context.beginPath(); context.arc(bldg.x, orbY, 12, 0, Math.PI * 2); context.fill();
+  context.strokeStyle = "#0284c7";
+  context.lineWidth = 1.5;
+  context.beginPath(); context.ellipse(bldg.x, orbY, 16, 6, time * 2, 0, Math.PI * 2); context.stroke();
+
+  // Hàng cột học thuật Hy Lạp - La Mã
+  const cols = 6;
+  for (let c = 0; c < cols; c++) {
+    const cx = bx + 25 + c * ((bldg.w - 50) / (cols - 1));
+    context.fillStyle = "#cbd5e1";
+    context.fillRect(cx - 5, by + 18, 10, bldg.h - 60);
+    context.fillStyle = "#94a3b8";
+    context.fillRect(cx - 7, by + 14, 14, 5);
+    context.fillRect(cx - 7, by + bldg.h - 44, 14, 5);
+  }
+
+  // Cửa đại sảnh trung tâm
+  const ex = bldg.stationX - 55;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#0c4a6e";
+  context.fillRect(ex, ey, 110, 40);
+  context.fillStyle = "#38bdf8";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("🏛️ VIỆN HÀN LÂM CCXH", bldg.stationX, ey - 6);
+}
+
+// 2. Trung Tâm Cơ Cấu Dân Cư & Dân Tộc (Terracotta, Community Forum, Civic Crest)
+function drawDemographicsBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#78350f";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#fbbf24";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Mái ngói đa tầng màu đất nung
+  context.fillStyle = "#b45309";
+  context.beginPath();
+  context.moveTo(bx - 10, by + 18);
+  context.lineTo(bldg.x, by - 24);
+  context.lineTo(bx + bldg.w + 10, by + 18);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = "#facc15";
+  context.lineWidth = 2;
+  context.stroke();
+
+  // Biểu tượng cộng đồng dân tộc
+  context.fillStyle = "#fef08a";
+  context.beginPath(); context.arc(bldg.x, by - 6, 14, 0, Math.PI * 2); context.fill();
+  context.fillStyle = "#78350f";
+  context.font = "bold 12px sans-serif";
+  context.textAlign = "center";
+  context.fillText("👥", bldg.x, by - 2);
+
+  // Cửa vòm dân tộc
+  const cols = 4;
+  for (let c = 0; c < cols; c++) {
+    const wx = bx + 30 + c * ((bldg.w - 60) / cols);
+    context.fillStyle = "#d97706";
+    context.beginPath();
+    context.arc(wx + 15, by + 46, 15, Math.PI, 0);
+    context.fillRect(wx, by + 46, 30, 20);
+    context.fill();
+  }
+
+  const ex = bldg.stationX - 50;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#451a03";
+  context.fillRect(ex, ey, 100, 40);
+  context.fillStyle = "#fde047";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("🌐 CƠ CẤU DÂN CƯ", bldg.stationX, ey - 6);
+}
+
+// 3. Cục Quản Lý Tư Liệu Sản Xuất (Cobalt Steel Architecture & Logistics Gateway)
+function drawProductionMeansBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#1e1b4b";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#6366f1";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Mái công nghiệp hiện đại vát thép
+  context.fillStyle = "#312e81";
+  context.fillRect(bx - 6, by - 12, bldg.w + 12, 22);
+  context.fillStyle = "#818cf8";
+  context.fillRect(bx, by + 6, bldg.w, 4);
+
+  // Icon bánh răng tư liệu sản xuất xoay nhẹ
+  const gearX = bldg.x;
+  const gearY = by + 45;
+  context.fillStyle = "#a5b4fc";
+  context.beginPath(); context.arc(gearX, gearY, 20, 0, Math.PI * 2); context.fill();
+  context.fillStyle = "#1e1b4b";
+  context.beginPath(); context.arc(gearX, gearY, 10, 0, Math.PI * 2); context.fill();
+
+  // Băng chuyền điều phối tài sản
+  context.fillStyle = "#4338ca";
+  context.fillRect(bx + 20, by + 76, bldg.w - 40, 14);
+  context.fillStyle = "#c7d2fe";
+  for (let i = 0; i < 5; i++) {
+    const px = (bx + 25 + i * 40 + time * 30) % (bldg.w - 50) + bx + 20;
+    context.fillRect(px, by + 78, 12, 10);
+  }
+
+  const ex = bldg.stationX - 55;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#312e81";
+  context.fillRect(ex, ey, 110, 40);
+  context.fillStyle = "#818cf8";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("⚙️ QUẢN LÝ TLSX", bldg.stationX, ey - 6);
+}
+
+// 4. Viện Phân Phối Lợi Ích & Việc Làm (Emerald & Bronze Balance Facade)
+function drawBenefitDistributionBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#064e3b";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#10b981";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Mái hiên xanh ngọc bích
+  context.fillStyle = "#047857";
+  context.fillRect(bx - 8, by - 14, bldg.w + 16, 24);
+  context.fillStyle = "#34d399";
+  context.fillRect(bx - 4, by + 6, bldg.w + 8, 4);
+
+  // Cân công lý phân phối lợi ích hài hòa
+  const sx = bldg.x;
+  const sy = by + 45;
+  context.strokeStyle = "#facc15";
+  context.lineWidth = 2.5;
+  context.beginPath();
+  context.moveTo(sx, sy - 18); context.lineTo(sx, sy + 14);
+  context.moveTo(sx - 26, sy - 8); context.lineTo(sx + 26, sy - 8);
+  context.stroke();
+  const tilt = Math.sin(time * 3) * 4;
+  context.beginPath();
+  context.arc(sx - 26, sy - 8 + tilt + 12, 10, 0, Math.PI);
+  context.arc(sx + 26, sy - 8 - tilt + 12, 10, 0, Math.PI);
+  context.fillStyle = "#facc15";
+  context.fill();
+
+  const ex = bldg.stationX - 55;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#022c22";
+  context.fillRect(ex, ey, 110, 40);
+  context.fillStyle = "#34d399";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("⚖️ PHÂN PHỐI LỢI ÍCH", bldg.stationX, ey - 6);
+}
+
+// 5. Trung Tâm Quản Lý Xã Hội (Grand Civic Palace, High Glass Atrium, State Seal)
+function drawSocialManagementBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#0f172a";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#38bdf8";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Mái vòm kính hiện đại phản quang
+  context.fillStyle = "#0284c7";
+  context.beginPath();
+  context.arc(bldg.x, by + 12, bldg.w * 0.38, Math.PI, 0);
+  context.fill();
+  context.strokeStyle = "#38bdf8";
+  context.lineWidth = 2;
+  context.stroke();
+
+  // Biểu tượng sao vàng quản lý nhà nước
+  context.fillStyle = "#dc2626";
+  context.fillRect(bldg.x - 18, by - 36, 36, 24);
+  context.fillStyle = "#facc15";
+  context.font = "bold 14px sans-serif";
+  context.textAlign = "center";
+  context.fillText("★", bldg.x, by - 19);
+
+  // Cửa kính thông minh LED
+  const cols = 5;
+  for (let c = 0; c < cols; c++) {
+    const wx = bx + 24 + c * ((bldg.w - 48) / cols);
+    context.fillStyle = "#0369a1";
+    context.fillRect(wx, by + 40, 24, 28);
+    context.fillStyle = "#7dd3fc";
+    context.fillRect(wx + 3, by + 43, 18, 22);
+  }
+
+  const ex = bldg.stationX - 60;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#0c4a6e";
+  context.fillRect(ex, ey, 120, 40);
+  context.fillStyle = "#38bdf8";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("🏛️ QUẢN LÝ XÃ HỘI", bldg.stationX, ey - 6);
+}
+
+// 6. Cục Nghiên Cứu Quan Hệ Giai Cấp (Solidarity Colonnade & Matrix Screen)
+function drawClassRelationsBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#1e1b4b";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#a855f7";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Mái vòm tím hoàng gia
+  context.fillStyle = "#581c87";
+  context.fillRect(bx - 6, by - 14, bldg.w + 12, 24);
+  context.fillStyle = "#c084fc";
+  context.fillRect(bx, by + 6, bldg.w, 4);
+
+  // Ma trận 4 khối giai cấp kết nối
+  const mx = bldg.x;
+  const my = by + 46;
+  const pts = [
+    { x: mx - 20, y: my - 12, label: "CN", col: "#38bdf8" },
+    { x: mx + 20, y: my - 12, label: "ND", col: "#4ade80" },
+    { x: mx - 20, y: my + 14, label: "TT", col: "#c084fc" },
+    { x: mx + 20, y: my + 14, label: "DN", col: "#facc15" },
+  ];
+  context.strokeStyle = "rgba(255, 255, 255, 0.4)";
+  context.lineWidth = 1.5;
+  context.beginPath();
+  context.moveTo(pts[0].x, pts[0].y); context.lineTo(pts[1].x, pts[1].y);
+  context.lineTo(pts[3].x, pts[3].y); context.lineTo(pts[2].x, pts[2].y);
+  context.closePath();
+  context.stroke();
+  for (const p of pts) {
+    context.fillStyle = p.col;
+    context.beginPath(); context.arc(p.x, p.y, 8, 0, Math.PI * 2); context.fill();
+    context.fillStyle = "#000000";
+    context.font = "bold 8px sans-serif";
+    context.textAlign = "center";
+    context.fillText(p.label, p.x, p.y + 3);
+  }
+
+  const ex = bldg.stationX - 55;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#3b0764";
+  context.fillRect(ex, ey, 110, 40);
+  context.fillStyle = "#c084fc";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("🤝 QUAN HỆ GIAI CẤP", bldg.stationX, ey - 6);
+}
+
+// 7. Ban Cơ Cấu Dân Tộc & Tôn Giáo (Multicultural Solidarity Pavilion)
+function drawEthnicBoardBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#7c2d12";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#f97316";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Mái nhà rông cách điệu vút cao đại ngàn
+  context.fillStyle = "#9a3412";
+  context.beginPath();
+  context.moveTo(bx - 12, by + 16);
+  context.lineTo(bldg.x, by - 36);
+  context.lineTo(bx + bldg.w + 12, by + 16);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = "#fbbf24";
+  context.lineWidth = 2;
+  context.stroke();
+
+  // Hoa văn thổ cẩm mặt tiền
+  context.fillStyle = "#facc15";
+  for (let i = 0; i < 6; i++) {
+    const fx = bx + 20 + i * ((bldg.w - 40) / 5);
+    context.beginPath();
+    context.moveTo(fx, by + 26);
+    context.lineTo(fx + 6, by + 34);
+    context.lineTo(fx - 6, by + 34);
+    context.closePath();
+    context.fill();
+  }
+
+  const ex = bldg.stationX - 55;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#431407";
+  context.fillRect(ex, ey, 110, 40);
+  context.fillStyle = "#fb923c";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("🌿 DÂN TỘC & TÔN GIÁO", bldg.stationX, ey - 6);
+}
+
+// 8. Viện Phân Tích Biến Đổi Xã Hội (Ivory & Amber Rotunda, Harmony Arches)
+function drawReligiousBoardBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#451a03";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#eab308";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Mái cong hài hòa màu hổ phách
+  context.fillStyle = "#b45309";
+  context.beginPath();
+  context.arc(bldg.x, by + 14, bldg.w * 0.32, Math.PI, 0);
+  context.fill();
+  context.strokeStyle = "#fef08a";
+  context.lineWidth = 2;
+  context.stroke();
+
+  // Biểu tượng biến đổi xã hội hình sóng tiến hóa
+  context.strokeStyle = "#facc15";
+  context.lineWidth = 3;
+  context.beginPath();
+  for (let i = 0; i < 60; i++) {
+    const wx = bldg.x - 30 + i;
+    const wy = by + 50 + Math.sin(time * 3 + i * 0.15) * 8;
+    if (i === 0) context.moveTo(wx, wy); else context.lineTo(wx, wy);
+  }
+  context.stroke();
+
+  const ex = bldg.stationX - 55;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#292524";
+  context.fillRect(ex, ey, 110, 40);
+  context.fillStyle = "#facc15";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("📊 BIẾN ĐỔI XÃ HỘI", bldg.stationX, ey - 6);
+}
+
+// 9. Trung Tâm Kinh Tế - Xã Hội (Financial & Macroeconomic Pulse)
+function drawPoliticalEconomyBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#090d16";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#38bdf8";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Mái vòm kim loại cao cấp
+  context.fillStyle = "#0369a1";
+  context.fillRect(bx - 6, by - 12, bldg.w + 12, 22);
+  context.fillStyle = "#38bdf8";
+  context.fillRect(bx, by + 6, bldg.w, 4);
+
+  // Đồ thị nhịp đập kinh tế số LED
+  context.fillStyle = "#0c4a6e";
+  context.fillRect(bx + 18, by + 34, bldg.w - 36, 32);
+  context.strokeStyle = "#38bdf8";
+  context.lineWidth = 2;
+  context.beginPath();
+  for (let i = 0; i < bldg.w - 44; i += 8) {
+    const py = by + 50 + Math.sin(time * 4 + i * 0.2) * 10;
+    if (i === 0) context.moveTo(bx + 22 + i, py); else context.lineTo(bx + 22 + i, py);
+  }
+  context.stroke();
+
+  const ex = bldg.stationX - 55;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#082f49";
+  context.fillRect(ex, ey, 110, 40);
+  context.fillStyle = "#38bdf8";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("📈 KINH TẾ - XÃ HỘI", bldg.stationX, ey - 6);
+}
+
+// 10. Đại Hội Trường Liên Minh 4 Khối (Monumental Alliance Hall, 4 Grand Pillars)
+function drawAllianceHallBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#450a0a";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#ef4444";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Mái ngói đỏ vĩ đại của Hội trường Liên Minh
+  context.fillStyle = "#991b1b";
+  context.beginPath();
+  context.moveTo(bx - 16, by + 18);
+  context.lineTo(bldg.x, by - 36);
+  context.lineTo(bx + bldg.w + 16, by + 18);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = "#facc15";
+  context.lineWidth = 2.5;
+  context.stroke();
+
+  // Ngôi sao vàng trên đỉnh vòm
+  context.fillStyle = "#facc15";
+  context.font = "bold 18px sans-serif";
+  context.textAlign = "center";
+  context.fillText("⭐", bldg.x, by - 12);
+
+  // 4 cột trụ đại diện cho 4 khối liên minh
+  const pillarLabels = ["CÔNG", "NÔNG", "TRÍ", "DOANH"];
+  const pillarColors = ["#38bdf8", "#4ade80", "#c084fc", "#facc15"];
+  for (let i = 0; i < 4; i++) {
+    const px = bx + 30 + i * ((bldg.w - 60) / 3);
+    context.fillStyle = "#f8fafc";
+    context.fillRect(px - 6, by + 18, 12, bldg.h - 60);
+    context.fillStyle = pillarColors[i];
+    context.fillRect(px - 8, by + 14, 16, 5);
+    context.fillRect(px - 8, by + bldg.h - 44, 16, 5);
+    context.font = "bold 7px sans-serif";
+    context.textAlign = "center";
+    context.fillText(pillarLabels[i], px, by + 30);
+  }
+
+  const ex = bldg.stationX - 60;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#7f1d1d";
+  context.fillRect(ex, ey, 120, 40);
+  context.fillStyle = "#facc15";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("🏛️ HỘI TRƯỜNG LIÊN MINH", bldg.stationX, ey - 6);
+}
+
+// 11. Tổ Hợp Công Nghiệp Công Nghệ Cao (Đại diện giai cấp Công nhân)
+function drawHighTechIndustryBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#0f172a";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#0284c7";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Mái thép công nghiệp xanh neon & tấm pin năng lượng mặt trời
+  context.fillStyle = "#0369a1";
+  context.fillRect(bx - 6, by - 14, bldg.w + 12, 24);
+  context.fillStyle = "#38bdf8";
+  context.fillRect(bx, by + 6, bldg.w, 4);
+
+  // Cánh tay robot tự động hoạt họa
+  const armX = bldg.x;
+  const armY = by + 46;
+  const armAngle = Math.sin(time * 3) * 0.4;
+  context.strokeStyle = "#eab308";
+  context.lineWidth = 4;
+  context.beginPath();
+  context.moveTo(armX - 16, armY);
+  context.lineTo(armX, armY - 14 + Math.sin(armAngle) * 6);
+  context.lineTo(armX + 16, armY + Math.cos(armAngle) * 6);
+  context.stroke();
+
+  // Biểu tượng công nhân tiên phong
+  context.fillStyle = "#38bdf8";
+  context.font = "bold 14px sans-serif";
+  context.textAlign = "center";
+  context.fillText("⚙️🔧", bldg.x, by + 74);
+
+  const ex = bldg.stationX - 55;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#0c4a6e";
+  context.fillRect(ex, ey, 110, 40);
+  context.fillStyle = "#38bdf8";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("⚙️ CÔNG NGHIỆP CÔNG NGHỆ CAO", bldg.stationX, ey - 6);
+}
+
+// 12. Trung Tâm Nông Nghiệp Sinh Thái Hiện Đại (Đại diện giai cấp Nông dân)
+function drawEcoAgricultureBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#064e3b";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#10b981";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Nhà kính vòm thủy canh hiện đại
+  context.fillStyle = "#047857";
+  context.beginPath();
+  context.arc(bldg.x, by + 12, bldg.w * 0.36, Math.PI, 0);
+  context.fill();
+  context.strokeStyle = "#34d399";
+  context.lineWidth = 2;
+  context.stroke();
+
+  // Bông lúa vàng sinh thái
+  context.fillStyle = "#facc15";
+  context.font = "bold 16px sans-serif";
+  context.textAlign = "center";
+  context.fillText("🌾🌿", bldg.x, by + 46);
+
+  // Vườn thẳng đứng khí canh
+  context.fillStyle = "#059669";
+  context.fillRect(bx + 16, by + 56, bldg.w - 32, 14);
+  context.fillStyle = "#a7f3d0";
+  for (let i = 0; i < 7; i++) {
+    context.fillRect(bx + 20 + i * ((bldg.w - 48) / 6), by + 58, 8, 10);
+  }
+
+  const ex = bldg.stationX - 55;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#022c22";
+  context.fillRect(ex, ey, 110, 40);
+  context.fillStyle = "#34d399";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("🌾 NÔNG NGHIỆP SINH THÁI", bldg.stationX, ey - 6);
+}
+
+// 13. Viện Đổi Mới Sáng Tạo & Trí Thức (Đại diện đội ngũ Trí thức)
+function drawInnovationHubBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#1e1b4b";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#a855f7";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Tháp pha lê công nghệ tri thức đỉnh cao
+  context.fillStyle = "#581c87";
+  context.beginPath();
+  context.moveTo(bldg.x - 24, by + 14);
+  context.lineTo(bldg.x, by - 42);
+  context.lineTo(bldg.x + 24, by + 14);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = "#e879f9";
+  context.lineWidth = 2;
+  context.stroke();
+
+  // Pha lê lượng tử phát sáng
+  const pulseR = 8 + Math.sin(time * 5) * 3;
+  context.fillStyle = "#c084fc";
+  context.beginPath(); context.arc(bldg.x, by - 16, pulseR, 0, Math.PI * 2); context.fill();
+
+  // Biểu tượng trí tuệ sáng tạo
+  context.fillStyle = "#e9d5ff";
+  context.font = "bold 14px sans-serif";
+  context.textAlign = "center";
+  context.fillText("💡🧪", bldg.x, by + 52);
+
+  const ex = bldg.stationX - 55;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#3b0764";
+  context.fillRect(ex, ey, 110, 40);
+  context.fillStyle = "#c084fc";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("💡 ĐỔI MỚI SÁNG TẠO", bldg.stationX, ey - 6);
+}
+
+// 14. Trung Tâm Doanh Nhân & Hợp Tác (Đại diện đội ngũ Doanh nhân)
+function drawEnterpriseCenterBuilding(bx, by, bldg, time, isTarget) {
+  context.fillStyle = "#18181b";
+  context.fillRect(bx, by, bldg.w, bldg.h - 35);
+  context.strokeStyle = isTarget ? "#facc15" : "#fbbf24";
+  context.lineWidth = 3;
+  context.strokeRect(bx, by, bldg.w, bldg.h - 35);
+
+  // Mái vát kính cao cấp mạ vàng
+  context.fillStyle = "#27272a";
+  context.fillRect(bx - 6, by - 14, bldg.w + 12, 24);
+  context.fillStyle = "#facc15";
+  context.fillRect(bx, by + 6, bldg.w, 4);
+
+  // Huy hiệu vàng thương gia
+  context.fillStyle = "#facc15";
+  context.beginPath(); context.arc(bldg.x, by + 42, 16, 0, Math.PI * 2); context.fill();
+  context.fillStyle = "#18181b";
+  context.font = "bold 13px sans-serif";
+  context.textAlign = "center";
+  context.fillText("💼", bldg.x, by + 47);
+
+  // Cửa kính sang trọng
+  const cols = 5;
+  for (let c = 0; c < cols; c++) {
+    const wx = bx + 22 + c * ((bldg.w - 44) / cols);
+    context.fillStyle = "#3f3f46";
+    context.fillRect(wx, by + 64, 22, 14);
+  }
+
+  const ex = bldg.stationX - 55;
+  const ey = by + bldg.h - 40;
+  context.fillStyle = "#27272a";
+  context.fillRect(ex, ey, 110, 40);
+  context.fillStyle = "#fde047";
+  context.font = "bold 10px sans-serif";
+  context.textAlign = "center";
+  context.fillText("💼 DOANH NHÂN & HỢP TÁC", bldg.stationX, ey - 6);
+}
 
 // ----------------------------------------------------
 // 16 DISTINCT HISTORICAL ARCHITECTURAL BUILDING RENDERERS
@@ -3556,6 +5047,13 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
   const isMoving = options.isMoving || false;
   const time = state.gameTime;
 
+  ctx.save();
+  if (isLocal && state.carHitCooldown > 0) {
+    if (Math.floor(time * 15) % 2 === 0) {
+      ctx.globalAlpha = 0.35;
+    }
+  }
+
   const walkCycle = isMoving ? Math.sin(time * 14) : 0;
   const footOffset = isMoving ? Math.sin(time * 14) * 4 : 0;
   const bobY = y + Math.abs(walkCycle) * 2;
@@ -3586,53 +5084,122 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
     ctx.fillRect(x - 7, bobY + 4, 14, 7);
   }
 
-  // Torso / Outfit
-  ctx.fillStyle = color;
-  ctx.fillRect(x - 8, bobY - 6, 16, 11);
+  // ----------------------------------------------------
+  // TORSO / OUTFIT & CLASS IDENTIFIERS
+  // ----------------------------------------------------
+  const isWorker = charId === "worker_leader" || charId === "det_thanh_cong_industry";
+  const isFarmer = charId === "farmer_strategic" || charId === "doan_xa_agriculture";
+  const isIntellectual = charId === "intellectual_core" || charId === "long_an_reform";
+  const isEntrepreneur = charId === "entrepreneur_dynamic" || charId === "ba_thi_distribution";
 
-  // Lapel / White Collared Shirt
-  ctx.fillStyle = "#ffffff";
-  ctx.beginPath();
-  ctx.moveTo(x - 4, bobY - 6);
-  ctx.lineTo(x + 4, bobY - 6);
-  ctx.lineTo(x, bobY - 1);
-  ctx.closePath();
-  ctx.fill();
-
-  // Tie or Ribbon
-  if (gender === "male") {
-    ctx.fillStyle = "#b91c1c";
-    ctx.fillRect(x - 1, bobY - 4, 2, 6);
-  } else {
+  if (isWorker) {
+    // Công nhân: Áo bảo hộ xanh dương công nghiệp + sọc phản quang neon vàng
+    ctx.fillStyle = "#0284c7";
+    ctx.fillRect(x - 8, bobY - 6, 16, 11);
     ctx.fillStyle = "#facc15";
+    ctx.fillRect(x - 8, bobY - 2, 16, 3);
+  } else if (isFarmer) {
+    // Nông dân: Áo bà ba truyền thống + Khăn rằn Nam Bộ đỏ trắng vắt vai
+    ctx.fillStyle = "#15803d";
+    ctx.fillRect(x - 8, bobY - 6, 16, 11);
+    // Khăn rằn
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(x - 6, bobY - 6, 3, 10);
+    ctx.fillRect(x + 3, bobY - 6, 3, 10);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(x - 6, bobY - 4, 3, 2);
+    ctx.fillRect(x + 3, bobY - 4, 3, 2);
+  } else if (isIntellectual) {
+    // Trí thức: Áo vest học thuật tím thẫm / xanh navy + cổ sơ mi trắng + bút ngực
+    ctx.fillStyle = "#4338ca";
+    ctx.fillRect(x - 8, bobY - 6, 16, 11);
+    ctx.fillStyle = "#ffffff";
     ctx.beginPath();
-    ctx.arc(x, bobY - 3, 2, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(x - 4, bobY - 6); ctx.lineTo(x + 4, bobY - 6); ctx.lineTo(x, bobY - 1);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#38bdf8"; // Cây bút cài túi
+    ctx.fillRect(x - 6, bobY - 3, 2, 4);
+  } else if (isEntrepreneur) {
+    // Doanh nhân: Bộ vest cao cấp đen than + cà vạt vàng cam lụa + huy hiệu vàng
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(x - 8, bobY - 6, 16, 11);
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.moveTo(x - 4, bobY - 6); ctx.lineTo(x + 4, bobY - 6); ctx.lineTo(x, bobY - 1);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#f59e0b"; // Cà vạt vàng lụa
+    ctx.fillRect(x - 1, bobY - 4, 2, 6);
+    ctx.fillStyle = "#facc15"; // Huy hiệu mạ vàng
+    ctx.fillRect(x - 6, bobY - 4, 2, 2);
+  } else {
+    // Cán bộ mặc định
+    ctx.fillStyle = color;
+    ctx.fillRect(x - 8, bobY - 6, 16, 11);
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.moveTo(x - 4, bobY - 6); ctx.lineTo(x + 4, bobY - 6); ctx.lineTo(x, bobY - 1);
+    ctx.closePath(); ctx.fill();
+    if (gender === "male") {
+      ctx.fillStyle = "#b91c1c";
+      ctx.fillRect(x - 1, bobY - 4, 2, 6);
+    }
   }
 
-  // Official Badge Pin on Left Chest
-  ctx.fillStyle = "#facc15";
-  ctx.fillRect(x - 6, bobY - 4, 2, 2);
-
   // Arms & Sleeves
-  ctx.fillStyle = color;
+  const armColor = isWorker ? "#0284c7" : isFarmer ? "#15803d" : isIntellectual ? "#4338ca" : isEntrepreneur ? "#0f172a" : color;
+  ctx.fillStyle = armColor;
   ctx.fillRect(x - 10, bobY - 5 - footOffset * 0.5, 3, 8);
   ctx.fillRect(x + 7, bobY - 5 + footOffset * 0.5, 3, 8);
   ctx.fillStyle = "#fed7aa";
   ctx.fillRect(x - 10, bobY + 3 - footOffset * 0.5, 3, 3);
   ctx.fillRect(x + 7, bobY + 3 + footOffset * 0.5, 3, 3);
 
+  // Tools & Items in hands
+  if (isWorker) {
+    // Mỏ lết thép trên tay phải
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillRect(x + 9, bobY + 2 - footOffset * 0.5, 2, 6);
+    ctx.fillRect(x + 8, bobY + 1 - footOffset * 0.5, 4, 2);
+  } else if (isFarmer) {
+    // Bông lúa vàng trên tay phải
+    ctx.fillStyle = "#ca8a04";
+    ctx.fillRect(x + 9, bobY + 1 - footOffset * 0.5, 2, 6);
+    ctx.fillStyle = "#facc15";
+    ctx.fillRect(x + 9, bobY - 3 - footOffset * 0.5, 3, 4);
+  } else if (isIntellectual) {
+    // Máy tính bảng thông minh / kẹp tài liệu tay trái
+    ctx.fillStyle = "#0284c7";
+    ctx.fillRect(x - 13, bobY + 1 - footOffset * 0.5, 4, 7);
+    ctx.fillStyle = "#38bdf8";
+    ctx.fillRect(x - 12, bobY + 2 - footOffset * 0.5, 2, 5);
+  } else if (isEntrepreneur) {
+    // Cặp táp doanh nhân tay phải
+    ctx.fillStyle = "#78350f";
+    ctx.fillRect(x + 9, bobY + 2 - footOffset * 0.5, 5, 5);
+    ctx.fillStyle = "#facc15";
+    ctx.fillRect(x + 11, bobY + 3 - footOffset * 0.5, 1, 2);
+  }
+
   // Head & Skin Tone
   ctx.fillStyle = "#fed7aa";
   ctx.fillRect(x - 6, bobY - 17, 12, 11);
 
-  // Eyes
+  // Eyes & Eyewear
   ctx.fillStyle = "#0f172a";
   ctx.fillRect(x - 4, bobY - 12, 2, 3);
   ctx.fillRect(x + 2, bobY - 12, 2, 3);
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(x - 3, bobY - 12, 1, 1);
   ctx.fillRect(x + 3, bobY - 12, 1, 1);
+
+  if (isIntellectual) {
+    // Kính trí thức gọng xanh cyan
+    ctx.strokeStyle = "#38bdf8";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 5, bobY - 13, 4, 4);
+    ctx.strokeRect(x + 1, bobY - 13, 4, 4);
+    ctx.beginPath(); ctx.moveTo(x - 1, bobY - 11); ctx.lineTo(x + 1, bobY - 11); ctx.stroke();
+  }
 
   // Soft Blush for Female Characters
   if (gender === "female") {
@@ -3641,33 +5208,48 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
     ctx.fillRect(x + 3, bobY - 9, 2, 1.5);
   }
 
-  // Distinct Hairstyle & Accessories for 4 Historical Roles
+  // Distinct Hairstyle & Headgear for the 4 Classes
   const hairColor = options.hairColor || (gender === "female" ? "#1c1917" : "#331800");
 
-  if (charId === "ba_thi_distribution" || gender === "female") {
-    // Bà Thi: Tóc ngắn uốn cúp Nam Bộ với kẹp nơ hoa
-    ctx.fillStyle = hairColor;
-    ctx.fillRect(x - 8, bobY - 20, 16, 6);
-    ctx.fillRect(x - 8, bobY - 16, 3, 10);
-    ctx.fillRect(x + 5, bobY - 16, 3, 10);
-    ctx.fillStyle = "#f472b6";
-    ctx.fillRect(x - 8, bobY - 13, 2, 2);
-    ctx.fillRect(x + 6, bobY - 13, 2, 2);
-  } else if (charId === "doan_xa_agriculture") {
-    // Cán bộ Đoàn Xá: Tóc rẽ ngôi nông nghiệp
-    ctx.fillStyle = hairColor;
-    ctx.fillRect(x - 7, bobY - 20, 14, 6);
-    ctx.fillRect(x - 7, bobY - 17, 2, 5);
-    ctx.fillRect(x + 5, bobY - 17, 2, 5);
-  } else if (charId === "det_thanh_cong_industry") {
-    // Giám đốc Dệt Thành Công: Tóc ngắn gọn gàng công nghiệp
+  if (isWorker) {
+    // Nón bảo hộ công nghiệp vàng tươi + đèn pin an toàn
+    ctx.fillStyle = "#eab308";
+    ctx.beginPath();
+    ctx.arc(x, bobY - 16, 8, Math.PI, 0);
+    ctx.fill();
+    ctx.fillRect(x - 8, bobY - 17, 16, 3);
+    // Đèn nón pin trắng
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(x - 2, bobY - 20, 4, 3);
+  } else if (isFarmer) {
+    // Nón lá Việt Nam vành rộng truyền thống
+    ctx.fillStyle = "#d97706";
+    ctx.beginPath();
+    ctx.moveTo(x - 11, bobY - 15);
+    ctx.lineTo(x, bobY - 26);
+    ctx.lineTo(x + 11, bobY - 15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#fde047";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  } else if (isIntellectual) {
+    // Tóc nhà khoa học / học giả bồng bềnh lịch lãm
     ctx.fillStyle = "#1e293b";
-    ctx.fillRect(x - 7, bobY - 21, 14, 7);
-    ctx.fillRect(x - 7, bobY - 17, 2, 4);
-    ctx.fillRect(x + 5, bobY - 17, 2, 4);
-  } else {
-    // Đoàn Khảo Sát Long An
+    ctx.fillRect(x - 7, bobY - 21, 14, 6);
+    ctx.fillRect(x - 8, bobY - 18, 3, 7);
+    ctx.fillRect(x + 5, bobY - 18, 3, 7);
+  } else if (isEntrepreneur) {
+    // Tóc doanh nhân chải chuốt bóng mượt
     ctx.fillStyle = "#0f172a";
+    ctx.fillRect(x - 7, bobY - 21, 14, 6);
+    ctx.fillRect(x - 7, bobY - 18, 2, 5);
+    ctx.fillRect(x + 5, bobY - 18, 2, 5);
+    ctx.fillStyle = "#334155";
+    ctx.fillRect(x - 4, bobY - 22, 8, 2);
+  } else {
+    // Mặc định
+    ctx.fillStyle = hairColor;
     ctx.fillRect(x - 7, bobY - 20, 14, 6);
     ctx.fillRect(x - 7, bobY - 17, 2, 5);
     ctx.fillRect(x + 5, bobY - 17, 2, 5);
@@ -3724,7 +5306,7 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
         if (unassistedCitizen) {
           targetX = unassistedCitizen.x;
           targetY = unassistedCitizen.y;
-          targetLabel = `💖 CỨU TRỢ: ${unassistedCitizen.name}`;
+          targetLabel = `💖 HỖ TRỢ: ${unassistedCitizen.name}`;
           arrowColor = "#ec4899";
         }
       }
@@ -3818,6 +5400,38 @@ function drawPixelCharacter(ctx, x, y, options = {}) {
     ctx.fillText(`${state.freezeTimer.toFixed(1)}s`, x, bobY + 32);
     ctx.restore();
   }
+
+  // 💫 CAR HIT DIZZY STUN EFFECT (Spinning stars & stun badge)
+  if (isLocal && state.dizzyTimer > 0) {
+    ctx.save();
+    const starCount = 3;
+    const starRadius = 18;
+    const spinAngle = time * 7;
+    for (let i = 0; i < starCount; i++) {
+      const angle = spinAngle + (i * (Math.PI * 2 / starCount));
+      const starX = x + Math.cos(angle) * starRadius;
+      const starY = (bobY - 34) + Math.sin(angle) * (starRadius * 0.4);
+      ctx.font = "14px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("⭐", starX, starY);
+    }
+
+    // Floating Stun Status Badge
+    ctx.fillStyle = "rgba(220, 38, 38, 0.95)";
+    ctx.fillRect(x - 42, bobY - 56, 84, 16);
+    ctx.strokeStyle = "#fde047";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x - 42, bobY - 56, 84, 16);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 9px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("😵 CHOÁNG VÁNG!", x, bobY - 44);
+    ctx.restore();
+  }
+
+  ctx.restore();
 }
 
 // ----------------------------------------------------
@@ -3836,7 +5450,7 @@ function drawItemEntity(ctx, entity, time) {
   const glowRadius = 22 + Math.sin(time * 4) * 3;
 
   if (type === "crisis_pkg" || type === "crisis_item") {
-    // ⭐ Kiện Cứu Trợ Lịch Sử Khẩn Cấp
+    // ⭐ Hòm Văn Kiện Cương Lĩnh Đặc Biệt (Executive Red & Gold Archive Chest)
     const rayAngle = time * 2;
     ctx.strokeStyle = "rgba(250, 204, 21, 0.45)";
     ctx.lineWidth = 1.5;
@@ -3851,50 +5465,40 @@ function drawItemEntity(ctx, entity, time) {
     ctx.fillStyle = "rgba(234, 179, 8, 0.4)";
     ctx.beginPath(); ctx.arc(x, floatY, glowRadius + 4, 0, Math.PI * 2); ctx.fill();
 
-    ctx.fillStyle = "#b45309";
-    ctx.fillRect(x - 13, floatY - 13, 26, 26);
+    // Red-gold Executive Archive Chest
+    ctx.fillStyle = "#7f1d1d";
+    ctx.fillRect(x - 13, floatY - 11, 26, 22);
+    ctx.fillStyle = "#991b1b";
+    ctx.fillRect(x - 11, floatY - 9, 22, 18);
+    // Gold straps and handle
     ctx.fillStyle = "#facc15";
-    ctx.fillRect(x - 11, floatY - 11, 22, 22);
-    ctx.fillStyle = "#dc2626";
-    ctx.fillRect(x - 3, floatY - 11, 6, 22);
-    ctx.fillRect(x - 11, floatY - 3, 22, 6);
+    ctx.fillRect(x - 8, floatY - 14, 16, 4);
+    ctx.fillRect(x - 7, floatY - 9, 3, 18);
+    ctx.fillRect(x + 4, floatY - 9, 3, 18);
+    ctx.fillRect(x - 3, floatY - 2, 6, 5);
 
-    ctx.font = "16px sans-serif";
+    ctx.font = "13px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("⭐", x, floatY + 6);
+    ctx.fillText("⭐", x, floatY + 3);
 
-  } else if (type === "rice_sheaf" || type === "rice" || phaseKey === "phase_1") {
-    // 🌾 Bó lúa vàng óng
-    ctx.fillStyle = "rgba(234, 179, 8, 0.35)";
-    ctx.beginPath(); ctx.arc(x, floatY, glowRadius, 0, Math.PI * 2); ctx.fill();
-
-    ctx.fillStyle = "#ca8a04";
-    ctx.fillRect(x - 10, floatY - 12, 20, 24);
-    ctx.fillStyle = "#facc15";
-    ctx.fillRect(x - 8, floatY - 10, 16, 20);
-    ctx.fillStyle = "#b45309";
-    ctx.fillRect(x - 10, floatY, 20, 3);
-
-    ctx.font = "16px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("🌾", x, floatY + 5);
-
-  } else if (type === "yarn_spool" || type === "cotton" || phaseKey === "phase_2") {
-    // 🧵 Cuộn sợi dệt Thành Công
+  } else if (type === "ccxh_survey_data" || type === "rice_sheaf" || type === "rice" || phaseKey === "phase_1") {
+    // 📊 Hồ Sơ Khảo Sát Cơ Cấu Xã Hội (Cyan Data Crystal)
     ctx.fillStyle = "rgba(56, 189, 248, 0.35)";
     ctx.beginPath(); ctx.arc(x, floatY, glowRadius, 0, Math.PI * 2); ctx.fill();
 
-    ctx.fillStyle = "#0284c7";
-    ctx.fillRect(x - 10, floatY - 12, 20, 24);
-    ctx.fillStyle = "#e0f2fe";
-    ctx.fillRect(x - 8, floatY - 10, 16, 20);
+    ctx.fillStyle = "#0369a1";
+    ctx.fillRect(x - 11, floatY - 13, 22, 26);
+    ctx.fillStyle = "#38bdf8";
+    ctx.fillRect(x - 9, floatY - 11, 18, 22);
+    ctx.fillStyle = "#0c4a6e";
+    ctx.fillRect(x - 7, floatY - 8, 14, 16);
 
     ctx.font = "16px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("🧵", x, floatY + 5);
+    ctx.fillText("📊", x, floatY + 5);
 
-  } else if (type === "survey_doc" || phaseKey === "phase_3") {
-    // 📋 Sổ tay khảo sát thực tế Long An
+  } else if (type === "class_structure_doc" || type === "yarn_spool" || type === "cotton" || phaseKey === "phase_2") {
+    // 📜 Hồ Sơ Biến Đổi Cơ Cấu Giai Cấp (Gold Parchment & Crimson Seal)
     ctx.fillStyle = "rgba(245, 158, 11, 0.35)";
     ctx.beginPath(); ctx.arc(x, floatY, glowRadius, 0, Math.PI * 2); ctx.fill();
 
@@ -3902,13 +5506,15 @@ function drawItemEntity(ctx, entity, time) {
     ctx.fillRect(x - 11, floatY - 13, 22, 26);
     ctx.fillStyle = "#fef3c7";
     ctx.fillRect(x - 9, floatY - 11, 18, 22);
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath(); ctx.arc(x, floatY + 3, 5, 0, Math.PI * 2); ctx.fill();
 
     ctx.font = "16px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("📋", x, floatY + 5);
+    ctx.fillText("📜", x, floatY + 5);
 
   } else {
-    // 📜 Bản thảo Chỉ thị 100 / Quyết định 25-CP
+    // ⭐ Văn Kiện Liên Minh 4 Khối (Alliance Red & Gold Treaty)
     ctx.fillStyle = "rgba(220, 38, 38, 0.35)";
     ctx.beginPath(); ctx.arc(x, floatY, glowRadius, 0, Math.PI * 2); ctx.fill();
 
@@ -3916,18 +5522,19 @@ function drawItemEntity(ctx, entity, time) {
     ctx.fillRect(x - 12, floatY - 14, 24, 28);
     ctx.fillStyle = "#fef2f2";
     ctx.fillRect(x - 10, floatY - 12, 20, 24);
+    ctx.fillStyle = "#facc15";
+    ctx.fillRect(x - 10, floatY - 12, 20, 4);
 
     ctx.font = "16px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("📜", x, floatY + 5);
+    ctx.fillText("⭐", x, floatY + 5);
   }
 
   // Label tag above item (Dynamic width with full Vietnamese support)
   const label = entity.label || (
-    type === "crisis_pkg" ? "Cứu Trợ (+10đ)" :
-    phaseKey === "phase_1" ? "Lúa Khoán" :
-    phaseKey === "phase_2" ? "Sợi Bông" :
-    phaseKey === "phase_3" ? "Tài Liệu TW" : "Chỉ Thị 100"
+    type === "crisis_pkg" ? "Văn Kiện Đặc Biệt (+10đ)" :
+    phaseKey === "phase_1" ? "Hồ Sơ CCXH" :
+    phaseKey === "phase_2" ? "Biến Đổi CCXH" : "Văn Kiện Liên Minh"
   );
   ctx.font = "bold 9px 'Segoe UI', 'Inter', system-ui, sans-serif";
   const itemTagW = Math.max(64, ctx.measureText(label).width + 16);
@@ -4020,7 +5627,7 @@ function drawCitizenInNeedEntity(ctx, x, y, time) {
   ctx.fillStyle = "#f472b6";
   ctx.font = "bold 9px 'Segoe UI', 'Inter', sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText("🆘 CẦN GIÚP", x, bubbleY + 1);
+  ctx.fillText("💬 CẦN HỖ TRỢ", x, bubbleY + 1);
 
   // Floating Pulsing Heart above
   const heartScale = 1 + Math.sin(time * 6) * 0.2;
@@ -4029,7 +5636,7 @@ function drawCitizenInNeedEntity(ctx, x, y, time) {
   ctx.fillText("❤️", x, bubbleY - 15);
 
   // Footer Tag (Dynamic Width)
-  const citizenLabel = "Dân cần hỗ trợ (+8đ)";
+  const citizenLabel = "Hỗ trợ đại biểu (+8đ)";
   ctx.font = "bold 9px 'Segoe UI', 'Inter', system-ui, sans-serif";
   const citTagW = Math.max(84, ctx.measureText(citizenLabel).width + 16);
   ctx.fillStyle = "#831843";
@@ -4114,29 +5721,74 @@ function drawHazardEntity(ctx, entity, time) {
   ctx.textAlign = "center";
   ctx.fillText("⚠️", x, sirenY);
 
-  if (type === "envelope") {
-    ctx.fillStyle = "#b91c1c";
-    ctx.fillRect(x - 14, y - 10, 28, 18);
-    ctx.strokeStyle = "#facc15";
+  if (type === "bias_prejudice") {
+    // ⚡ Định Kiến Xã Hội
+    ctx.fillStyle = "#4c1d95";
+    ctx.fillRect(x - 12, y - 12, 24, 24);
+    ctx.strokeStyle = "#a855f7";
     ctx.lineWidth = 1.5;
-    ctx.strokeRect(x - 14, y - 10, 28, 18);
-    ctx.fillStyle = "#22c55e";
-    ctx.fillRect(x - 6, y - 14, 12, 6);
-  } else if (type === "waste") {
-    ctx.fillStyle = "#475569";
-    ctx.fillRect(x - 11, y - 13, 22, 22);
-    ctx.fillStyle = "#eab308";
-    ctx.fillRect(x - 9, y - 7, 18, 9);
-  } else if (type === "group_interest") {
-    ctx.fillStyle = "#1e1b4b";
-    ctx.fillRect(x - 13, y - 9, 26, 18);
-    ctx.fillStyle = "#facc15";
-    ctx.fillRect(x - 3, y - 6, 6, 6);
+    ctx.strokeRect(x - 12, y - 12, 24, 24);
+    ctx.font = "14px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("⚡", x, y + 5);
+  } else if (type === "imbalance_dist") {
+    // ⚖️ Mất Cân Đối Phân Phối
+    ctx.fillStyle = "#7c2d12";
+    ctx.fillRect(x - 12, y - 12, 24, 24);
+    ctx.strokeStyle = "#f97316";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x - 12, y - 12, 24, 24);
+    ctx.font = "14px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("⚖️", x, y + 5);
+  } else if (type === "class_divide") {
+    // 💥 Chia Rẽ Giai Tầng
+    ctx.fillStyle = "#831843";
+    ctx.fillRect(x - 12, y - 12, 24, 24);
+    ctx.strokeStyle = "#ec4899";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x - 12, y - 12, 24, 24);
+    ctx.font = "14px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("💥", x, y + 5);
+  } else if (type === "polarization") {
+    // ↔️ Phân Hóa Giàu Nghèo
+    ctx.fillStyle = "#701a75";
+    ctx.fillRect(x - 12, y - 12, 24, 24);
+    ctx.strokeStyle = "#d946ef";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x - 12, y - 12, 24, 24);
+    ctx.font = "14px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("↔️", x, y + 5);
+  } else if (type === "alliance_sabotage") {
+    // 💣 Phá Hoại Liên Minh
+    ctx.fillStyle = "#7f1d1d";
+    ctx.fillRect(x - 12, y - 12, 24, 24);
+    ctx.strokeStyle = "#ef4444";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x - 12, y - 12, 24, 24);
+    ctx.font = "14px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("💣", x, y + 5);
+  } else if (type === "bureaucracy") {
+    // 📑 Quan Liêu Trì Trệ
+    ctx.fillStyle = "#334155";
+    ctx.fillRect(x - 12, y - 12, 24, 24);
+    ctx.strokeStyle = "#94a3b8";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x - 12, y - 12, 24, 24);
+    ctx.font = "14px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("📑", x, y + 5);
   } else {
     ctx.fillStyle = "#dc2626";
     ctx.beginPath();
-    ctx.moveTo(x, y - 15); ctx.lineTo(x + 15, y + 11); ctx.lineTo(x - 15, y + 11);
+    ctx.moveTo(x, y - 14); ctx.lineTo(x + 14, y + 10); ctx.lineTo(x - 14, y + 10);
     ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#facc15";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
   }
 
   ctx.font = "bold 9px 'Segoe UI', 'Inter', system-ui, sans-serif";
@@ -4271,25 +5923,23 @@ function drawMiniMapRadar() {
   const mapToMmY = (wy) => mmY + (wy / MAP_HEIGHT) * mmH;
 
   // Ground zones
+  // Ground zones & roads on Minimap
   context.fillStyle = "rgba(51, 65, 85, 0.65)";
   if (phaseKey === "phase_1") {
-    context.fillRect(mmX, mapToMmY(600), mmW, (200 / MAP_HEIGHT) * mmH);
-    context.fillRect(mapToMmX(340), mmY, (160 / MAP_WIDTH) * mmW, mmH);
-    context.fillRect(mapToMmX(1120), mmY, (160 / MAP_WIDTH) * mmW, mmH);
-    context.fillRect(mapToMmX(1900), mmY, (160 / MAP_WIDTH) * mmW, mmH);
+    context.fillRect(mmX, mapToMmY(580), mmW, (180 / MAP_HEIGHT) * mmH);
+    context.fillRect(mapToMmX(520), mmY, (140 / MAP_WIDTH) * mmW, mmH);
+    context.fillRect(mapToMmX(1560), mmY, (140 / MAP_WIDTH) * mmW, mmH);
   } else if (phaseKey === "phase_2") {
-    context.fillRect(mmX, mapToMmY(320), mmW, (160 / MAP_HEIGHT) * mmH);
-    context.fillRect(mmX, mapToMmY(920), mmW, (160 / MAP_HEIGHT) * mmH);
-    context.fillRect(mapToMmX(480), mmY, (160 / MAP_WIDTH) * mmW, mmH);
-    context.fillRect(mapToMmX(1760), mmY, (160 / MAP_WIDTH) * mmW, mmH);
-    context.fillStyle = "rgba(16, 185, 129, 0.35)";
+    context.fillRect(mmX, mapToMmY(580), mmW, (180 / MAP_HEIGHT) * mmH);
+    context.fillRect(mapToMmX(1130), mmY, (140 / MAP_WIDTH) * mmW, mmH);
+    context.fillStyle = "rgba(180, 83, 9, 0.35)";
     context.fillRect(mapToMmX(640), mapToMmY(480), (1120 / MAP_WIDTH) * mmW, (440 / MAP_HEIGHT) * mmH);
   } else {
-    context.fillStyle = "rgba(248, 250, 252, 0.4)";
-    context.fillRect(mapToMmX(840), mmY, (720 / MAP_WIDTH) * mmW, mmH);
-    context.fillStyle = "rgba(51, 65, 85, 0.65)";
-    context.fillRect(mmX, mapToMmY(600), (840 / MAP_WIDTH) * mmW, (160 / MAP_HEIGHT) * mmH);
-    context.fillRect(mapToMmX(1560), mapToMmY(600), (840 / MAP_WIDTH) * mmW, (160 / MAP_HEIGHT) * mmH);
+    // Phase 3 & 4 Siêu Đô Thị
+    context.fillStyle = "rgba(10, 15, 29, 0.85)";
+    context.fillRect(mmX, mapToMmY(580), mmW, (180 / MAP_HEIGHT) * mmH);
+    context.fillRect(mapToMmX(540), mmY, (140 / MAP_WIDTH) * mmW, mmH);
+    context.fillRect(mapToMmX(1720), mmY, (140 / MAP_WIDTH) * mmW, mmH);
   }
 
   // 1. Buildings on Minimap
@@ -4515,6 +6165,9 @@ function drawScene() {
   // 2. Standalone Dynamic City Ground for Active Phase
   drawCityGround();
 
+  // 2.1 Dynamic City Traffic Vehicles (Strictly running on road lanes)
+  drawTrafficVehicles(context, time);
+
   // 3. Dynamic 6 Buildings for Active Phase
   const currentBuildings = getCurrentPhaseBuildings();
   const activeTargetBldgId = state.activeQuest
@@ -4580,8 +6233,8 @@ function drawScene() {
       drawPixelCharacter(context, rendered?.x ?? toWorldX(remote.x), rendered?.y ?? toWorldY(remote.y), {
         name: remote.name || remote.id || "Cán bộ",
         color: rendered?.color || remote.color || "#64748b",
-        characterId: rendered?.character || remote.character || "male_reception",
-        gender: rendered?.gender || remote.gender || (remote.character?.startsWith("female") ? "female" : "male"),
+        characterId: rendered?.character || rendered?.roleId || remote.character || remote.roleId || "worker_leader",
+        gender: rendered?.gender || remote.gender || ((remote.character || remote.roleId)?.startsWith("female") ? "female" : "male"),
         isLocal: false,
         isMoving: Boolean(rendered && Math.hypot(rendered.targetX - rendered.x, rendered.targetY - rendered.y) > 1),
       });
@@ -4733,6 +6386,55 @@ function drawScene() {
         trackerY + 92
       );
     }
+
+    // Class Perk Active Badge (Below Tracker)
+    const charId = state.player.characterId;
+    let perkText = "";
+    let perkCol = "#38bdf8";
+    if (charId === "worker_leader") {
+      perkText = `🛡️ KHIÊN CÔNG NHÂN: ${state.workerShield ? "SẴN SÀNG" : "ĐÃ HẾT"}`;
+      perkCol = state.workerShield ? "#38bdf8" : "#94a3b8";
+    } else if (charId === "farmer_strategic") {
+      perkText = "🌾 ĐẶC QUYỀN NÔNG DÂN: +1Đ MỖI DỮ LIỆU";
+      perkCol = "#34d399";
+    } else if (charId === "intellectual_core") {
+      perkText = "💡 TUỆ GIÁC TRÍ THỨC: LOẠI TRỪ 1 ĐÁP ÁN SAI";
+      perkCol = "#c084fc";
+    } else if (charId === "entrepreneur_dynamic") {
+      const cd = Math.ceil(state.dashCooldown || 0);
+      perkText = `⚡ BỨT PHÁ DOANH NHÂN: [SHIFT/Q] ${cd > 0 ? `(${cd}s)` : "SẴN SÀNG"}`;
+      perkCol = cd > 0 ? "#94a3b8" : "#fde047";
+    }
+
+    if (perkText) {
+      const perkY = trackerY + trackerH + 6;
+      context.fillStyle = "rgba(15, 23, 42, 0.9)";
+      context.fillRect(trackerX, perkY, trackerW, 20);
+      context.strokeStyle = perkCol;
+      context.lineWidth = 1;
+      context.strokeRect(trackerX, perkY, trackerW, 20);
+      context.fillStyle = perkCol;
+      context.font = "bold 9px 'Segoe UI', 'Inter', system-ui, sans-serif";
+      context.textAlign = "left";
+      context.fillText(perkText, trackerX + 8, perkY + 14);
+    }
+  }
+
+  // Top Right BGM Sound Toggle Button (rendered on canvas for player role)
+  if (options.role === "player") {
+    const soundBtnW = 146;
+    const soundBtnH = 26;
+    const soundBtnX = VIEW_WIDTH - soundBtnW - 14;
+    const soundBtnY = 14;
+    context.fillStyle = bgmEnabled ? "rgba(16, 185, 129, 0.25)" : "rgba(239, 68, 68, 0.25)";
+    context.fillRect(soundBtnX, soundBtnY, soundBtnW, soundBtnH);
+    context.strokeStyle = bgmEnabled ? "#10b981" : "#ef4444";
+    context.lineWidth = 1.5;
+    context.strokeRect(soundBtnX, soundBtnY, soundBtnW, soundBtnH);
+    context.fillStyle = bgmEnabled ? "#34d399" : "#fca5a5";
+    context.font = "bold 10px 'Segoe UI', 'Inter', system-ui, sans-serif";
+    context.textAlign = "center";
+    context.fillText(bgmEnabled ? "🔊 NHẠC (Lovely Garden)" : "🔇 TẮT NHẠC", soundBtnX + soundBtnW / 2, soundBtnY + 17);
   }
 
   // Interactive Bottom Prompt
@@ -4842,6 +6544,16 @@ function frame(now) {
     }
   }
 
+  if (state.dizzyTimer > 0) {
+    state.dizzyTimer -= deltaSeconds;
+    if (state.dizzyTimer < 0) state.dizzyTimer = 0;
+  }
+
+  if (state.carHitCooldown > 0) {
+    state.carHitCooldown -= deltaSeconds;
+    if (state.carHitCooldown < 0) state.carHitCooldown = 0;
+  }
+
   // Sprint Timer Decay & Speed Trail Effect
   if (state.sprintTimer > 0) {
     state.sprintTimer -= deltaSeconds;
@@ -4864,10 +6576,11 @@ function frame(now) {
   }
 
   updateMovingHazards(deltaSeconds);
+  updateTrafficVehicles(deltaSeconds);
   advanceRemotePlayers(deltaSeconds);
 
   // Move player with SOLID BUILDING COLLISION BLOCKING (Direct Keyboard & D-Pad Control)
-  if (!state.frozen && state.freezeTimer <= 0 && options.role === "player" && activeInput()) {
+  if (!state.frozen && state.freezeTimer <= 0 && state.dizzyTimer <= 0 && options.role === "player" && activeInput()) {
     const rawMoved = movePlayer(state.player, input, deltaSeconds, { width: MAP_WIDTH, height: MAP_HEIGHT });
     const blockedPos = resolveSolidBuildingCollisions(rawMoved.x, rawMoved.y, state.player.radius);
     state.player = {
@@ -4903,8 +6616,23 @@ const KEY_TO_DIRECTION = {
 };
 
 window.addEventListener("keydown", (event) => {
+  getAudioContext();
+  startBgm();
+
   if (state.frozen || state.freezeTimer > 0) {
     event.preventDefault();
+    return;
+  }
+
+  if (
+    event.code === "ShiftLeft" ||
+    event.code === "ShiftRight" ||
+    event.code === "KeyQ" ||
+    event.key === "q" ||
+    event.key === "Q"
+  ) {
+    event.preventDefault();
+    triggerClassPerk();
     return;
   }
 
@@ -4966,6 +6694,7 @@ window.addEventListener("pointerup", () => { hostDragging = false; });
 
 canvas.addEventListener("pointerdown", (event) => {
   getAudioContext();
+  startBgm();
 
   if (options.role === "host") {
     hostDragging = true;
@@ -4978,11 +6707,18 @@ canvas.addEventListener("pointerdown", (event) => {
   window.focus();
   try { canvas.focus(); } catch (_) {}
 
-  if (state.frozen || state.freezeTimer > 0) return;
-
   const rect = canvas.getBoundingClientRect();
   const clickCanvasX = (event.clientX - rect.left) * (VIEW_WIDTH / rect.width);
   const clickCanvasY = (event.clientY - rect.top) * (VIEW_HEIGHT / rect.height);
+
+  // Check if clicked Top Right Sound Toggle Button
+  if (clickCanvasX >= VIEW_WIDTH - 160 && clickCanvasX <= VIEW_WIDTH - 14 && clickCanvasY >= 14 && clickCanvasY <= 40) {
+    toggleBgm();
+    return;
+  }
+
+  if (state.frozen || state.freezeTimer > 0) return;
+
   const worldClickX = clickCanvasX + camera.x;
   const worldClickY = clickCanvasY + camera.y;
 
@@ -5025,6 +6761,16 @@ window.addEventListener("message", (event) => {
   if (!message || typeof message !== "object") return;
 
   if (message.type === "POLICY_GAME_SNAPSHOT" || message.type === "GAME_SNAPSHOT") {
+    const prevPhaseStatus = state.phaseStatus;
+    const nextPhaseStatus = typeof message.phaseStatus === "string" ? message.phaseStatus : "active";
+    state.phaseStatus = nextPhaseStatus;
+
+    if (nextPhaseStatus === "resolved") {
+      stopBgm();
+    } else if (nextPhaseStatus === "active" && (prevPhaseStatus === "resolved" || !lovelyGardenAudio || lovelyGardenAudio.paused)) {
+      startBgm();
+    }
+
     const nextPhase = typeof message.phaseId === "string" ? message.phaseId : (typeof message.phase === "string" ? message.phase : state.phase);
     const phaseChanged = nextPhase !== state.phase
       && nextPhase !== "waiting"
@@ -5104,6 +6850,12 @@ window.addEventListener("message", (event) => {
     spawnExtraThematicItems(5);
   } else if (message.type === "TOGGLE_SOUND") {
     soundEnabled = !soundEnabled;
+  } else if (message.type === "TOGGLE_BGM") {
+    toggleBgm();
+  } else if (message.type === "SET_BGM_MUTED") {
+    toggleBgm(!message.muted);
+  } else if (message.type === "ACTIVATE_PERK") {
+    triggerClassPerk();
   }
 });
 

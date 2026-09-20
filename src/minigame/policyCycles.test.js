@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { POLICY_CYCLES, PHASE_4_PRESETS, getPolicyCycle } from './policyCycles.js';
+import { POLICY_CYCLES, PHASE_3_PRESETS, PHASE_4_PRESETS, getPolicyCycle } from './policyCycles.js';
 import { CHARACTER_OPTIONS, getCharacterOption } from './characterOptions.js';
 
-test('POLICY_CYCLES has exactly 4 phases in order with required schema', () => {
-  assert.equal(POLICY_CYCLES.length, 4);
+test('POLICY_CYCLES has exactly 3 phases in order with required schema', () => {
+  assert.equal(POLICY_CYCLES.length, 3);
   const phaseIds = POLICY_CYCLES.map(c => c.id);
-  assert.deepEqual(phaseIds, ['phase_1', 'phase_2', 'phase_3', 'phase_4']);
+  assert.deepEqual(phaseIds, ['phase_1', 'phase_2', 'phase_3']);
 
   POLICY_CYCLES.forEach(cycle => {
     assert.ok(cycle.id, 'Cycle must have an id');
@@ -27,42 +27,37 @@ test('POLICY_CYCLES has exactly 4 phases in order with required schema', () => {
   });
 });
 
-test('Phase options match historical decisions and presets', () => {
+test('Phase options match Chapter 5 topics and presets', () => {
   const p1 = getPolicyCycle('phase_1');
-  assert.deepEqual(p1.options.map(o => o.id), ['keep_piecework', 'try_harvest_contract']);
-  assert.equal(p1.defaultOptionId, 'keep_piecework');
-  assert.equal(p1.task.stationId, 'doan_xa_crisis');
+  assert.deepEqual(p1.options.map(o => o.id), ['opt_p1_phiendien', 'opt_p1_toandien']);
+  assert.equal(p1.defaultOptionId, 'opt_p1_toandien');
+  assert.equal(p1.task.stationId, 'station_p1_concept');
 
   const p2 = getPolicyCycle('phase_2');
-  assert.deepEqual(p2.options.map(o => o.id), ['wait_state_supply', 'borrow_fx_import']);
-  assert.equal(p2.defaultOptionId, 'wait_state_supply');
-  assert.equal(p2.task.stationId, 'det_thanh_cong_yarn');
+  assert.deepEqual(p2.options.map(o => o.id), ['opt_p2_tuyetdoi', 'opt_p2_haihoa']);
+  assert.equal(p2.defaultOptionId, 'opt_p2_haihoa');
+  assert.equal(p2.task.stationId, 'station_p2_central');
 
   const p3 = getPolicyCycle('phase_3');
-  assert.deepEqual(p3.options.map(o => o.id), ['hide_data', 'report_truth']);
-  assert.equal(p3.defaultOptionId, 'report_truth');
-  assert.equal(p3.task.stationId, 'field_survey_report');
-
-  const p4 = getPolicyCycle('phase_4');
-  assert.deepEqual(p4.options.map(o => o.id), ['plan_focus', 'balanced_khoan', 'incentive_risk']);
-  assert.equal(p4.defaultOptionId, 'balanced_khoan');
-  assert.equal(p4.task.stationId, 'policy_allocation_1981');
+  assert.deepEqual(p3.options.map(o => o.id), ['uu_tien_nong_thon', 'toan_dien_ben_vung', 'dot_pha_tri_thuc']);
+  assert.equal(p3.defaultOptionId, 'toan_dien_ben_vung');
+  assert.equal(p3.task.stationId, 'station_p3_alliance');
 });
 
-test('PHASE_4_PRESETS contains exact allocations', () => {
-  assert.deepEqual(PHASE_4_PRESETS.plan_focus, { P1: 0.60, P2: 0.25, P3: 0.15, Lc: 80, theta: 0.80 });
-  assert.deepEqual(PHASE_4_PRESETS.balanced_khoan, { P1: 0.45, P2: 0.35, P3: 0.20, Lc: 65, theta: 0.60 });
-  assert.deepEqual(PHASE_4_PRESETS.incentive_risk, { P1: 0.30, P2: 0.40, P3: 0.30, Lc: 45, theta: 0.35 });
+test('PHASE_3_PRESETS contains exact allocations', () => {
+  assert.deepEqual(PHASE_3_PRESETS.toan_dien_ben_vung, { P1: 0.45, P2: 0.35, P3: 0.20, Lc: 65, theta: 0.60 });
+  assert.deepEqual(PHASE_3_PRESETS.uu_tien_nong_thon, { P1: 0.60, P2: 0.25, P3: 0.15, Lc: 80, theta: 0.80 });
+  assert.deepEqual(PHASE_3_PRESETS.dot_pha_tri_thuc, { P1: 0.30, P2: 0.40, P3: 0.30, Lc: 45, theta: 0.35 });
 });
 
 test('CHARACTER_OPTIONS contains 4 simulation roles with preferredMetrics', () => {
   assert.equal(CHARACTER_OPTIONS.length, 4);
   const roleIds = CHARACTER_OPTIONS.map(r => r.id);
   assert.deepEqual(roleIds, [
-    'doan_xa_agriculture',
-    'ba_thi_distribution',
-    'det_thanh_cong_industry',
-    'long_an_policy'
+    'worker_leader',
+    'farmer_strategic',
+    'intellectual_core',
+    'entrepreneur_dynamic'
   ]);
 
   CHARACTER_OPTIONS.forEach(role => {
@@ -74,8 +69,11 @@ test('CHARACTER_OPTIONS contains 4 simulation roles with preferredMetrics', () =
     assert.ok(role.preferredMetrics.length > 0);
   });
 
-  const agriculturalRole = getCharacterOption('doan_xa_agriculture');
-  assert.equal(agriculturalRole.id, 'doan_xa_agriculture');
+  const workerRole = getCharacterOption('worker_leader');
+  assert.equal(workerRole.id, 'worker_leader');
   const fallback = getCharacterOption('unknown_role');
-  assert.equal(fallback.id, 'doan_xa_agriculture');
+  assert.equal(fallback.id, 'worker_leader');
+  // Check alias compatibility
+  const aliasedFarmer = getCharacterOption('doan_xa_agriculture');
+  assert.equal(aliasedFarmer.id, 'farmer_strategic');
 });

@@ -549,6 +549,7 @@ iframe {
   }
 
   .character-option {
+    min-height: auto !important;
     padding: 8px 6px !important;
     border-radius: 10px !important;
   }
@@ -560,6 +561,22 @@ iframe {
   .character-option .character-desc {
     font-size: 0.65rem !important;
     line-height: 1.25 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .character-grid {
+    gap: 6px !important;
+  }
+  .character-option {
+    padding: 6px 4px !important;
+  }
+  .character-option .character-desc {
+    display: none !important;
   }
 
   /* Role Selection trên mobile */
