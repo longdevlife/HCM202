@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getPolicyCycle, POLICY_CYCLES } from "./policyCycles.js";
-import { getCharacterOption } from "./characterOptions.js";
+
 import { getDecisionOptions, buildDecisionPayload } from "./cycleDecisionUtils.js";
 
 export { getDecisionOptions, buildDecisionPayload };
@@ -19,7 +19,7 @@ export const CycleDecisionPanel = ({
   const cycle = getPolicyCycle(phaseId);
   const options = cycle?.options || [];
   const [selectedOptionId, setSelectedOptionId] = useState(
-    existingDecision?.optionId || cycle?.defaultOptionId || options[0]?.id
+    existingDecision?.optionId || null
   );
   const [submitting, setSubmitting] = useState(false);
   const [timeLeftMs, setTimeLeftMs] = useState(() =>
@@ -113,7 +113,7 @@ export const CycleDecisionPanel = ({
               marginBottom: "4px",
             }}
           >
-            NĂM {cycle.year}
+            CHẶNG {cycle.year}
           </span>
           <h2 style={{ fontSize: "1.1rem", margin: "2px 0 0 0", color: "#ffffff", fontWeight: "800" }}>
             {cycle.title}
@@ -201,7 +201,7 @@ export const CycleDecisionPanel = ({
                         {String.fromCharCode(65 + idx)}. {opt.title}
                       </span>
                     </div>
-                    {opt.presetKey === "balanced_khoan" && (
+                    {opt.presetKey === "toan_dien_ben_vung" && (
                       <span style={{ fontSize: "0.68rem", background: "rgba(16,185,129,0.2)", color: "#34d399", fontWeight: "bold", padding: "2px 8px", borderRadius: "4px" }}>
                         Cân đối
                       </span>
@@ -248,9 +248,9 @@ export const CycleDecisionPanel = ({
                       {opt.preset && (
                         <div style={{ marginBottom: "8px" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", marginBottom: "4px" }}>
-                            <span style={{ color: "#38bdf8" }}>P1 (Pháp lệnh): <strong>{Math.round(opt.preset.P1 * 100)}%</strong></span>
-                            <span style={{ color: "#34d399" }}>P2 (Tự chủ): <strong>{Math.round(opt.preset.P2 * 100)}%</strong></span>
-                            <span style={{ color: "#fbbf24" }}>P3 (Gia đình): <strong>{Math.round(opt.preset.P3 * 100)}%</strong></span>
+                            <span style={{ color: "#38bdf8" }}>P1 (Công nghiệp - Nhà nước): <strong>{Math.round(opt.preset.P1 * 100)}%</strong></span>
+                            <span style={{ color: "#34d399" }}>P2 (Nông nghiệp): <strong>{Math.round(opt.preset.P2 * 100)}%</strong></span>
+                            <span style={{ color: "#fbbf24" }}>P3 (Trí thức & DN): <strong>{Math.round(opt.preset.P3 * 100)}%</strong></span>
                           </div>
                           <div style={{ display: "flex", height: "8px", borderRadius: "4px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.2)" }}>
                             <div style={{ width: `${opt.preset.P1 * 100}%`, background: "#38bdf8" }} title="P1" />
@@ -259,7 +259,7 @@ export const CycleDecisionPanel = ({
                           </div>
                           {opt.preset.P1 < 0.40 && (
                             <div style={{ fontSize: "0.7rem", color: "#f87171", marginTop: "4px", fontWeight: "bold" }}>
-                              ⚠️ Chú ý: P1 &lt; 40% (Dưới ngưỡng pháp lệnh tối thiểu). Sẽ chịu xử lý hành chính!
+                              ⚠️ Chú ý: P1 &lt; 40% — Dưới ngưỡng trụ cột nhà nước tối thiểu. Suy giảm vai trò nòng cốt kinh tế nhà nước!
                             </div>
                           )}
                         </div>
@@ -317,17 +317,22 @@ export const CycleDecisionPanel = ({
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={submitting}
+            disabled={submitting || !selectedOptionId}
             className="btn-cyber btn-cyber-blue"
             style={{
               width: "100%",
               padding: "12px",
               fontSize: "0.95rem",
               fontWeight: "800",
-              cursor: "pointer",
+              cursor: submitting || !selectedOptionId ? "not-allowed" : "pointer",
+              opacity: !selectedOptionId ? 0.6 : 1,
             }}
           >
-            {submitting ? "Đang gửi quyết định..." : "XÁC NHẬN QUYẾT ĐỊNH CHÍNH SÁCH 📜"}
+            {!selectedOptionId
+              ? "👆 Vui lòng chọn 1 phương án bên trên để xác nhận"
+              : submitting
+              ? "Đang gửi quyết định..."
+              : "XÁC NHẬN QUYẾT ĐỊNH CHÍNH SÁCH 📜"}
           </button>
         )}
       </div>

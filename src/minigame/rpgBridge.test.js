@@ -10,17 +10,14 @@ import {
 
 test('getStationForPhase returns corresponding station for each phase', () => {
   const s1 = getStationForPhase('phase_1');
-  assert.equal(s1.id, 'doan_xa_crisis');
+  assert.equal(s1.id, 'station_p1_concept');
   assert.equal(s1.phaseId, 'phase_1');
 
   const s2 = getStationForPhase('phase_2');
-  assert.equal(s2.id, 'det_thanh_cong_yarn');
+  assert.equal(s2.id, 'station_p2_central');
 
   const s3 = getStationForPhase('phase_3');
-  assert.equal(s3.id, 'field_survey_report');
-
-  const s4 = getStationForPhase('phase_4');
-  assert.equal(s4.id, 'policy_allocation_1981');
+  assert.equal(s3.id, 'station_p3_alliance');
 });
 
 test('buildPolicyRpgSnapshot formats snapshot with station and player state', () => {
@@ -30,7 +27,7 @@ test('buildPolicyRpgSnapshot formats snapshot with station and player state', ()
     phaseStatus: 'active'
   };
   const players = {
-    p1: { name: 'Player 1', roleId: 'doan_xa_agriculture', taskProgress: { phase_1: true } }
+    p1: { name: 'Player 1', roleId: 'worker_leader', taskProgress: { phase_1: true } }
   };
   const positions = {
     p1: { x: 100, y: 150, direction: 'down' }
@@ -45,7 +42,7 @@ test('buildPolicyRpgSnapshot formats snapshot with station and player state', ()
 
   assert.equal(snapshot.type, 'POLICY_GAME_SNAPSHOT');
   assert.equal(snapshot.phaseId, 'phase_1');
-  assert.equal(snapshot.station.id, 'doan_xa_crisis');
+  assert.equal(snapshot.station.id, 'station_p1_concept');
   assert.equal(snapshot.taskCompletedByPlayer, true);
   assert.equal(snapshot.players.p1.x, 100);
   assert.equal(snapshot.players.p1.y, 150);
@@ -55,7 +52,7 @@ test('isPolicyStationMessage validates interact message correctly', () => {
   assert.equal(isPolicyStationMessage({
     type: 'POLICY_STATION_INTERACT',
     phaseId: 'phase_1',
-    stationId: 'doan_xa_crisis'
+    stationId: 'station_p1_concept'
   }), true);
 
   assert.equal(isPolicyStationMessage({

@@ -5,7 +5,7 @@ import { getDatabase } from "firebase/database";
 const firebaseConfig = {
   apiKey: "AIzaSyAnFuQqmtO8KimZhmVWxoBx3kSsCravBDw",
   authDomain: "minigamehcm202.firebaseapp.com",
-  databaseURL: "https://minigamehcm202-default-rtdb.asia-southeast1.firebasedatabase.app",
+  databaseURL: "https://gamemln131-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "minigamehcm202",
   storageBucket: "minigamehcm202.firebasestorage.app",
   messagingSenderId: "599249144434",

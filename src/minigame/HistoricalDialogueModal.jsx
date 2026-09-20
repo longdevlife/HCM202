@@ -3,6 +3,7 @@ import { IconCheck, IconX } from "./icons.jsx";
 
 export const HistoricalDialogueModal = ({
   npc,
+  playerRoleId,
   onClose,
   onAnswer,
 }) => {
@@ -11,6 +12,8 @@ export const HistoricalDialogueModal = ({
 
   if (!npc) return null;
 
+  const isIntellectual = playerRoleId === "intellectual_core";
+  const eliminatedOptionId = isIntellectual ? npc.options?.find((opt) => !opt.isCorrect)?.id : null;
   const currentOption = npc.options?.find((opt) => opt.id === selectedOptionId);
 
   const handleSubmit = () => {
@@ -66,15 +69,15 @@ export const HistoricalDialogueModal = ({
           onClick={onClose}
           style={{
             position: "absolute",
-            top: "12px",
-            right: "12px",
-            background: "rgba(255, 255, 255, 0.1)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
+            top: "10px",
+            right: "10px",
+            background: "rgba(255, 255, 255, 0.12)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
             color: "#ffffff",
             borderRadius: "50%",
-            width: "32px",
-            height: "32px",
-            fontSize: "0.9rem",
+            width: "40px",
+            height: "40px",
+            fontSize: "1.1rem",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
@@ -119,7 +122,7 @@ export const HistoricalDialogueModal = ({
 
           <div>
             <div style={{ fontSize: "0.66rem", color: "#f59e0b", fontWeight: "800", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "2px" }}>
-              🚩 LỊCH SỬ ĐẢNG CỘNG SẢN VIỆT NAM • KHẢO NGHIỆM THỰC TIỄN
+              🏛️ CNXH KHOA HỌC — CHƯƠNG 5 • ĐỐI THOẠI CHUYÊN GIA
             </div>
             <div style={{ fontSize: "0.72rem", color: npc.avatarColor || "#fde047", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               {npc.roleTitle}
@@ -166,22 +169,57 @@ export const HistoricalDialogueModal = ({
             </div>
           </div>
 
+          {/* Intellectual Class Perk Clue Banner */}
+          {isIntellectual && (
+            <div
+              style={{
+                background: "rgba(124, 58, 237, 0.18)",
+                border: "1px solid rgba(167, 139, 250, 0.45)",
+                borderRadius: "10px",
+                padding: "7px 12px",
+                marginBottom: "12px",
+                fontSize: "0.78rem",
+                color: "#c084fc",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <span style={{ fontSize: "1.1rem" }}>💡</span>
+              <div>
+                <strong style={{ color: "#e9d5ff" }}>Đặc Quyền Trí Thức: </strong>
+                Tư duy phản biện đã tự động nhận diện và gạch bỏ 1 phương án suy luận sai lầm!
+              </div>
+            </div>
+          )}
+
           {/* Options */}
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "12px" }}>
             {npc.options?.map((opt, idx) => {
               const isSelected = selectedOptionId === opt.id;
+              const isEliminated = opt.id === eliminatedOptionId;
+
               return (
                 <div
                   key={opt.id}
                   onClick={() => {
-                    if (!hasSubmitted) setSelectedOptionId(opt.id);
+                    if (!hasSubmitted && !isEliminated) setSelectedOptionId(opt.id);
                   }}
                   style={{
-                    background: isSelected ? "rgba(56, 189, 248, 0.15)" : "rgba(30, 41, 59, 0.6)",
-                    border: isSelected ? "2px solid #38bdf8" : "1px solid rgba(255, 255, 255, 0.1)",
+                    background: isEliminated
+                      ? "rgba(30, 41, 59, 0.25)"
+                      : isSelected
+                      ? "rgba(56, 189, 248, 0.15)"
+                      : "rgba(30, 41, 59, 0.6)",
+                    border: isEliminated
+                      ? "1px dashed rgba(255, 255, 255, 0.15)"
+                      : isSelected
+                      ? "2px solid #38bdf8"
+                      : "1px solid rgba(255, 255, 255, 0.1)",
                     borderRadius: "12px",
                     padding: "10px 14px",
-                    cursor: hasSubmitted ? "default" : "pointer",
+                    cursor: hasSubmitted || isEliminated ? "not-allowed" : "pointer",
+                    opacity: isEliminated ? 0.42 : 1,
                     transition: "all 0.2s ease",
                     boxShadow: isSelected ? "0 4px 16px rgba(56, 189, 248, 0.25)" : "none",
                   }}
@@ -191,12 +229,38 @@ export const HistoricalDialogueModal = ({
                       type="radio"
                       name="npc_dialogue_opt"
                       checked={isSelected}
-                      onChange={() => setSelectedOptionId(opt.id)}
-                      disabled={hasSubmitted}
-                      style={{ accentColor: "#38bdf8", width: "16px", height: "16px", cursor: "pointer" }}
+                      onChange={() => {
+                        if (!isEliminated) setSelectedOptionId(opt.id);
+                      }}
+                      disabled={hasSubmitted || isEliminated}
+                      style={{ accentColor: "#38bdf8", width: "16px", height: "16px", cursor: isEliminated ? "not-allowed" : "pointer" }}
                     />
-                    <div style={{ fontSize: "0.88rem", fontWeight: "700", color: isSelected ? "#38bdf8" : "#f1f5f9" }}>
+                    <div
+                      style={{
+                        fontSize: "0.88rem",
+                        fontWeight: "700",
+                        color: isEliminated ? "#94a3b8" : isSelected ? "#38bdf8" : "#f1f5f9",
+                        textDecoration: isEliminated ? "line-through" : "none",
+                      }}
+                    >
                       {String.fromCharCode(65 + idx)}. {opt.text}
+                      {isEliminated && (
+                        <span
+                          style={{
+                            marginLeft: "8px",
+                            fontSize: "0.68rem",
+                            background: "rgba(124, 58, 237, 0.3)",
+                            border: "1px solid rgba(167, 139, 250, 0.4)",
+                            color: "#c084fc",
+                            padding: "1px 6px",
+                            borderRadius: "6px",
+                            textDecoration: "none",
+                            display: "inline-block",
+                          }}
+                        >
+                          [💡 ĐÃ LOẠI TRỪ]
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

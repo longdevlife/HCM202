@@ -59,16 +59,15 @@ test('getNextPhaseId progresses sequentially', () => {
   assert.equal(getNextPhaseId(null), 'phase_1');
   assert.equal(getNextPhaseId('phase_1'), 'phase_2');
   assert.equal(getNextPhaseId('phase_2'), 'phase_3');
-  assert.equal(getNextPhaseId('phase_3'), 'phase_4');
-  assert.equal(getNextPhaseId('phase_4'), null);
+  assert.equal(getNextPhaseId('phase_3'), null);
 });
 
 test('buildTimeoutDecision creates valid default payload', () => {
-  const dec = buildTimeoutDecision('phase_1', 'player123', 'doan_xa_agriculture', 5000);
+  const dec = buildTimeoutDecision('phase_1', 'player123', 'worker_leader', 5000);
   assert.equal(dec.playerId, 'player123');
   assert.equal(dec.phaseId, 'phase_1');
-  assert.equal(dec.roleId, 'doan_xa_agriculture');
-  assert.equal(dec.optionId, 'keep_piecework');
+  assert.equal(dec.roleId, 'worker_leader');
+  assert.equal(dec.optionId, 'opt_p1_toandien');
   assert.equal(dec.taskCompleted, false);
   assert.equal(dec.autoSubmitted, true);
   assert.equal(dec.submittedAt, 5000);

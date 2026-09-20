@@ -8,6 +8,7 @@ import { getPolicyCycle, POLICY_CYCLES } from "./policyCycles";
 import { PixelAvatarPreview } from "./PixelAvatarPreview";
 import { CycleDecisionPanel } from "./CycleDecisionPanel";
 import { PhaseResult } from "./PhaseResult";
+import { PlayerPhaseReviewModal } from "./PlayerPhaseReviewModal";
 import { HISTORICAL_NPCS_BY_PHASE } from "./historicalNpcData";
 import { HistoricalDialogueModal } from "./HistoricalDialogueModal";
 import {
@@ -29,8 +30,7 @@ import {
 const getPhaseIcon = (status, className = "w-5 h-5") => {
   if (status === "phase_1") return <IconLeaf className={`${className} text-emerald-500`} />;
   if (status === "phase_2") return <IconWarning className={`${className} text-cyan-500`} />;
-  if (status === "phase_3") return <IconWarning className={`${className} text-amber-500`} />;
-  if (status === "phase_4") return <IconFlame className={`${className} text-red-500`} />;
+  if (status === "phase_3") return <IconFlame className={`${className} text-amber-500`} />;
   return null;
 };
 
@@ -57,6 +57,27 @@ export const RpgGamePlay = ({
   const [isDecisionModalOpen, setIsDecisionModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [activeNpcDialogue, setActiveNpcDialogue] = useState(null);
+  const [isBgmOn, setIsBgmOn] = useState(() => {
+    try {
+      return localStorage.getItem("minigame_bgm_muted") === "false";
+    } catch {
+      return false;
+    }
+  });
+
+  const handleToggleBgm = () => {
+    setIsBgmOn((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("minigame_bgm_muted", (!next).toString());
+      } catch {}
+      iframeRef.current?.contentWindow?.postMessage({
+        type: "SET_BGM_MUTED",
+        muted: !next,
+      }, "*");
+      return next;
+    });
+  };
 
   const phaseId = gameState.status || gameState.phaseId || "phase_1";
   const cycle = getPolicyCycle(phaseId);
@@ -137,10 +158,14 @@ export const RpgGamePlay = ({
   const handleIframeLoad = useCallback(() => {
     iframeReadyRef.current = true;
     postRpgSnapshot(true);
+    iframeRef.current?.contentWindow?.postMessage({
+      type: "SET_BGM_MUTED",
+      muted: !isBgmOn,
+    }, "*");
     setTimeout(() => {
       iframeRef.current?.focus();
     }, 100);
-  }, [postRpgSnapshot]);
+  }, [postRpgSnapshot, isBgmOn]);
 
   const lastSpawnEventRef = useRef(0);
   useEffect(() => {
@@ -160,6 +185,11 @@ export const RpgGamePlay = ({
     const handleMessage = async (e) => {
       const msg = e.data;
       if (!msg || typeof msg !== "object") return;
+
+      if (msg.type === "BGM_STATE") {
+        setIsBgmOn(!msg.muted);
+        return;
+      }
 
       if (msg.type === "PLAYER_MOVE") {
         const move = normalizePlayerMove(msg);
@@ -211,6 +241,21 @@ export const RpgGamePlay = ({
     return () => window.removeEventListener("message", handleMessage);
   }, [phaseId, playerId, isTaskCompleted, positionWriter]);
 
+  // Sync BGM with Phase status: When Host resolves, music stops; when entering next phase, music plays
+  useEffect(() => {
+    if (isResolved) {
+      iframeRef.current?.contentWindow?.postMessage({
+        type: "SET_BGM_MUTED",
+        muted: true,
+      }, "*");
+    } else if (isBgmOn) {
+      iframeRef.current?.contentWindow?.postMessage({
+        type: "SET_BGM_MUTED",
+        muted: false,
+      }, "*");
+    }
+  }, [isResolved, isBgmOn]);
+
   
   // Global Keyboard Controls Forwarding to RPG iframe
   useEffect(() => {
@@ -227,6 +272,12 @@ export const RpgGamePlay = ({
       if (e.code === "KeyE" || e.code === "Space" || e.code === "Enter" || e.key === "e" || e.key === "E" || e.key === " ") {
         e.preventDefault();
         iframeRef.current?.contentWindow?.postMessage({ type: "ACTION_INTERACT" }, "*");
+        return;
+      }
+
+      if (e.code === "KeyQ" || e.key === "q" || e.key === "Q" || e.code === "ShiftLeft" || e.code === "ShiftRight") {
+        e.preventDefault();
+        iframeRef.current?.contentWindow?.postMessage({ type: "ACTIVATE_PERK" }, "*");
         return;
       }
 
@@ -305,6 +356,8 @@ export const RpgGamePlay = ({
       id: playerId,
       name: playerName || "Player",
       color: selectedCharacter?.color || "#059669",
+      character: selectedCharacter?.id || "worker_leader",
+      roleId: selectedCharacter?.id || "worker_leader",
     });
     const basePath = typeof window !== "undefined" && window.location.pathname.startsWith("/HCM202")
       ? "/rpg/index.html"
@@ -469,8 +522,30 @@ export const RpgGamePlay = ({
             </span>
           </div>
 
-          {/* Timer & Help Button */}
+          {/* Timer & Controls */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <button
+              onClick={handleToggleBgm}
+              title={isBgmOn ? "Tắt nhạc nền (Lovely Garden)" : "Bật nhạc nền (Lovely Garden)"}
+              style={{
+                background: isBgmOn ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                border: isBgmOn ? "1px solid rgba(16, 185, 129, 0.5)" : "1px solid rgba(239, 68, 68, 0.5)",
+                color: isBgmOn ? "#34d399" : "#f87171",
+                borderRadius: "8px",
+                padding: "4px 10px",
+                fontSize: "0.75rem",
+                fontWeight: "bold",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <span>{isBgmOn ? "🔊" : "🔇"}</span>
+              <span className="hidden sm:inline">{isBgmOn ? "NHẠC (Lovely Garden)" : "TẮT NHẠC"}</span>
+            </button>
+
             <button
               onClick={() => setIsHelpModalOpen(true)}
               style={{
@@ -597,6 +672,7 @@ export const RpgGamePlay = ({
             ref={iframeRef}
             src={iframeSrc}
             onLoad={handleIframeLoad}
+            allow="autoplay"
             style={{ width: "100%", aspectRatio: "16/9", border: "none", display: "block" }}
             title="RPG Gameplay Canvas"
             tabIndex={0}
@@ -664,18 +740,18 @@ export const RpgGamePlay = ({
           </div>
         </div>
 
+        {/* MODAL OVERLAY: ĐÁNH GIÁ LỰA CHỌN SÁNG SUỐT & BẢNG XẾP HẠNG KHI HOST CHỐT PHASE */}
         {isResolved && gameState.currentResult && (
-          <div style={{ width: "100%", maxWidth: "1400px", marginTop: "16px" }}>
-            <PhaseResult
-              phaseId={phaseId}
-              result={gameState.currentResult}
-              playerScoreData={{
-                scoreDelta: playerInfo.lastScoreDelta || 0,
-                explanation: playerInfo.lastExplanation || "Kết quả đã được Host tổng kết.",
-              }}
-              phaseEndsAt={gameState.phaseEndsAt}
-            />
-          </div>
+          <PlayerPhaseReviewModal
+            phaseId={phaseId}
+            playerInfo={playerInfo}
+            myDecision={myDecision}
+            currentResult={gameState.currentResult}
+            sortedPlayers={sortedPlayers}
+            playerId={playerId}
+            playerRank={playerRank}
+            phaseEndsAt={gameState.phaseEndsAt}
+          />
         )}
 
         {/* Controls Helper Text */}
@@ -694,24 +770,24 @@ export const RpgGamePlay = ({
           <span>Điều khiển: WASD / Mũi tên</span>
           <span>•</span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
-            <IconBook className="w-3.5 h-3.5 text-amber-500" /> Đến Trạm {cycle.task.stationId} để khảo sát
+            <IconBook className="w-3.5 h-3.5 text-amber-500" /> {cycle.task.objectiveLabel}
           </span>
           <span>•</span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
-            <IconBolt className="w-3.5 h-3.5 text-red-500" /> Bấm ⚡ / [SPACE] để tương tác
+            <IconBolt className="w-3.5 h-3.5 text-red-500" /> ⚡ [SPACE] Khảo sát / ✨ [Q] Kỹ năng
           </span>
         </div>
 
-        {/* Virtual Touch D-pad & Action Button */}
+        {/* Virtual Touch D-pad & Action Buttons */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: "28px",
+            gap: "24px",
             marginTop: "12px",
             width: "100%",
-            maxWidth: "440px",
+            maxWidth: "460px",
           }}
         >
           {/* D-pad */}
@@ -720,8 +796,10 @@ export const RpgGamePlay = ({
               className="dpad-btn"
               onMouseDown={(e) => handleDpadPress("up", e)}
               onMouseUp={(e) => handleDpadRelease("up", e)}
+              onMouseLeave={(e) => handleDpadRelease("up", e)}
               onTouchStart={(e) => handleDpadPress("up", e)}
               onTouchEnd={(e) => handleDpadRelease("up", e)}
+              onTouchCancel={(e) => handleDpadRelease("up", e)}
             >
               ▲
             </button>
@@ -730,8 +808,10 @@ export const RpgGamePlay = ({
                 className="dpad-btn"
                 onMouseDown={(e) => handleDpadPress("left", e)}
                 onMouseUp={(e) => handleDpadRelease("left", e)}
+                onMouseLeave={(e) => handleDpadRelease("left", e)}
                 onTouchStart={(e) => handleDpadPress("left", e)}
                 onTouchEnd={(e) => handleDpadRelease("left", e)}
+                onTouchCancel={(e) => handleDpadRelease("left", e)}
               >
                 ◀
               </button>
@@ -739,8 +819,10 @@ export const RpgGamePlay = ({
                 className="dpad-btn"
                 onMouseDown={(e) => handleDpadPress("right", e)}
                 onMouseUp={(e) => handleDpadRelease("right", e)}
+                onMouseLeave={(e) => handleDpadRelease("right", e)}
                 onTouchStart={(e) => handleDpadPress("right", e)}
                 onTouchEnd={(e) => handleDpadRelease("right", e)}
+                onTouchCancel={(e) => handleDpadRelease("right", e)}
               >
                 ▶
               </button>
@@ -749,43 +831,86 @@ export const RpgGamePlay = ({
               className="dpad-btn"
               onMouseDown={(e) => handleDpadPress("down", e)}
               onMouseUp={(e) => handleDpadRelease("down", e)}
+              onMouseLeave={(e) => handleDpadRelease("down", e)}
               onTouchStart={(e) => handleDpadPress("down", e)}
               onTouchEnd={(e) => handleDpadRelease("down", e)}
+              onTouchCancel={(e) => handleDpadRelease("down", e)}
             >
               ▼
             </button>
           </div>
 
-          {/* Action Button: Khảo sát / Tương tác */}
-          <button
-            className="action-stamp-btn"
-            onClick={(e) => handleActionPress(e)}
-            onTouchStart={(e) => handleActionPress(e)}
-            style={{
-              width: "84px",
-              height: "84px",
-              borderRadius: "50%",
-              background: "radial-gradient(circle at 30% 30%, #ef4444, #991b1b)",
-              border: "4px solid #facc15",
-              boxShadow: "0 6px 18px rgba(239, 68, 68, 0.45), 0 0 0 2px #000",
-              color: "#ffffff",
-              fontFamily: "var(--font-heading)",
-              fontSize: "0.78rem",
-              fontWeight: "800",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              touchAction: "manipulation",
-              userSelect: "none",
-              gap: "2px",
-            }}
-          >
-            <span style={{ fontSize: "1.3rem" }}>⚡</span>
-            <span>KHẢO SÁT</span>
-            <span style={{ fontSize: "8px", color: "#fef08a" }}>[E / SPACE]</span>
-          </button>
+          {/* Action & Perk Buttons */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {/* Class Perk Skill Button */}
+            <button
+              className="action-stamp-btn"
+              onClick={(e) => {
+                if (e && e.cancelable && e.type === "touchstart") e.preventDefault();
+                iframeRef.current?.contentWindow?.postMessage({ type: "ACTIVATE_PERK" }, "*");
+              }}
+              onTouchStart={(e) => {
+                if (e && e.cancelable && e.type === "touchstart") e.preventDefault();
+                iframeRef.current?.contentWindow?.postMessage({ type: "ACTIVATE_PERK" }, "*");
+              }}
+              title="Kích hoạt đặc quyền giai cấp"
+              style={{
+                width: "68px",
+                height: "68px",
+                borderRadius: "50%",
+                background: "radial-gradient(circle at 30% 30%, #38bdf8, #0369a1)",
+                border: "3px solid #7dd3fc",
+                boxShadow: "0 4px 14px rgba(56, 189, 248, 0.45), 0 0 0 2px #000",
+                color: "#ffffff",
+                fontFamily: "var(--font-heading)",
+                fontSize: "0.68rem",
+                fontWeight: "800",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                touchAction: "manipulation",
+                userSelect: "none",
+                gap: "1px",
+              }}
+            >
+              <span style={{ fontSize: "1.1rem" }}>✨</span>
+              <span style={{ fontSize: "9px" }}>KỸ NĂNG</span>
+              <span style={{ fontSize: "7px", color: "#e0f2fe" }}>[Q]</span>
+            </button>
+
+            {/* Main Action Button: Khảo sát / Tương tác */}
+            <button
+              className="action-stamp-btn"
+              onClick={(e) => handleActionPress(e)}
+              onTouchStart={(e) => handleActionPress(e)}
+              style={{
+                width: "82px",
+                height: "82px",
+                borderRadius: "50%",
+                background: "radial-gradient(circle at 30% 30%, #ef4444, #991b1b)",
+                border: "4px solid #facc15",
+                boxShadow: "0 6px 18px rgba(239, 68, 68, 0.45), 0 0 0 2px #000",
+                color: "#ffffff",
+                fontFamily: "var(--font-heading)",
+                fontSize: "0.76rem",
+                fontWeight: "800",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                touchAction: "manipulation",
+                userSelect: "none",
+                gap: "2px",
+              }}
+            >
+              <span style={{ fontSize: "1.25rem" }}>⚡</span>
+              <span>KHẢO SÁT</span>
+              <span style={{ fontSize: "8px", color: "#fef08a" }}>[SPACE]</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -839,6 +964,30 @@ export const RpgGamePlay = ({
           </div>
           <div style={{ fontSize: "0.75rem", color: "#cbd5e1" }}>Xếp hạng: #{playerRank}</div>
         </div>
+
+        {selectedCharacter && (
+          <div
+            style={{
+              background: "rgba(15, 23, 42, 0.85)",
+              border: `1px solid ${selectedCharacter.color || "#38bdf8"}55`,
+              borderRadius: "10px",
+              padding: "10px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "4px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "0.9rem" }}>✨</span>
+              <span style={{ fontSize: "0.78rem", fontWeight: "800", color: selectedCharacter.color || "#38bdf8" }}>
+                {selectedCharacter.perkBadge || "Đặc quyền giai cấp"}
+              </span>
+            </div>
+            <div style={{ fontSize: "0.72rem", color: "#cbd5e1", lineHeight: 1.35 }}>
+              {selectedCharacter.perkDesc || "Kỹ năng hỗ trợ khảo sát và vượt thử thách."}
+            </div>
+          </div>
+        )}
 
         <div className="mission-card" style={{ padding: "12px", borderRadius: "10px" }}>
           <div className="mission-label">MỤC TIÊU PHASE {cycle.year}</div>
@@ -960,7 +1109,7 @@ export const RpgGamePlay = ({
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span style={{ fontSize: "1.4rem" }}>🎯</span>
                 <h3 style={{ margin: 0, color: "var(--neon-gold)", fontSize: "1.2rem", fontWeight: "800" }}>
-                  HƯỚNG DẪN TRÒ CHƠI & NHIỆM VỤ (1978–1981)
+                  HƯỚNG DẪN TRÒ CHƠI & NHIỆM VỤ CHIẾN LƯỢC (CHƯƠNG 5)
                 </h3>
               </div>
               <button
@@ -990,7 +1139,7 @@ export const RpgGamePlay = ({
                   🚩 MỤC TIÊU CỦA BẠN:
                 </div>
                 <div>
-                  Nhập vai lực lượng thực tiễn tiên phong (Hải Phòng, Bà Ba Thi TP.HCM, Dệt Thành Công, Bí thư Long An). Trải qua 4 giai đoạn lịch sử (1978 - 1981) để tìm giải pháp cởi trói sức sản xuất, đưa đất nước thoát khỏi khủng hoảng kinh tế trước thềm Đổi Mới 1986.
+                  Nhập vai 4 lực lượng rường cột (Công nhân tiên phong, Nông dân chiến lược, Trí thức sáng tạo, Doanh nhân năng động). Trải qua 3 chặng chuyên đề Chương 5 để nắm vững bản chất CCXH-GC, quy luật biến đổi khách quan và củng cố khối đại đoàn kết liên minh giai cấp, tầng lớp trong thời kỳ quá độ lên CNXH.
                 </div>
               </div>
 
@@ -1020,7 +1169,7 @@ export const RpgGamePlay = ({
               {/* Các hoạt động kiếm điểm */}
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 <div style={{ fontWeight: "800", color: "#4ade80", fontSize: "0.92rem" }}>
-                  ⭐ 5 CÁCH GHI ĐIỂM TRONG MỖI GIAI ĐOẠN:
+                  ⭐ 5 CÁCH GHI ĐIỂM TRONG MỖI CHẶNG:
                 </div>
 
                 {/* 1. Khảo sát */}
@@ -1035,15 +1184,15 @@ export const RpgGamePlay = ({
                 <div style={{ display: "flex", gap: "10px", alignItems: "flex-start", background: "rgba(0,0,0,0.35)", padding: "10px", borderRadius: "8px" }}>
                   <div style={{ background: "#c084fc", color: "#000", fontWeight: "bold", borderRadius: "50%", width: "22px", height: "22px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "0.75rem" }}>2</div>
                   <div>
-                    <strong style={{ color: "#e9d5ff" }}>Đối thoại Nhân vật Lịch sử (<span style={{ color: "#4ade80" }}>+10 điểm</span>):</strong> Đến gần các nhân vật lịch sử (Bác Hai Lúa, Đ/c Đoàn Duy Thành, Bà Ba Thi, Kỹ sư Dệt, Chín Cần, Đoàn Khảo sát TW...) bấm <code style={{ background: "rgba(255,255,255,0.15)", padding: "1px 4px", borderRadius: "3px" }}>E / Space</code> để giải câu hỏi tình huống thực tế.
+                    <strong style={{ color: "#e9d5ff" }}>Đối thoại Chuyên gia & Đại biểu (<span style={{ color: "#4ade80" }}>+10 điểm</span>):</strong> Đến gần các chuyên gia lý luận và đại biểu thực tiễn (GS. Nguyễn Văn An, Chuyên viên Thống kê, Ban Dân tộc - Tôn giáo, Đại biểu Công đoàn, TS. Lê Thị Mai Lan...) bấm <code style={{ background: "rgba(255,255,255,0.15)", padding: "1px 4px", borderRadius: "3px" }}>E / Space</code> để giải câu hỏi chuyên đề Chương 5.
                   </div>
                 </div>
 
-                {/* 3. Giúp dân */}
+                {/* 3. Hỗ trợ đại biểu nhân dân */}
                 <div style={{ display: "flex", gap: "10px", alignItems: "flex-start", background: "rgba(0,0,0,0.35)", padding: "10px", borderRadius: "8px" }}>
                   <div style={{ background: "#ec4899", color: "#fff", fontWeight: "bold", borderRadius: "50%", width: "22px", height: "22px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "0.75rem" }}>3</div>
                   <div>
-                    <strong style={{ color: "#f472b6" }}>Trợ giúp Nhân dân / Xã viên (<span style={{ color: "#4ade80" }}>+8 điểm</span>):</strong> Tìm và đi đến gần những người dân có biểu tượng <strong style={{ color: "#ec4899" }}>🆘 CẦN GIÚP ❤️</strong> để hỗ trợ tháo gỡ khó khăn dân sinh.
+                    <strong style={{ color: "#f472b6" }}>Hỗ trợ Đại biểu & Quần chúng (<span style={{ color: "#4ade80" }}>+8 điểm</span>):</strong> Gặp gỡ và hỗ trợ các đại biểu, người dân mang biểu tượng <strong style={{ color: "#ec4899" }}>💬 CẦN HỖ TRỢ ❤️</strong> để tiếp thu ý kiến, phản ánh cơ sở.
                   </div>
                 </div>
 
@@ -1051,7 +1200,7 @@ export const RpgGamePlay = ({
                 <div style={{ display: "flex", gap: "10px", alignItems: "flex-start", background: "rgba(0,0,0,0.35)", padding: "10px", borderRadius: "8px" }}>
                   <div style={{ background: "#38bdf8", color: "#000", fontWeight: "bold", borderRadius: "50%", width: "22px", height: "22px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "0.75rem" }}>4</div>
                   <div>
-                    <strong style={{ color: "#7dd3fc" }}>Thu thập Tư liệu & Kiện Cứu Trợ (<span style={{ color: "#4ade80" }}>+2đ đến +10đ</span>):</strong> Chạy qua các tư liệu lịch sử trên đường (<strong style={{ color: "#facc15" }}>🌾 Lúa khoán</strong>, <strong style={{ color: "#38bdf8" }}>🧵 Sợi bông</strong>, <strong style={{ color: "#fbbf24" }}>📋 Báo cáo TW</strong>, <strong style={{ color: "#f87171" }}>📜 Chỉ thị 100</strong>, <strong style={{ color: "#fde047" }}>⭐ Kiện cứu trợ khẩn cấp</strong>).
+                    <strong style={{ color: "#7dd3fc" }}>Thu thập Dữ liệu & Văn Kiện (<span style={{ color: "#4ade80" }}>+2đ đến +10đ</span>):</strong> Chạy qua các tư liệu thực địa trên đường (<strong style={{ color: "#38bdf8" }}>📊 Hồ sơ CCXH</strong>, <strong style={{ color: "#facc15" }}>📜 Biến đổi CCXH</strong>, <strong style={{ color: "#f87171" }}>⭐ Văn kiện Liên minh</strong>, <strong style={{ color: "#fde047" }}>⭐ Hòm văn kiện đặc biệt</strong>).
                   </div>
                 </div>
 
@@ -1059,7 +1208,7 @@ export const RpgGamePlay = ({
                 <div style={{ display: "flex", gap: "10px", alignItems: "flex-start", background: "rgba(0,0,0,0.35)", padding: "10px", borderRadius: "8px" }}>
                   <div style={{ background: "#10b981", color: "#000", fontWeight: "bold", borderRadius: "50%", width: "22px", height: "22px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "0.75rem" }}>5</div>
                   <div>
-                    <strong style={{ color: "#6ee7b7" }}>Gửi Phiếu Quyết Định Chính Sách:</strong> Bấm nút <strong style={{ color: "#fde047" }}>📜 PHIẾU QUYẾT ĐỊNH</strong> ở cột bên phải để chọn phương án giải quyết khủng hoảng hoặc phân bổ Kế hoạch 3 phần (P1, P2, P3).
+                    <strong style={{ color: "#6ee7b7" }}>Gửi Phiếu Quyết Định Chiến Lược:</strong> Bấm nút <strong style={{ color: "#fde047" }}>📜 PHIẾU QUYẾT ĐỊNH</strong> ở cột bên phải để chọn phương án tiếp cận CCXH toàn diện hoặc biểu quyết gói phân bổ nguồn lực liên minh (P1, P2, P3).
                   </div>
                 </div>
               </div>
@@ -1067,10 +1216,24 @@ export const RpgGamePlay = ({
               {/* Cảnh báo Bẫy */}
               <div style={{ background: "rgba(239, 68, 68, 0.12)", border: "1px solid rgba(239, 68, 68, 0.4)", borderRadius: "10px", padding: "12px" }}>
                 <div style={{ fontWeight: "800", color: "#f87171", marginBottom: "4px", fontSize: "0.92rem" }}>
-                  ❄️ CẢNH BÁO BẪY ĐÓNG BĂNG & CẠM BẪY TUẦN TRA:
+                  ❄️ CẢNH BÁO BẪY ĐÓNG BĂNG & ĐỊNH KIẾN XÃ HỘI:
                 </div>
                 <div style={{ color: "#cbd5e1" }}>
-                  Hãy cẩn thận tránh né các <strong style={{ color: "#38bdf8" }}>Bẫy Đóng Băng pha lê ❄️</strong> và trạm kiểm soát trên đường! Nếu dẫm phải bẫy, bạn sẽ bị <strong style={{ color: "#38bdf8" }}>đóng băng bất động trong 2.5 giây</strong> và bị <strong style={{ color: "#f87171" }}>trừ 3 điểm</strong>.
+                  Hãy cẩn thận tránh né các <strong style={{ color: "#38bdf8" }}>Bẫy Đóng Băng pha lê ❄️</strong> và bẫy chia rẽ trên đường! Nếu dẫm phải bẫy, bạn sẽ bị <strong style={{ color: "#38bdf8" }}>đóng băng bất động trong 2.5 giây</strong> và bị <strong style={{ color: "#f87171" }}>trừ 3 điểm</strong>.
+                </div>
+              </div>
+
+              {/* Đặc quyền 4 giai tầng & Bệ tăng tốc */}
+              <div style={{ background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.4)", borderRadius: "10px", padding: "12px" }}>
+                <div style={{ fontWeight: "800", color: "#34d399", marginBottom: "6px", fontSize: "0.92rem" }}>
+                  ✨ ĐẶC QUYỀN 4 LỰC LƯỢNG & BỆ TĂNG TỐC ĐỔI MỚI:
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "0.82rem", color: "#cbd5e1" }}>
+                  <div>🛡️ <strong style={{ color: "#38bdf8" }}>Giai cấp Công nhân:</strong> Tự động kích hoạt khiên năng lượng miễn nhiễm 1 bẫy đóng băng mỗi giai đoạn!</div>
+                  <div>🌾 <strong style={{ color: "#34d399" }}>Giai cấp Nông dân:</strong> Tinh thần cần cù bồi đắp, được thưởng thêm +1 điểm cho mỗi tư liệu/văn kiện nhặt được.</div>
+                  <div>💡 <strong style={{ color: "#c084fc" }}>Tầng lớp Trí thức:</strong> Tư duy lý luận sắc bén, tự động gạch bỏ 1 phương án sai trong đối thoại NPC!</div>
+                  <div>⚡ <strong style={{ color: "#fde047" }}>Đội ngũ Doanh nhân:</strong> Bấm phím <code style={{ background: "rgba(255,255,255,0.15)", padding: "1px 4px", borderRadius: "3px" }}>Q / Shift</code> (hoặc nút Kỹ năng) để bứt phá tốc độ (+45% trong 4s, hồi chiêu 9s)!</div>
+                  <div>🚀 <strong style={{ color: "#22d3ee" }}>Bệ Tăng Tốc Neon:</strong> Di chuyển đè lên 3 bệ phóng ánh sáng xanh trên các đại lộ để lướt siêu tốc!</div>
                 </div>
               </div>
 
@@ -1090,6 +1253,7 @@ export const RpgGamePlay = ({
       {activeNpcDialogue && (
         <HistoricalDialogueModal
           npc={activeNpcDialogue}
+          playerRoleId={selectedCharacter?.id}
           onAnswer={handleAnswerNpcDialogue}
           onClose={() => setActiveNpcDialogue(null)}
         />

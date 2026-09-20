@@ -45,7 +45,7 @@ export const createInitialPolicyState = () => {
 
 export const getNextPhaseId = (currentPhaseId) => {
   if (!currentPhaseId) return 'phase_1';
-  const phaseOrder = ['phase_1', 'phase_2', 'phase_3', 'phase_4'];
+  const phaseOrder = ['phase_1', 'phase_2', 'phase_3'];
   const currentIndex = phaseOrder.indexOf(currentPhaseId);
   if (currentIndex >= 0 && currentIndex < phaseOrder.length - 1) {
     return phaseOrder[currentIndex + 1];
