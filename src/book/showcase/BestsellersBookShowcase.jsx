@@ -63,6 +63,7 @@ export const BestsellersBookShowcase = ({
   onOpenBook,
 }) => {
   const rootRef = useRef(null);
+  const cardRefs = useRef([]);
   const openTimerRef = useRef(null);
   const [hoveredBook, setHoveredBook] = useState(null);
   const [openingBook, setOpeningBook] = useState(null);
@@ -89,6 +90,19 @@ export const BestsellersBookShowcase = ({
     setHoveredBook(null);
     rootRef.current?.style.setProperty("--pointer-x", "0");
     rootRef.current?.style.setProperty("--pointer-y", "0");
+  };
+
+  const handleCardKeyDown = (event, index) => {
+    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft" && event.key !== "ArrowDown" && event.key !== "ArrowUp") {
+      return;
+    }
+
+    event.preventDefault();
+    const delta = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1;
+    const nextIndex = Math.max(0, Math.min(BOOK_CATALOG.length - 1, index + delta));
+    onSelectBook?.(nextIndex);
+    setHoveredBook(nextIndex);
+    cardRefs.current[nextIndex]?.focus();
   };
 
   const handleOpenBook = (index) => {
@@ -147,6 +161,9 @@ export const BestsellersBookShowcase = ({
           return (
             <button
               key={book.id}
+              ref={(node) => {
+                cardRefs.current[index] = node;
+              }}
               type="button"
               role="listitem"
               className={[
@@ -169,6 +186,7 @@ export const BestsellersBookShowcase = ({
                 setHoveredBook(index);
                 onSelectBook?.(index);
               }}
+              onKeyDown={(event) => handleCardKeyDown(event, index)}
               onClick={() => handleOpenBook(index)}
               style={{
                 "--book-color": book.color,
