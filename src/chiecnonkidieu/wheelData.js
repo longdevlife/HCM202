@@ -19,18 +19,13 @@ export const DEFAULT_QUESTIONS = [
     visualImages: [
       {
         src: "/images/chiecnon/bodybuilder_muscle.jpg",
-        caption: "Bắp cơ",
-        wordClue: "CƠ",
       },
       {
         src: "/images/chiecnon/fisherman_angling.jpg",
-        caption: "Câu cá (+ dấu sắc ' )",
-        wordClue: "CẤU",
         hasAcuteAccent: true,
       },
     ],
-    question:
-      "Bên trái là hình ảnh vận động viên thể hình đang gồng mình khoe từng múi bắp cơ, bên phải là hình 1 người đang câu cá có thêm dấu sắc. Ghép hai hình lại ta được từ gì?",
+    question: "Ghép hai hình lại ta được từ gì?",
     options: [
       { id: "A", text: "Cơ cấu", isCorrect: true },
       { id: "B", text: "Cơ bắp", isCorrect: false },
@@ -43,13 +38,13 @@ export const DEFAULT_QUESTIONS = [
   {
     id: "q2",
     num: 2,
-    typeTag: "Câu hỏi kiến thức ngắn",
-    title: "Câu 2: Câu Hỏi Kiến Thức Ngắn",
+    typeTag: "Câu hỏi trắc nghiệm",
+    title: "Câu 2: Câu Hỏi Trắc Nghiệm",
     shortLabel: "Câu 2",
     secretWord: "Xã hội",
     points: 100,
     badge: "MẢNH GHÉP 2",
-    questionType: "text_quiz",
+    questionType: "multiple_choice",
     wordPattern: ["_ _", "_ _ _"], // XÃ - HỘI
     acceptedAnswers: ["xã hội", "xa hoi", "xã hội ", "xa hoi "],
     question:
@@ -66,20 +61,20 @@ export const DEFAULT_QUESTIONS = [
   {
     id: "q3",
     num: 3,
-    typeTag: "Câu hỏi kiến thức ngắn",
-    title: "Câu 3: Câu Hỏi Kiến Thức Ngắn",
+    typeTag: "Câu hỏi trắc nghiệm",
+    title: "Câu 3: Câu Hỏi Trắc Nghiệm",
     shortLabel: "Câu 3",
     secretWord: "Giai cấp",
     points: 100,
     badge: "MẢNH GHÉP 3",
-    questionType: "text_quiz",
+    questionType: "multiple_choice",
     wordPattern: ["_ _ _ _", "_ _ _"], // GIAI - CẤP
     acceptedAnswers: ["giai cấp", "giai cap", "giai cấp ", "giai cap "],
     question:
       "Trong lịch sử và xã hội học, công nhân, nông dân hay tư sản được gọi chung bằng thuật ngữ 2 chữ nào?",
     options: [
-      { id: "A", text: "Giai cấp", isCorrect: true },
-      { id: "B", text: "Giai tầng", isCorrect: false },
+      { id: "A", text: "Giai tầng", isCorrect: false },
+      { id: "B", text: "Giai cấp", isCorrect: true },
       { id: "C", text: "Tầng lớp", isCorrect: false },
       { id: "D", text: "Giới tính", isCorrect: false },
     ],
@@ -116,7 +111,7 @@ export const DEFAULT_QUESTIONS = [
   {
     id: "q5",
     num: 5,
-    typeTag: "Đuổi hình bắt chữ 4 ô",
+    typeTag: "Đuổi hình bắt chữ",
     title: "Câu 5: Đuổi Hình Bắt Chữ (4 Ô Liên Hoàn)",
     shortLabel: "Câu 5",
     secretWord: "Chủ nghĩa xã hội",
@@ -133,27 +128,18 @@ export const DEFAULT_QUESTIONS = [
     visualImages: [
       {
         src: "/images/chiecnon/red_ownership_book.jpg",
-        caption: "Sổ đỏ quyền làm chủ",
-        wordClue: "CHỦ",
       },
       {
         src: "/images/chiecnon/chivalric_handshake.jpg",
-        caption: "Hiệp khách trọn chữ nghĩa",
-        wordClue: "NGHĨA",
       },
       {
         src: "/images/chiecnon/fresh_lemongrass.jpg",
-        caption: "Bó củ sả (lái âm xã)",
-        wordClue: "XÃ",
       },
       {
         src: "/images/chiecnon/festive_crowd.jpg",
-        caption: "Dòng người đi trẩy hội",
-        wordClue: "HỘI",
       },
     ],
-    question:
-      "Bức tranh bốn ô liên hoàn: ô thứ nhất là cuốn sổ đỏ xác nhận quyền sở hữu của người làm chủ; ô thứ hai là hai hiệp khách bắt tay nhau thề giữ trọn chữ nghĩa; ô thứ ba là một bó củ sả thơm lừng dùng để nấu lẩu (đọc lái âm với từ xã)... ; ô cuối cùng là dòng người nô nức cờ hoa kéo nhau đi trẩy hội. Ghép bốn ô lại ta được cụm từ gì?",
+    question: "Ghép bốn hình lại ta được cụm từ gì?",
     options: [
       { id: "A", text: "Chủ nghĩa xã hội", isCorrect: true },
       { id: "B", text: "Sở hữu toàn dân", isCorrect: false },
@@ -191,7 +177,7 @@ export const WHEEL_SLICES = [
     type: "question",
     questionId: "q2",
     label: "CÂU 2",
-    subLabel: "Kiến Thức",
+    subLabel: "Trắc Nghiệm",
     color: "#059669", // Emerald
     textColor: "#ffffff",
     points: 100,
@@ -210,7 +196,7 @@ export const WHEEL_SLICES = [
     type: "question",
     questionId: "q3",
     label: "CÂU 3",
-    subLabel: "Giai Cấp",
+    subLabel: "Trắc Nghiệm",
     color: "#2563eb", // Blue
     textColor: "#ffffff",
     points: 100,
