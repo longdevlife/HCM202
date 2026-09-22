@@ -48,25 +48,12 @@ export default function ChiecNonKiDieuGame() {
 
     let targetIdx;
     if (unansweredQuestions.length > 0) {
-      // 75% chance to hit an unanswered question
-      const pickQuestion = Math.random() < 0.75 || answeredCount === 0;
-
-      if (pickQuestion) {
-        const randomUnansweredQ =
-          unansweredQuestions[Math.floor(Math.random() * unansweredQuestions.length)];
-        const sliceIdx = WHEEL_SLICES.findIndex(
-          (s) => s.type === "question" && s.questionId === randomUnansweredQ.id
-        );
-        targetIdx = sliceIdx !== -1 ? sliceIdx : Math.floor(Math.random() * WHEEL_SLICES.length);
-      } else {
-        const bonusIndices = WHEEL_SLICES.map((s, i) => (s.type !== "question" ? i : null)).filter(
-          (i) => i !== null
-        );
-        targetIdx =
-          bonusIndices.length > 0
-            ? bonusIndices[Math.floor(Math.random() * bonusIndices.length)]
-            : Math.floor(Math.random() * WHEEL_SLICES.length);
-      }
+      const randomUnansweredQ =
+        unansweredQuestions[Math.floor(Math.random() * unansweredQuestions.length)];
+      const sliceIdx = WHEEL_SLICES.findIndex(
+        (s) => s.type === "question" && s.questionId === randomUnansweredQ.id
+      );
+      targetIdx = sliceIdx !== -1 ? sliceIdx : Math.floor(Math.random() * WHEEL_SLICES.length);
     } else {
       targetIdx = Math.floor(Math.random() * WHEEL_SLICES.length);
     }
@@ -83,14 +70,12 @@ export default function ChiecNonKiDieuGame() {
   const handleSpinEnd = (slice) => {
     setIsSpinning(false);
 
-    if (slice.type === "question") {
+    if (slice?.type === "question") {
       const q = questions.find((item) => item.id === slice.questionId);
       if (q) {
         setActiveQuestion(q);
         setIsQuestionModalOpen(true);
       }
-    } else {
-      showToast(`🎁 Bạn quay trúng ô ${slice.label}! Hãy tiếp tục quay để mở các mảnh ghép!`);
     }
   };
 

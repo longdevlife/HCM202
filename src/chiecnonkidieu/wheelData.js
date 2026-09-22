@@ -151,7 +151,7 @@ export const DEFAULT_QUESTIONS = [
   },
 ];
 
-// 10 Slices on the spinning wheel
+// 5 Slices on the spinning wheel (chỉ giữ lại các ô câu hỏi)
 export const WHEEL_SLICES = [
   {
     id: "slice_q1",
@@ -163,28 +163,12 @@ export const WHEEL_SLICES = [
     textColor: "#ffffff",
   },
   {
-    id: "slice_special_1",
-    type: "special",
-    label: "MAY MẮN",
-    subLabel: "Quay Tiếp 🍀",
-    color: "#f59e0b", // Amber
-    textColor: "#1f2937",
-  },
-  {
     id: "slice_q2",
     type: "question",
     questionId: "q2",
     label: "CÂU 2",
     subLabel: "Trắc Nghiệm",
     color: "#059669", // Emerald
-    textColor: "#ffffff",
-  },
-  {
-    id: "slice_special_2",
-    type: "special",
-    label: "THỬ THÁCH",
-    subLabel: "Tự Tin ⚡",
-    color: "#8b5cf6", // Purple
     textColor: "#ffffff",
   },
   {
@@ -197,14 +181,6 @@ export const WHEEL_SLICES = [
     textColor: "#ffffff",
   },
   {
-    id: "slice_special_3",
-    type: "special",
-    label: "CƠ HỘI",
-    subLabel: "Tiến Lên 🎲",
-    color: "#10b981", // Teal
-    textColor: "#ffffff",
-  },
-  {
     id: "slice_q4",
     type: "question",
     questionId: "q4",
@@ -214,28 +190,12 @@ export const WHEEL_SLICES = [
     textColor: "#ffffff",
   },
   {
-    id: "slice_special_4",
-    type: "special",
-    label: "NIỀM VUI",
-    subLabel: "Hào Hứng 🎁",
-    color: "#ec4899", // Pink
-    textColor: "#ffffff",
-  },
-  {
     id: "slice_q5",
     type: "question",
     questionId: "q5",
     label: "CÂU 5",
     subLabel: "4 Ô Hình",
     color: "#7c3aed", // Violet
-    textColor: "#ffffff",
-  },
-  {
-    id: "slice_special_5",
-    type: "special",
-    label: "TRI THỨC",
-    subLabel: "Khám Phá ⭐",
-    color: "#0891b2", // Cyan
     textColor: "#ffffff",
   },
 ];

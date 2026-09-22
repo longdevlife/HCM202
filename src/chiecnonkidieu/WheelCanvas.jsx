@@ -105,18 +105,18 @@ const WheelCanvas = forwardRef(function WheelCanvas(
 
         if (isAnswered) {
           ctx.fillStyle = "#cbd5e1";
-          ctx.font = "bold 16px 'Inter', sans-serif";
-          ctx.fillText("✓ ĐÃ XONG", radius - 30, -8);
+          ctx.font = "bold 18px 'Inter', sans-serif";
+          ctx.fillText("✓ ĐÃ XONG", radius - 30, -10);
 
-          ctx.font = "13px 'Inter', sans-serif";
+          ctx.font = "14px 'Inter', sans-serif";
           ctx.fillStyle = "#94a3b8";
           ctx.fillText(slice.label, radius - 30, 14);
         } else {
           ctx.fillStyle = slice.textColor || "#ffffff";
-          ctx.font = "bold 18px 'Playfair Display', Georgia, serif";
-          ctx.fillText(slice.label, radius - 28, -9);
+          ctx.font = "bold 21px 'Playfair Display', Georgia, serif";
+          ctx.fillText(slice.label, radius - 28, -10);
 
-          ctx.font = "bold 13px 'Inter', sans-serif";
+          ctx.font = "bold 14px 'Inter', sans-serif";
           ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
           ctx.fillText(slice.subLabel, radius - 28, 14);
         }
@@ -182,7 +182,7 @@ const WheelCanvas = forwardRef(function WheelCanvas(
       ctx.restore(); // end center hub
 
       // Flashing decorative LED lights on outer rim
-      const ledCount = numSlices * 3;
+      const ledCount = 30; // 30 evenly spaced festive LED lights
       const ledAngleStep = (2 * Math.PI) / ledCount;
       const timeMs = Date.now() / 250;
 
