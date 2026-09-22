@@ -42,7 +42,7 @@ export const Experience = () => {
     <>
       <CameraAnimator />
 
-      {/* Magazine / Book */}
+      {/* 3D Book */}
       <Float
         rotation-x={-Math.PI / 4}
         floatIntensity={1}

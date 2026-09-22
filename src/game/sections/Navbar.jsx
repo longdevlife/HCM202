@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 const NAV_LINKS = [
   { href: '#overview', label: 'Tổng quan', id: 'overview' },
-  { href: '#book', label: 'Tạp chí', id: 'book' },
+  { href: '#book', label: 'Sách 3D', id: 'book' },
   { href: '#minigame', label: 'Mini Game', id: 'minigame' },
 ];
 

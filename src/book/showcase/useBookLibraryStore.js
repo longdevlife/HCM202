@@ -9,10 +9,10 @@ export const useBookLibraryStore = create((set) => ({
   setSelectedBook: (index) => set({ selectedBook: clampBookIndex(index) }),
 
   openBook: (index) =>
-    set({
-      selectedBook: clampBookIndex(index),
-      view: "magazine",
-    }),
+    set((state) => ({
+      selectedBook: index !== undefined ? clampBookIndex(index) : state.selectedBook,
+      view: "book",
+    })),
 
   openLibrary: () => set({ view: "library" }),
 }));

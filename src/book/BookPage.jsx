@@ -6,7 +6,7 @@ import { Experience } from "./Experience";
 import { UI, pageAtom, viewModeAtom } from "./UI";
 import { IntroScreen } from "./IntroScreen";
 import { BestsellersBookShowcase } from "./showcase/BestsellersBookShowcase";
-import { getBookByIndex } from "./showcase/bookCatalog";
+import { getBookByIndex } from "./content/bookContent.js";
 import { useBookLibraryStore } from "./showcase/useBookLibraryStore";
 
 export const BookPage = ({ skipIntro = false, onIntroFinish }) => {
@@ -23,7 +23,7 @@ export const BookPage = ({ skipIntro = false, onIntroFinish }) => {
   const currentBook = getBookByIndex(selectedBook);
 
   useEffect(() => {
-    if (!isStarted || libraryView !== "magazine") return undefined;
+    if (!isStarted || libraryView === "library") return undefined;
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {

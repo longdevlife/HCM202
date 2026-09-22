@@ -14,7 +14,7 @@ export const BOOK_CATALOG = [
     foil: "#C87046",
     paper: "#E8DDC8",
     motion: "network",
-    magazineName: "TẠP CHÍ CHUYÊN ĐỀ · QUYỂN I",
+    bookName: "SÁCH HỌC THUẬT · QUYỂN I",
     edgeLabel: "CƠ CẤU XÃ HỘI – GIAI CẤP",
   },
   {
@@ -32,7 +32,7 @@ export const BOOK_CATALOG = [
     foil: "#EFC16D",
     paper: "#F0DFC2",
     motion: "convergence",
-    magazineName: "TẠP CHÍ CHUYÊN ĐỀ · QUYỂN II",
+    bookName: "SÁCH HỌC THUẬT · QUYỂN II",
     edgeLabel: "LIÊN MINH GIAI CẤP, TẦNG LỚP",
   },
   {
@@ -40,18 +40,18 @@ export const BOOK_CATALOG = [
     index: 2,
     roman: "III",
     eyebrow: "QUYỂN III",
-    shortTitle: "Việt Nam: cơ cấu & liên minh",
-    titleLines: ["VIỆT NAM", "CƠ CẤU & LIÊN MINH"],
-    subtitle: "Thực tiễn · đổi mới · phát triển",
+    shortTitle: "Cơ cấu xã hội – giai cấp ở Việt Nam",
+    titleLines: ["VIỆT NAM", "TRONG THỜI KỲ QUÁ ĐỘ"],
+    subtitle: "Công nhân · nông dân · trí thức · doanh nhân",
     description:
-      "Đặc điểm cơ cấu xã hội – giai cấp và liên minh giai cấp, tầng lớp ở Việt Nam trong bối cảnh đổi mới và phát triển.",
+      "Cơ cấu xã hội – giai cấp ở Việt Nam trong thời kỳ quá độ lên CNXH với 4 lực lượng chủ yếu: công nhân, nông dân, trí thức, doanh nhân.",
     color: "#1D3E35",
     colorDeep: "#0C211B",
     foil: "#D4AF37",
     paper: "#E7DFC9",
     motion: "orbit",
-    magazineName: "TẠP CHÍ CHUYÊN ĐỀ · QUYỂN III",
-    edgeLabel: "VIỆT NAM · CƠ CẤU & LIÊN MINH",
+    bookName: "SÁCH HỌC THUẬT · QUYỂN III",
+    edgeLabel: "VIỆT NAM · TRONG THỜI KỲ QUÁ ĐỘ",
   },
 ];
 

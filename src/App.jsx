@@ -7,7 +7,7 @@ const MinigamePage = lazy(() => import("./minigame/MinigamePage").then((module) 
 
 const TABS = [
   { id: "overview", label: "Tổng quan" },
-  { id: "book", label: "Tạp chí" },
+  { id: "book", label: "Sách 3D" },
   { id: "minigame", label: "Mini Game" },
 ];
 
