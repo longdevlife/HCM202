@@ -6,37 +6,8 @@ import { BOOKS } from "./content/bookContent.js";
 export const pageAtom = atom(0);
 export const viewModeAtom = atom("showcase"); // "showcase" | "reading"
 
-export const pages = [
-  {
-    front: "/textures/hinh/hinh1.png",
-    back: "/textures/hinh/hinh2.png",
-  },
-  {
-    front: "/textures/hinh/hinh3.png",
-    back: "/textures/hinh/hinh4.png",
-  },
-  {
-    front: "/textures/hinh/hinh5.png",
-    back: "/textures/hinh/hinh6.png",
-  },
-  {
-    front: "/textures/hinh/hinh7.png",
-    back: "/textures/hinh/hinh8.png",
-  },
-  {
-    front: "/textures/hinh/hinh9.png",
-    back: "/textures/hinh/hinh10.png",
-  },
-];
-
-const pageLabels = [
-  "Bìa",
-  "Trang 1–2",
-  "Trang 3–4",
-  "Trang 5–6",
-  "Trang 7–8",
-  "Bìa sau",
-];
+// Backwards-compatible empty pages export (single source of truth is now bookContent.js)
+export const pages = [];
 
 /* ── SVG Icons ── */
 const BookIcon = () => (
@@ -90,7 +61,15 @@ export const UI = ({ book = BOOKS[0], onBackToLibrary }) => {
     audio.play().catch(() => {});
   }, [page]);
 
-  const totalPages = pages.length + 1;
+  const bookPages = (book?.ready && Array.isArray(book?.pages)) ? book.pages : [];
+  const totalPages = bookPages.length > 0 ? bookPages.length + 1 : 1;
+  const pageLabels = bookPages.length > 0
+    ? [
+        ...bookPages.map((p, idx) => p.label || (idx === 0 ? "Bìa" : `Trang ${idx * 2 - 1}–${idx * 2}`)),
+        "Bìa sau",
+      ]
+    : ["Bìa"];
+
   const foil = book?.cover?.foilColor || "#C5A028";
   const roman = book?.roman || "I";
   const shortTitle = Array.isArray(book?.cover?.title)
@@ -166,6 +145,20 @@ export const UI = ({ book = BOOKS[0], onBackToLibrary }) => {
                     </li>
                   ))}
                 </ul>
+              )}
+              {Array.isArray(book?.bibliography) && book.bibliography.length > 0 && (
+                <div className="mt-4 pt-3 border-t border-white/10 text-left">
+                  <p className="text-xs font-semibold text-[#c3a47b] mb-1 uppercase tracking-wider">
+                    Thư mục nguồn & Tài liệu tham khảo
+                  </p>
+                  <ul className="text-xs space-y-1 opacity-75">
+                    {book.bibliography.map((b, idx) => (
+                      <li key={idx}>
+                        • <strong>{b.title}</strong> — {b.publisher} ({b.year})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
 
@@ -265,55 +258,59 @@ export const UI = ({ book = BOOKS[0], onBackToLibrary }) => {
         </div>
 
         {/* Side Arrows */}
-        <div className="pointer-events-auto flex items-center justify-between px-4 absolute top-1/2 left-0 right-0 -translate-y-1/2">
-          <button
-            className="view-toggle"
-            style={{
-              padding: "10px",
-              opacity: page > 0 ? 1 : 0.3,
-              pointerEvents: page > 0 ? "auto" : "none",
-            }}
-            onClick={() => setPage(Math.max(0, page - 1))}
-            aria-label="Trang trước"
-          >
-            <ChevronLeft />
-          </button>
-          <button
-            className="view-toggle"
-            style={{
-              padding: "10px",
-              opacity: page < totalPages - 1 ? 1 : 0.3,
-              pointerEvents: page < totalPages - 1 ? "auto" : "none",
-            }}
-            onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
-            aria-label="Trang sau"
-          >
-            <ChevronRight />
-          </button>
-        </div>
+        {bookPages.length > 0 && (
+          <div className="pointer-events-auto flex items-center justify-between px-4 absolute top-1/2 left-0 right-0 -translate-y-1/2">
+            <button
+              className="view-toggle"
+              style={{
+                padding: "10px",
+                opacity: page > 0 ? 1 : 0.3,
+                pointerEvents: page > 0 ? "auto" : "none",
+              }}
+              onClick={() => setPage(Math.max(0, page - 1))}
+              aria-label="Trang trước"
+            >
+              <ChevronLeft />
+            </button>
+            <button
+              className="view-toggle"
+              style={{
+                padding: "10px",
+                opacity: page < totalPages - 1 ? 1 : 0.3,
+                pointerEvents: page < totalPages - 1 ? "auto" : "none",
+              }}
+              onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+              aria-label="Trang sau"
+            >
+              <ChevronRight />
+            </button>
+          </div>
+        )}
 
         {/* Bottom Nav Island */}
-        <div className="absolute bottom-6 left-0 right-0 w-full pointer-events-auto flex justify-center">
-          <div className="book-nav rounded-full px-2 py-2 flex flex-col items-center gap-0" style={{ maxWidth: "90vw" }}>
-            <div className="flex items-center gap-1 overflow-x-auto px-1">
-              {[...pages].map((_, index) => (
+        {bookPages.length > 0 && (
+          <div className="absolute bottom-6 left-0 right-0 w-full pointer-events-auto flex justify-center">
+            <div className="book-nav rounded-full px-2 py-2 flex flex-col items-center gap-0" style={{ maxWidth: "90vw" }}>
+              <div className="flex items-center gap-1 overflow-x-auto px-1">
+                {bookPages.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`book-nav-btn shrink-0 ${index === page ? "active" : ""}`}
+                    onClick={() => setPage(index)}
+                  >
+                    {pageLabels[index]}
+                  </button>
+                ))}
                 <button
-                  key={index}
-                  className={`book-nav-btn shrink-0 ${index === page ? "active" : ""}`}
-                  onClick={() => setPage(index)}
+                  className={`book-nav-btn shrink-0 ${page === bookPages.length ? "active" : ""}`}
+                  onClick={() => setPage(bookPages.length)}
                 >
-                  {pageLabels[index]}
+                  {pageLabels[bookPages.length]}
                 </button>
-              ))}
-              <button
-                className={`book-nav-btn shrink-0 ${page === pages.length ? "active" : ""}`}
-                onClick={() => setPage(pages.length)}
-              >
-                {pageLabels[pages.length]}
-              </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </main>
 
       {/* Floating Bottom Right Controls */}

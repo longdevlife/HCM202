@@ -91,7 +91,7 @@ export const BookPage = ({ skipIntro = false, onIntroFinish }) => {
       >
         <group position-y={0}>
           <Suspense fallback={null}>
-            <Experience />
+            <Experience book={currentBook} />
           </Suspense>
         </group>
       </Canvas>

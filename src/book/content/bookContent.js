@@ -8,21 +8,31 @@ export const SOURCES = [
     id: "gso-2025",
     name: "Cục Thống kê (Tổng cục Thống kê Việt Nam - GSO)",
     details: "Báo cáo tình hình kinh tế – xã hội quý IV và năm 2025, cơ cấu lao động và số liệu doanh nghiệp gia nhập thị trường.",
+    url: "https://www.gso.gov.vn",
   },
   {
     id: "nq-45-tw",
     name: "Nghị quyết số 45-NQ/TW (2023)",
     details: "Nghị quyết Hội nghị Trung ương 8 khóa XIII về tiếp tục xây dựng và phát huy vai trò của đội ngũ trí thức đáp ứng yêu cầu phát triển đất nước.",
+    url: "https://tulieuvankien.dangcongsan.vn",
   },
   {
     id: "chinh-phu",
     name: "Cổng Thông tin Điện tử Chính phủ",
     details: "Dữ liệu phát triển kinh tế tư nhân, đội ngũ doanh nhân và các chính sách an sinh xã hội.",
+    url: "https://baochinhphu.vn",
   },
   {
     id: "giam-ngheo",
     name: "Chương trình mục tiêu quốc gia giảm nghèo bền vững",
     details: "Báo cáo kết quả giảm tỷ lệ nghèo đa chiều đến năm 2025 (còn khoảng 1,3%).",
+    url: "https://molisa.gov.vn",
+  },
+  {
+    id: "giao-trinh-mln",
+    name: "Giáo trình Triết học Mác - Lênin & CNXHKH (Bộ GD&ĐT)",
+    details: "Giáo trình chuẩn quốc gia dành cho bậc đại học hệ không chuyên lý luận chính trị, Nxb. Chính trị Quốc gia Sự thật.",
+    url: "https://nxbctqg.vn",
   },
 ];
 
@@ -30,7 +40,7 @@ export const BOOKS = [
   {
     id: 0,
     roman: "I",
-    ready: true,
+    ready: false,
     cover: {
       eyebrow: "QUYỂN I",
       title: ["CƠ CẤU XÃ HỘI", "– GIAI CẤP"],
@@ -47,6 +57,7 @@ export const BOOKS = [
       description:
         "Cơ cấu xã hội – giai cấp là hệ thống các giai cấp, tầng lớp xã hội tồn tại khách quan và mối quan hệ giữa chúng về sở hữu, quản lý và phân phối trong một chế độ xã hội nhất định.",
     },
+    skeletonNotice: "Nội dung Sách 3D của Quyển I đang được chuẩn hóa trang tư liệu số theo đúng giáo trình Chương 5. Bản xem trước đề cương và thư mục nguồn đã sẵn sàng.",
     chapters: [
       { id: "1.1", title: "Khái niệm cơ cấu xã hội" },
       { id: "1.2", title: "Khái niệm cơ cấu xã hội – giai cấp" },
@@ -56,54 +67,28 @@ export const BOOKS = [
       { id: "1.6", title: "Ví dụ: Doanh nhân và kinh tế tư nhân" },
       { id: "1.7", title: "Ví dụ: Vai trò của đội ngũ trí thức" },
     ],
-    pages: [
+    pages: [],
+    sources: SOURCES,
+    bibliography: [
       {
-        pageNumber: 0,
-        type: "cover",
-        label: "Bìa",
-        title: "CƠ CẤU XÃ HỘI – GIAI CẤP",
-        subtitle: "Khái niệm & vị trí trong thời kỳ quá độ",
-        front: "/textures/hinh/hinh1.png",
-        back: "/textures/hinh/hinh2.png",
+        title: "Giáo trình Chủ nghĩa xã hội khoa học (Chương 5)",
+        publisher: "Nxb. Chính trị Quốc gia Sự thật",
+        year: "2021",
+        url: "https://nxbctqg.vn",
       },
       {
-        pageNumber: 1,
-        type: "content",
-        label: "Trang 1–2",
-        title: "Khái niệm cơ cấu xã hội và cơ cấu xã hội – giai cấp",
-        summary: "Cơ cấu xã hội là tổng thể các cộng đồng người cùng toàn bộ các mối quan hệ xã hội. Cơ cấu xã hội – giai cấp giữ vị trí trung tâm chi phối các cơ cấu xã hội khác.",
-        front: "/textures/hinh/hinh3.png",
-        back: "/textures/hinh/hinh4.png",
+        title: "Báo cáo tình hình kinh tế – xã hội quý IV và năm 2025",
+        publisher: "Tổng cục Thống kê (GSO)",
+        year: "2025",
+        url: "https://www.gso.gov.vn",
       },
       {
-        pageNumber: 2,
-        type: "content",
-        label: "Trang 3–4",
-        title: "Đặc điểm thời kỳ quá độ & các tầng lớp chủ yếu",
-        summary: "Tính đa dạng, phức tạp và đan xen giữa các yếu tố cũ và mới. Gồm giai cấp công nhân, nông dân, đội ngũ trí thức, doanh nhân và các nhóm xã hội khác.",
-        front: "/textures/hinh/hinh5.png",
-        back: "/textures/hinh/hinh6.png",
-      },
-      {
-        pageNumber: 3,
-        type: "content",
-        label: "Trang 5–6",
-        title: "Vị trí hàng đầu và thực tiễn phát triển",
-        summary: "Cơ cấu xã hội – giai cấp liên quan trực tiếp đến quyền lực chính trị, địa vị kinh tế và là cơ sở để hoạch định chính sách đại đoàn kết toàn dân tộc.",
-        front: "/textures/hinh/hinh7.png",
-        back: "/textures/hinh/hinh8.png",
-      },
-      {
-        pageNumber: 4,
-        type: "content",
-        label: "Trang 7–8",
-        title: "Ví dụ thực tiễn: Doanh nhân & Trí thức",
-        summary: "Năm 2025 có gần 195,1 nghìn doanh nghiệp thành lập mới, hơn 102,3 nghìn doanh nghiệp quay trở lại (tổng 297,5 nghìn gia nhập thị trường). Nghị quyết 45-NQ/TW khẳng định trí thức là lực lượng tiên phong trong kinh tế tri thức.",
-        front: "/textures/hinh/hinh9.png",
-        back: "/textures/hinh/hinh10.png",
+        title: "Nghị quyết số 45-NQ/TW về phát huy vai trò đội ngũ trí thức",
+        publisher: "Ban Chấp hành Trung ương khóa XIII",
+        year: "2023",
+        url: "https://tulieuvankien.dangcongsan.vn",
       },
     ],
-    sources: SOURCES,
   },
   {
     id: 1,
@@ -133,6 +118,20 @@ export const BOOKS = [
     ],
     pages: [],
     sources: [SOURCES[0], SOURCES[3]],
+    bibliography: [
+      {
+        title: "Giáo trình Chủ nghĩa xã hội khoa học (Chương 5, Mục 2)",
+        publisher: "Nxb. Chính trị Quốc gia Sự thật",
+        year: "2021",
+        url: "https://nxbctqg.vn",
+      },
+      {
+        title: "Báo cáo chuyển dịch cơ cấu lao động và giảm nghèo đa chiều",
+        publisher: "Bộ Lao động – Thương binh và Xã hội",
+        year: "2025",
+        url: "https://molisa.gov.vn",
+      },
+    ],
   },
   {
     id: 2,
@@ -164,6 +163,26 @@ export const BOOKS = [
     ],
     pages: [],
     sources: SOURCES,
+    bibliography: [
+      {
+        title: "Giáo trình Chủ nghĩa xã hội khoa học (Chương 5, Mục 3)",
+        publisher: "Nxb. Chính trị Quốc gia Sự thật",
+        year: "2021",
+        url: "https://nxbctqg.vn",
+      },
+      {
+        title: "Văn kiện Đại hội đại biểu toàn quốc lần thứ XIII",
+        publisher: "Nxb. Chính trị Quốc gia Sự thật",
+        year: "2021",
+        url: "https://tulieuvankien.dangcongsan.vn",
+      },
+      {
+        title: "Nghị quyết số 45-NQ/TW của Ban Chấp hành Trung ương Đảng",
+        publisher: "Ban Chấp hành Trung ương khóa XIII",
+        year: "2023",
+        url: "https://tulieuvankien.dangcongsan.vn",
+      },
+    ],
   },
 ];
 

@@ -37,7 +37,7 @@ const CameraAnimator = () => {
   return null;
 };
 
-export const Experience = () => {
+export const Experience = ({ book }) => {
   return (
     <>
       <CameraAnimator />
@@ -49,7 +49,7 @@ export const Experience = () => {
         speed={1}
         rotationIntensity={0.1}
       >
-        <Book />
+        <Book book={book} />
         <PageParticles />
       </Float>
 

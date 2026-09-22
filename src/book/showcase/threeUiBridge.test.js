@@ -39,6 +39,7 @@ function createMockIframe() {
 
   const cards = ['codex', 'claude', 'cursor'].map((id, index) => {
     const cardListeners = {};
+    const classes = new Set();
     const subElements = {
       '.cover-kicker': { textContent: `FIELD MANUAL · ${index + 1}` },
       '.cover-title': { innerHTML: id },
@@ -48,6 +49,21 @@ function createMockIframe() {
     };
 
     return {
+      classList: {
+        add: (c) => classes.add(c),
+        remove: (c) => classes.delete(c),
+        toggle: (c, force) => {
+          if (force === undefined) {
+            if (classes.has(c)) classes.delete(c);
+            else classes.add(c);
+          } else if (force) {
+            classes.add(c);
+          } else {
+            classes.delete(c);
+          }
+        },
+        contains: (c) => classes.has(c),
+      },
       getAttribute(attr) {
         if (attr === 'data-book') return id;
         return null;
@@ -70,12 +86,16 @@ function createMockIframe() {
       click() {
         (cardListeners['click'] || []).forEach(fn => fn({ preventDefault: () => {} }));
       },
+      focus() {},
       cardListeners,
     };
   });
 
   const docListeners = {};
   const doc = {
+    body: {
+      dataset: { mode: 'gallery' },
+    },
     querySelector(selector) {
       return elements[selector] || null;
     },
@@ -160,4 +180,109 @@ test('bindThreeUiShowcase injects Vietnamese Chapter 5 copy into DOM slots', () 
 
   // Verify cleanup removes listeners
   assert.doesNotThrow(() => cleanup());
+});
+
+test('cleanup actually removes card and cta event listeners from DOM', () => {
+  const { iframe, cards, elements } = createMockIframe();
+
+  const cleanup = bindThreeUiShowcase({
+    iframe,
+    books: BOOKS,
+    selectedBook: 0,
+    onSelectBook: () => {},
+    onOpenBook: () => {},
+  });
+
+  const cta = elements['.action-rail .pill:not(.language):not(.icon-only)'];
+
+  // Verify listeners were added
+  cards.forEach((card) => {
+    assert.equal(card.cardListeners['click']?.length, 1);
+  });
+
+  // Call cleanup
+  cleanup();
+
+  // Verify all listeners were completely removed
+  cards.forEach((card) => {
+    assert.equal(card.cardListeners['click']?.length || 0, 0);
+  });
+});
+
+test('rebind does not double-fire CTA or leak listeners', () => {
+  const { iframe, elements } = createMockIframe();
+
+  let openCount = 0;
+  const onOpen = () => { openCount++; };
+
+  // First bind
+  const cleanup1 = bindThreeUiShowcase({
+    iframe,
+    books: BOOKS,
+    selectedBook: 0,
+    onOpenBook: onOpen,
+  });
+
+  cleanup1();
+
+  // Second bind
+  const cleanup2 = bindThreeUiShowcase({
+    iframe,
+    books: BOOKS,
+    selectedBook: 0,
+    onOpenBook: onOpen,
+  });
+
+  const cta = elements['.action-rail .pill:not(.language):not(.icon-only)'];
+  cta.click();
+
+  assert.equal(openCount, 1, 'CTA must only fire once after rebind');
+
+  cleanup2();
+});
+
+test('restore authored ThreeUI selected state after remount with Book II', () => {
+  const { iframe, cards, doc, elements } = createMockIframe();
+
+  // Simulate returning from 3D Book with selectedBook = 1 (Book II)
+  let notifiedIndex = -1;
+
+  const cleanup = bindThreeUiShowcase({
+    iframe,
+    books: BOOKS,
+    selectedBook: 1,
+    onSelectBook: (idx) => { notifiedIndex = idx; },
+    onOpenBook: () => {},
+  });
+
+  // Authored visual selection must be restored to Book II (index 1)
+  assert.ok(cards[1].classList.contains('selected'), 'Card 1 (Book II) must have .selected class');
+  assert.ok(!cards[0].classList.contains('selected'), 'Card 0 must not have .selected class');
+  assert.equal(doc.body.dataset.mode, 'detail', 'Body mode must be set to detail');
+
+  // Detail drawer must reflect Book II content
+  assert.equal(
+    elements['#detailTitle'].textContent,
+    'Sự biến đổi có tính quy luật của cơ cấu xã hội – giai cấp'
+  );
+
+  // Must not trigger infinite feedback loop on mount
+  assert.equal(notifiedIndex, -1, 'Must not re-notify parent on mount restore');
+
+  cleanup();
+});
+
+test('sources have valid official URLs and structured bibliography', () => {
+  assert.ok(BOOKS.length === 3);
+
+  BOOKS.forEach((b) => {
+    assert.ok(Array.isArray(b.bibliography), `Book ${b.roman} must have bibliography`);
+    assert.ok(b.bibliography.length > 0, `Book ${b.roman} bibliography must not be empty`);
+    b.bibliography.forEach((bib) => {
+      assert.ok(bib.title, 'Bibliography must have title');
+      assert.ok(bib.publisher, 'Bibliography must have publisher');
+      assert.ok(bib.year, 'Bibliography must have year');
+      assert.ok(bib.url.startsWith('https://'), 'Bibliography must have https:// URL');
+    });
+  });
 });

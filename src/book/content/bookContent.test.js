@@ -9,10 +9,21 @@ test('BOOKS has exactly 3 volumes with correct Roman numerals', () => {
   assert.equal(BOOKS[2].roman, 'III');
 });
 
-test('Volume readiness follows Hybrid strategy: Book I ready, II and III not ready', () => {
-  assert.equal(isBookReady(0), true);
-  assert.equal(isBookReady(1), false);
-  assert.equal(isBookReady(2), false);
+test('Volume readiness strictly reflects honest asset availability: all volumes unready until assets verified', () => {
+  assert.equal(isBookReady(0), false, 'Book I must be unready until Chapter 5 textures are designed');
+  assert.equal(isBookReady(1), false, 'Book II is in honest skeleton state');
+  assert.equal(isBookReady(2), false, 'Book III is in honest skeleton state');
+
+  // When unready, pages array must be empty to prevent rendering stale legacy assets
+  assert.equal(BOOKS[0].pages.length, 0);
+  assert.equal(BOOKS[1].pages.length, 0);
+  assert.equal(BOOKS[2].pages.length, 0);
+});
+
+test('Volumes maintain isolated page configs so II and III never inherit I', () => {
+  assert.notEqual(BOOKS[0], BOOKS[1]);
+  assert.notEqual(BOOKS[1], BOOKS[2]);
+  assert.notEqual(BOOKS[0].pages, BOOKS[1].pages);
 });
 
 test('getBookByIndex clamps negative and out-of-range indices safely', () => {

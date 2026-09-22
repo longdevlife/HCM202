@@ -37,6 +37,7 @@ export function bindThreeUiShowcase({
 
   const cleanups = [];
   let currentSelectedIndex = Number(selectedBook) || 0;
+  let isRestoring = false;
 
   // 1. Update Topbar & Brand headers if present
   try {
@@ -99,9 +100,9 @@ export function bindThreeUiShowcase({
     }
   };
 
-  // 3. Inject Vietnamese cover copy on the 3 book cards
+  // 3. Inject Vietnamese cover copy on the 3 book cards & bind click
+  const cards = doc.querySelectorAll(THREEUI_SELECTORS.bookCards);
   try {
-    const cards = doc.querySelectorAll(THREEUI_SELECTORS.bookCards);
     cards.forEach((card, index) => {
       const book = getBookByIndex(index);
       if (!book) return;
@@ -136,6 +137,7 @@ export function bindThreeUiShowcase({
 
       // Card click listener
       const handleCardClick = () => {
+        if (isRestoring) return;
         currentSelectedIndex = index;
         onSelectBook?.(index);
         // Delay slightly so ThreeUI's internal selectBook() finishes, then re-apply our copy
@@ -172,17 +174,53 @@ export function bindThreeUiShowcase({
     console.warn("[ThreeUiAdapter] Error setting up CTA:", err);
   }
 
-  // 5. Initial sync of detail drawer
+  // 5. Restore authored ThreeUI visual selected state (e.g. returning from 3D Book)
+  try {
+    if (cards && cards.length > currentSelectedIndex) {
+      const targetCard = cards[currentSelectedIndex];
+      if (targetCard) {
+        isRestoring = true;
+        // Trigger ThreeUI's native selectBook handler on the card
+        if (typeof targetCard.click === "function") {
+          targetCard.click();
+        }
+        // Ensure authored classes and dataset are definitively applied
+        cards.forEach((c, idx) => {
+          if (c.classList?.toggle) {
+            c.classList.toggle("selected", idx === currentSelectedIndex);
+          }
+        });
+        if (doc.body) {
+          doc.body.dataset.mode = "detail";
+        }
+        const detailPanel = doc.querySelector(THREEUI_SELECTORS.detailPanel || "#detailPanel");
+        if (detailPanel) {
+          detailPanel.setAttribute("aria-hidden", "false");
+          detailPanel.inert = false;
+        }
+        if (typeof targetCard.focus === "function") {
+          targetCard.focus({ preventScroll: true });
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[ThreeUiAdapter] Error restoring authored visual selection:", err);
+  } finally {
+    isRestoring = false;
+  }
+
+  // 6. Initial sync of detail drawer copy
   updateDetailDrawer(currentSelectedIndex);
 
   // Return comprehensive cleanup
   return () => {
-    cleanups.forEach((fn) => {
+    while (cleanups.length > 0) {
+      const fn = cleanups.pop();
       try {
         fn();
       } catch (e) {
         // ignore
       }
-    });
+    }
   };
 }
