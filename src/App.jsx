@@ -6,17 +6,15 @@ const BookPage = lazy(() => import("./book/BookPage").then((module) => ({ defaul
 const MinigamePage = lazy(() => import("./minigame/MinigamePage").then((module) => ({ default: module.MinigamePage || module.default })));
 
 const TABS = [
-  { id: "overview", label: "Tổng quan" },
-  { id: "book", label: "Tạp chí" },
+  { id: "book", label: "Sách 3D" },
   { id: "minigame", label: "Mini Game" },
 ];
 
 function getActiveTab() {
   const hash = window.location.hash.replace("#", "");
   const path = window.location.pathname.replace("/", "");
-  if (hash === "intro" || path === "intro") return "overview";
   const from = TABS.find((t) => t.id === hash || t.id === path);
-  return from ? from.id : "overview";
+  return from ? from.id : "book";
 }
 
 function App() {
@@ -35,7 +33,7 @@ function App() {
   }, []);
 
   const handleTabChange = (id) => {
-    const targetId = id === "intro" ? "overview" : id;
+    const targetId = id === "intro" || id === "overview" ? "book" : id;
     setActiveTab(targetId);
     window.location.hash = targetId;
   };
@@ -64,7 +62,7 @@ function App() {
             </div>
           }
         >
-          {(activeTab === "overview" || activeTab === "intro") && <TheoryPage />}
+          {activeTab === "overview" && <TheoryPage />}
           {activeTab === "book" && <BookPage skipIntro={hasVisitedBook} onIntroFinish={() => setHasVisitedBook(true)} />}
           {activeTab === "minigame" && <MinigamePage />}
         </Suspense>
