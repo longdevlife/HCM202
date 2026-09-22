@@ -1,23 +1,22 @@
 import { useState, useEffect } from 'react';
 
 const NAV_LINKS = [
-  { href: '#overview', label: 'Tổng quan', id: 'overview' },
   { href: '#book', label: 'Sách 3D', id: 'book' },
   { href: '#minigame', label: 'Mini Game', id: 'minigame' },
 ];
 
 export default function Navbar({ activeTab, onTabChange }) {
-  const [active, setActive] = useState('#overview');
+  const [active, setActive] = useState('#book');
 
   useEffect(() => {
-    const current = activeTab === 'intro' ? 'overview' : activeTab;
+    const current = activeTab === 'intro' ? 'book' : activeTab;
     setActive(`#${current}`);
   }, [activeTab]);
 
   const handleNavClick = (e, href) => {
     e.preventDefault();
     const id = href.replace('#', '');
-    const targetId = id === 'intro' ? 'overview' : id;
+    const targetId = id === 'intro' ? 'book' : id;
 
     if (activeTab !== targetId && onTabChange) {
       onTabChange(targetId);
@@ -40,13 +39,13 @@ export default function Navbar({ activeTab, onTabChange }) {
       </div>
       <nav className={`navbar-theory pointer-events-auto ${isBook ? 'nav-mode-book' : ''}`}>
         <a
-          href="#overview"
+          href="#book"
           className="navbar-brand"
           style={{
             fontVariantNumeric: 'lining-nums',
             fontFeatureSettings: '"lnum" 1, "tnum" 1',
           }}
-          onClick={(e) => handleNavClick(e, '#overview')}
+          onClick={(e) => handleNavClick(e, '#book')}
         >
           <span className="brand-icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>

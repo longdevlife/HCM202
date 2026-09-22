@@ -66,10 +66,9 @@ export function injectVietnameseTypography(doc) {
             text-rendering: optimizeLegibility !important;
           }
 
-          /* Offset iframe topbar so it sits comfortably beneath the global Navbar */
+          /* Hide iframe topbar completely since global MLN131 Navbar handles top navigation */
           .topbar {
-            padding-top: 86px !important;
-            z-index: 40 !important;
+            display: none !important;
           }
 
           .hero-word {
@@ -192,7 +191,14 @@ export function injectVietnameseTypography(doc) {
             font-size: 14px !important;
           }
 
-          /* Hide commercial bookshop rating stars */
+          /* Meta row layout: cleanly separates source and volume with stylish gold bullet */
+          .meta-row {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            margin-top: 14px !important;
+          }
+
           .meta-row .stars,
           .meta-row .meta-divider {
             display: none !important;
@@ -200,18 +206,31 @@ export function injectVietnameseTypography(doc) {
 
           .review-source {
             font-family: var(--sans) !important;
-            font-size: 12px !important;
+            font-size: 13px !important;
             letter-spacing: 0.08em !important;
             text-transform: uppercase !important;
             color: #dbc39c !important;
             font-weight: 600 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+          }
+
+          .review-source::after {
+            content: "•";
+            margin-left: 12px;
+            color: #c5a028;
+            font-size: 14px;
+            font-weight: bold;
           }
 
           .year {
+            display: inline-block !important;
             font-family: var(--sans) !important;
-            font-size: 12px !important;
-            color: #b7976c !important;
-            font-weight: 600 !important;
+            font-size: 13px !important;
+            color: #e5c158 !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.08em !important;
+            text-transform: uppercase !important;
           }
 
           .pill {
@@ -230,21 +249,37 @@ export function injectVietnameseTypography(doc) {
             font-size: clamp(24px, 3vw, 38px) !important;
           }
 
-          /* Refined close button with clear affordance */
+          /* Close button repositioned to top-right to prevent collision with top-centered global Navbar */
           .close-button {
-            cursor: pointer !important;
-            background: rgba(234, 223, 199, 0.15) !important;
-            border: 1px solid rgba(234, 223, 199, 0.3) !important;
-            color: #eadfc7 !important;
-            border-radius: 50% !important;
-            transition: all 200ms ease !important;
+            position: fixed !important;
             top: 24px !important;
+            right: 28px !important;
+            left: auto !important;
+            transform: translateY(-8px) !important;
+            z-index: 70 !important;
+            width: 48px !important;
+            height: 48px !important;
+            border-radius: 50% !important;
+            cursor: pointer !important;
+            background: rgba(30, 24, 18, 0.85) !important;
+            border: 1px solid rgba(219, 195, 156, 0.45) !important;
+            color: #f7edd9 !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45) !important;
+            backdrop-filter: blur(12px) !important;
+            transition: all 250ms ease !important;
+          }
+
+          [data-mode="detail"] .close-button {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            pointer-events: auto !important;
           }
 
           .close-button:hover {
-            background: rgba(234, 223, 199, 0.3) !important;
-            transform: translate3d(-50%, 0, 0) scale(1.1) !important;
-            color: #fff !important;
+            background: rgba(197, 39, 45, 0.95) !important;
+            border-color: #f7edd9 !important;
+            transform: translateY(0) scale(1.08) !important;
+            color: #ffffff !important;
           }
 
           /* Hide unused action rail buttons */
