@@ -48,13 +48,13 @@ export default function LessonSummaryModal({
 
             {/* Achievement Pieces Pill */}
             <div className="flex items-center gap-3 bg-black/40 px-5 py-3 rounded-2xl border border-[#c9922a]/40 self-start md:self-auto">
-              <div className="text-3xl">🧩</div>
+              <div className="text-3xl">🎯</div>
               <div>
                 <div className="text-[10px] uppercase tracking-widest text-[#fef08a] font-bold">
-                  TIẾN ĐỘ GIẢI MÃ
+                  TIẾN ĐỘ HOÀN THÀNH
                 </div>
                 <div className="text-lg font-black text-white">
-                  {answeredCount}/{totalQuestions} Mảnh Ghép
+                  {answeredCount}/{totalQuestions} Câu Hỏi
                 </div>
               </div>
             </div>

@@ -12,7 +12,7 @@ export const DEFAULT_QUESTIONS = [
     shortLabel: "Câu 1",
     secretWord: "Cơ cấu",
     points: 100,
-    badge: "MẢNH GHÉP 1",
+    badge: "CÂU HỎI 1",
     questionType: "image_riddle",
     wordPattern: ["_ _", "_ _ _"], // CƠ - CẤU
     acceptedAnswers: ["cơ cấu", "co cau", "cơ cấu ", "co cau "],
@@ -33,7 +33,7 @@ export const DEFAULT_QUESTIONS = [
       { id: "D", text: "Cấu trúc", isCorrect: false },
     ],
     explanation:
-      "Chính xác! 'Bắp cơ' (CƠ) ghép với 'Câu cá thêm dấu sắc' (CẤU) = 'CƠ CẤU' — Mảnh ghép đầu tiên cấu thành tựa đề bài học!",
+      "Chính xác! 'Bắp cơ' (CƠ) ghép với 'Câu cá thêm dấu sắc' (CẤU) = 'CƠ CẤU' — Cấu thành tựa đề bài học!",
   },
   {
     id: "q2",
@@ -43,7 +43,7 @@ export const DEFAULT_QUESTIONS = [
     shortLabel: "Câu 2",
     secretWord: "Xã hội",
     points: 100,
-    badge: "MẢNH GHÉP 2",
+    badge: "CÂU HỎI 2",
     questionType: "multiple_choice",
     wordPattern: ["_ _", "_ _ _"], // XÃ - HỘI
     acceptedAnswers: ["xã hội", "xa hoi", "xã hội ", "xa hoi "],
@@ -56,7 +56,7 @@ export const DEFAULT_QUESTIONS = [
       { id: "D", text: "Tập thể", isCorrect: false },
     ],
     explanation:
-      "Chính xác! 'XÃ HỘI' là khái niệm chỉ cộng đồng tập thể con người gắn kết qua các quan hệ sinh sống và sản xuất ('Xã hội loài người') — Mảnh ghép thứ hai!",
+      "Chính xác! 'XÃ HỘI' là khái niệm chỉ cộng đồng tập thể con người gắn kết qua các quan hệ sinh sống và sản xuất ('Xã hội loài người')!",
   },
   {
     id: "q3",
@@ -66,7 +66,7 @@ export const DEFAULT_QUESTIONS = [
     shortLabel: "Câu 3",
     secretWord: "Giai cấp",
     points: 100,
-    badge: "MẢNH GHÉP 3",
+    badge: "CÂU HỎI 3",
     questionType: "multiple_choice",
     wordPattern: ["_ _ _ _", "_ _ _"], // GIAI - CẤP
     acceptedAnswers: ["giai cấp", "giai cap", "giai cấp ", "giai cap "],
@@ -79,7 +79,7 @@ export const DEFAULT_QUESTIONS = [
       { id: "D", text: "Giới tính", isCorrect: false },
     ],
     explanation:
-      "Chính xác! 'GIAI CẤP' là các tập đoàn người to lớn khác nhau về địa vị trong hệ thống sản xuất xã hội (Công nhân, Nông dân, Tư sản...) — Mảnh ghép thứ ba!",
+      "Chính xác! 'GIAI CẤP' là các tập đoàn người to lớn khác nhau về địa vị trong hệ thống sản xuất xã hội (Công nhân, Nông dân, Tư sản...)!",
   },
   {
     id: "q4",
@@ -89,7 +89,7 @@ export const DEFAULT_QUESTIONS = [
     shortLabel: "Câu 4",
     secretWord: "Thời kì quá độ",
     points: 100,
-    badge: "MẢNH GHÉP 4",
+    badge: "CÂU HỎI 4",
     questionType: "anagram", // purely letter tiles & underlines, no multiple choice!
     scrambledTiles: ["Ờ", "K", "Á", "Đ", "I", "Ộ", "T", "H", "Ì", "U", "Q"],
     wordPattern: ["_ _ _ _", "_ _", "_ _ _", "_ _"], // THỜI - KÌ - QUÁ - ĐỘ
@@ -116,7 +116,7 @@ export const DEFAULT_QUESTIONS = [
     shortLabel: "Câu 5",
     secretWord: "Chủ nghĩa xã hội",
     points: 100,
-    badge: "MẢNH GHÉP 5",
+    badge: "CÂU HỎI 5",
     questionType: "image_riddle",
     wordPattern: ["_ _ _", "_ _ _ _ _", "_ _", "_ _ _"], // CHỦ - NGHĨA - XÃ - HỘI
     acceptedAnswers: [
@@ -147,7 +147,7 @@ export const DEFAULT_QUESTIONS = [
       { id: "D", text: "Hiệp nghĩa xã hội", isCorrect: false },
     ],
     explanation:
-      "Chính xác! 'Người làm CHỦ' + 'Trọn chữ NGHĨA' + 'Củ sả lái XÃ' + 'Trẩy HỘI' = 'CHỦ NGHĨA XÃ HỘI' — Mảnh ghép thứ năm hoàn tất tựa đề bài học!",
+      "Chính xác! 'Người làm CHỦ' + 'Trọn chữ NGHĨA' + 'Củ sả lái XÃ' + 'Trẩy HỘI' = 'CHỦ NGHĨA XÃ HỘI' — Hoàn tất tựa đề bài học!",
   },
 ];
 
@@ -216,7 +216,7 @@ export const LESSON_SUMMARY = {
       title: "Tính hệ thống & Các mối quan hệ xã hội nền tảng",
       content:
         "Cơ cấu xã hội không đơn thuần là phép cộng cơ học giữa các nhóm người, mà là hệ thống các giai cấp, tầng lớp tồn tại khách quan cùng các mối quan hệ xã hội về sở hữu tư liệu sản xuất, tổ chức quản lý lao động và phân phối của cải vật chất.",
-      badge: "MẢNH GHÉP 1",
+      badge: "TỪ KHÓA 1",
       accent: "#e11d48",
     },
     {
@@ -225,7 +225,7 @@ export const LESSON_SUMMARY = {
       title: "Vị trí trung tâm chi phối các loại hình cơ cấu khác",
       content:
         "Trong toàn bộ xã hội (gồm cơ cấu dân số, nghề nghiệp, dân tộc, tôn giáo), cơ cấu xã hội – giai cấp giữ vị trí trung tâm, quyết định bản chất kinh tế – chính trị của chế độ và là căn cứ hoạch định chính sách đại đoàn kết.",
-      badge: "MẢNH GHÉP 2",
+      badge: "TỪ KHÓA 2",
       accent: "#059669",
     },
     {
@@ -234,7 +234,7 @@ export const LESSON_SUMMARY = {
       title: "Sứ mệnh giai cấp công nhân & Hạt nhân liên minh",
       content:
         "Giai cấp công nhân Việt Nam là giai cấp lãnh đạo cách mạng thông qua Đảng Cộng sản; cùng với giai cấp nông dân và đội ngũ trí thức tạo thành khối liên minh nòng cốt, đồng thời phát huy mạnh mẽ vai trò của đội ngũ doanh nhân trong thời đại mới.",
-      badge: "MẢNH GHÉP 3",
+      badge: "TỪ KHÓA 3",
       accent: "#2563eb",
     },
     {
@@ -243,7 +243,7 @@ export const LESSON_SUMMARY = {
       title: "Quy luật biến đổi kinh tế quy định giai cấp",
       content:
         "Trong thời kì quá độ lên CNXH, sự tồn tại khách quan của nền kinh tế nhiều thành phần vận hành theo cơ chế thị trường định hướng XHCN quy định tính chất phong phú, đa dạng, vừa hợp tác vừa đấu tranh của các giai cấp, tầng lớp xã hội.",
-      badge: "MẢNH GHÉP 4",
+      badge: "TỪ KHÓA 4",
       accent: "#d97706",
     },
     {
@@ -252,7 +252,7 @@ export const LESSON_SUMMARY = {
       title: "Đích đến tối thượng: Dân giàu, nước mạnh, dân chủ, công bằng, văn minh",
       content:
         "Mục tiêu cao nhất của liên minh giai cấp và đại đoàn kết toàn dân tộc là đưa đất nước vững bước đi lên chủ nghĩa xã hội — giải phóng con người, phát triển lực lượng sản xuất hiện đại và bảo đảm cuộc sống ấm no, tự do, hạnh phúc cho toàn thể nhân dân.",
-      badge: "MẢNH GHÉP 5",
+      badge: "TỪ KHÓA 5",
       accent: "#7c3aed",
     },
   ],

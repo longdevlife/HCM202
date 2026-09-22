@@ -177,11 +177,14 @@ export default function QuestionModal({
               </div>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <span className="px-3 py-1 text-xs font-bold rounded-full bg-[#c9922a]/20 border border-[#c9922a] text-[#fef08a]">
-              Mảnh ghép {question.num}/5
-            </span>
-          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Đóng"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-base"
+          >
+            ✕
+          </button>
         </div>
 
         {/* Scrollable Body */}
@@ -548,7 +551,7 @@ export default function QuestionModal({
                   <span>{isCorrect ? "🎯 CHÍNH XÁC!" : "💡 ĐÁP ÁN ĐÚNG:"}</span>
                 </div>
                 <div className="px-3.5 py-1 bg-white rounded-full border border-current text-xs font-black uppercase tracking-wider shadow-sm">
-                  Mảnh ghép: "{question.secretWord}"
+                  Đáp án: "{question.secretWord}"
                 </div>
               </div>
               <p className="text-xs md:text-sm leading-relaxed">{question.explanation}</p>
@@ -561,7 +564,7 @@ export default function QuestionModal({
               <div className="flex items-center space-x-3">
                 <span className="text-2xl">🎉</span>
                 <div>
-                  <div className="font-bold text-sm">ĐÃ GIẢI MÃ ĐỦ 5 MẢNH GHÉP TỰA ĐỀ!</div>
+                  <div className="font-bold text-sm">ĐÃ HOÀN THÀNH TOÀN BỘ 5 CÂU HỎI!</div>
                   <div className="text-xs text-amber-100">
                     Bấm để mở toàn cảnh KẾT NỘI DUNG BÀI HỌC
                   </div>
