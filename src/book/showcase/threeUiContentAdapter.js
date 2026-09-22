@@ -15,6 +15,7 @@ export function injectVietnameseTypography(doc) {
   if (!doc || !doc.head) return;
 
   try {
+    doc.title = "MLN131 · Thư Viện Sách 3D — Chương 5: Cơ cấu xã hội – giai cấp";
     // 1. Google Fonts Preconnect
     if (!doc.head.querySelector?.("#google-fonts-preconnect-1")) {
       const p1 = doc.createElement?.("link");
