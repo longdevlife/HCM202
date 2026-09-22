@@ -254,7 +254,6 @@ export default function ChiecNonKiDieuGame() {
         isOpen={isSummaryModalOpen}
         onClose={() => setIsSummaryModalOpen(false)}
         onRestart={handleRestart}
-        score={score}
         answeredCount={answeredCount}
         totalQuestions={totalQuestions}
       />

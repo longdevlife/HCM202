@@ -5,7 +5,6 @@ export default function LessonSummaryModal({
   isOpen,
   onClose,
   onRestart,
-  score = 500,
   answeredCount = 5,
   totalQuestions = 5,
 }) {
@@ -47,15 +46,15 @@ export default function LessonSummaryModal({
               </p>
             </div>
 
-            {/* Achievement Score Pill */}
+            {/* Achievement Pieces Pill */}
             <div className="flex items-center gap-3 bg-black/40 px-5 py-3 rounded-2xl border border-[#c9922a]/40 self-start md:self-auto">
-              <div className="text-3xl">🏆</div>
+              <div className="text-3xl">🧩</div>
               <div>
                 <div className="text-[10px] uppercase tracking-widest text-[#fef08a] font-bold">
-                  KẾT QUẢ ĐẠT ĐƯỢC
+                  TIẾN ĐỘ GIẢI MÃ
                 </div>
                 <div className="text-lg font-black text-white">
-                  {score} Điểm · {answeredCount}/{totalQuestions} Câu
+                  {answeredCount}/{totalQuestions} Mảnh Ghép
                 </div>
               </div>
             </div>
