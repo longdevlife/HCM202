@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 const NAV_LINKS = [
   { href: '#book', label: 'Sách 3D', id: 'book' },
   { href: '#minigame', label: 'Mini Game', id: 'minigame' },
+  { href: '#chiecnon', label: 'Chiếc Nón Kỳ Diệu', id: 'chiecnon' },
 ];
 
 export default function Navbar({ activeTab, onTabChange }) {

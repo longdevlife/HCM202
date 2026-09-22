@@ -1,0 +1,38 @@
+/* Styling & Keyframe animations for Chiếc Nón Kỳ Diệu */
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(201, 146, 42, 0.4), 0 0 40px rgba(201, 146, 42, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(201, 146, 42, 0.8), 0 0 60px rgba(201, 146, 42, 0.4);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.wheel-canvas {
+  filter: drop-shadow(0 15px 25px rgba(44, 26, 14, 0.25));
+  transition: transform 0.1s ease-out;
+}
+
+.wheel-stage-card {
+  background: radial-gradient(circle at center, #ffffff 0%, #f4eee6 100%);
+}
