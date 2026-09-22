@@ -120,8 +120,11 @@
 .bestseller-book-card {
   --yaw: 0deg;
   --roll: 0deg;
+  --hover-yaw: 0deg;
+  --hover-roll: 0deg;
+  --selected-yaw: 0deg;
+  --selected-roll: 0deg;
   --offset-y: 0px;
-  --offset-x: 0px;
   appearance: none;
   position: relative;
   width: 100%;
@@ -144,18 +147,30 @@
 .bestseller-book-card[data-position="left"] {
   --yaw: 13deg;
   --roll: -1.8deg;
+  --hover-yaw: 4deg;
+  --hover-roll: -0.45deg;
+  --selected-yaw: 9deg;
+  --selected-roll: -1deg;
   --offset-y: 16px;
 }
 
 .bestseller-book-card[data-position="center"] {
   --yaw: 0deg;
   --roll: 0deg;
+  --hover-yaw: 0deg;
+  --hover-roll: 0deg;
+  --selected-yaw: 0deg;
+  --selected-roll: 0deg;
   --offset-y: -8px;
 }
 
 .bestseller-book-card[data-position="right"] {
   --yaw: -13deg;
   --roll: 1.8deg;
+  --hover-yaw: -4deg;
+  --hover-roll: 0.45deg;
+  --selected-yaw: -9deg;
+  --selected-roll: 1deg;
   --offset-y: 16px;
 }
 
@@ -462,17 +477,17 @@
 .bestseller-book-card:focus-visible .bestseller-book-object {
   transform:
     translate3d(-50%, calc(-50% + var(--offset-y) - 28px), 44px)
-    rotateY(calc(var(--yaw) * .34))
+    rotateY(var(--hover-yaw))
     rotateX(calc(var(--pointer-y) * -2deg))
-    rotateZ(calc(var(--roll) * .25))
+    rotateZ(var(--hover-roll))
     scale(1.045);
 }
 
 .bestseller-book-card.is-selected:not(:hover) .bestseller-book-object {
   transform:
     translate3d(-50%, calc(-50% + var(--offset-y) - 8px), 12px)
-    rotateY(calc(var(--yaw) * .72))
-    rotateZ(calc(var(--roll) * .55));
+    rotateY(var(--selected-yaw))
+    rotateZ(var(--selected-roll));
 }
 
 .bestseller-book-card:hover .bestseller-book-shadow,
@@ -721,8 +736,17 @@
     width: clamp(105px, 31vw, 145px);
   }
 
-  .bestseller-book-card[data-position="left"] { --yaw: 9deg; }
-  .bestseller-book-card[data-position="right"] { --yaw: -9deg; }
+  .bestseller-book-card[data-position="left"] {
+    --yaw: 9deg;
+    --hover-yaw: 3deg;
+    --selected-yaw: 6deg;
+  }
+
+  .bestseller-book-card[data-position="right"] {
+    --yaw: -9deg;
+    --hover-yaw: -3deg;
+    --selected-yaw: -6deg;
+  }
 
   .bestseller-book-cover__eyebrow {
     font-size: 7px;
