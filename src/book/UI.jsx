@@ -194,7 +194,7 @@ export const UI = ({ book = BOOKS[0], onBackToLibrary }) => {
         >
           SÁCH HỌC THUẬT · QUYỂN {roman}
           <span className="mx-4" style={{ color: foil, opacity: 0.85 }}>●</span>
-          HCM202
+          MLN131
         </div>
 
         {/* Right Vertical Edge Label */}

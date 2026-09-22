@@ -2,8 +2,12 @@ import { THREEUI_SELECTORS, AUTHORED_BOOK_KEYS } from "./threeUiSelectors.js";
 import { getBookByIndex } from "../content/bookContent.js";
 
 /**
- * Injects Google Fonts (Playfair Display & Inter) and CSS overrides into ThreeUI iframe document.
- * Eliminates Vietnamese font split / missing glyph fallback issues on Windows.
+ * Injects Google Fonts (Playfair Display & Inter) and refined CSS overrides into ThreeUI iframe document.
+ * - Eliminates Vietnamese font split and missing glyph fallback issues on Windows.
+ * - Fixes giant broken detail titles by sizing them appropriately for Vietnamese academic titles.
+ * - Removes floating blossom petals that overlap and obscure text.
+ * - Offsets topbar so it never collides with the global navigation bar.
+ * - Adds clean action rail controls including an explicit "Close / Pick another book" button.
  *
  * @param {Document} doc - The iframe HTML document
  */
@@ -44,7 +48,7 @@ export function injectVietnameseTypography(doc) {
       }
     }
 
-    // 3. Style overrides for Vietnamese letter spacing and font stacks
+    // 3. Style overrides for Vietnamese letter spacing, detail typography, and UI polish
     if (!doc.head.querySelector?.("#threeui-vietnamese-typography")) {
       const styleEl = doc.createElement?.("style");
       if (styleEl) {
@@ -62,15 +66,22 @@ export function injectVietnameseTypography(doc) {
             text-rendering: optimizeLegibility !important;
           }
 
-          /* Reset negative letter-spacing that breaks Vietnamese diacritics */
+          /* Offset iframe topbar so it sits comfortably beneath the global Navbar */
+          .topbar {
+            padding-top: 86px !important;
+            z-index: 40 !important;
+          }
+
           .hero-word {
             font-family: var(--serif) !important;
             letter-spacing: -0.02em !important;
+            top: 17vh !important;
           }
 
           .brand {
             font-family: var(--serif) !important;
             letter-spacing: normal !important;
+            font-size: clamp(20px, 1.8vw, 26px) !important;
           }
 
           .cover-kicker {
@@ -102,17 +113,31 @@ export function injectVietnameseTypography(doc) {
             font-weight: 600 !important;
           }
 
+          /* DETAIL TITLE FIX: Replaces 82-118px monster font with refined academic title font */
           .detail-title {
             font-family: var(--serif) !important;
+            font-size: clamp(22px, 2.4vw, 34px) !important;
+            font-weight: 600 !important;
+            line-height: 1.3 !important;
             letter-spacing: -0.01em !important;
-            line-height: 1.15 !important;
+            margin-bottom: 14px !important;
+            color: #f7edd9 !important;
+            word-break: normal !important;
+            overflow-wrap: break-word !important;
           }
 
           .detail-description {
             font-family: var(--sans) !important;
+            font-size: clamp(14px, 1.05vw, 15px) !important;
             letter-spacing: normal !important;
-            line-height: 1.6 !important;
+            line-height: 1.65 !important;
             color: #d6cbb8 !important;
+            margin-bottom: 20px !important;
+          }
+
+          /* Hide floating flower petals that obscure text */
+          .blossom-field {
+            display: none !important;
           }
 
           .doc-label {
@@ -120,32 +145,73 @@ export function injectVietnameseTypography(doc) {
             letter-spacing: 0.08em !important;
             font-weight: 700 !important;
             text-transform: uppercase !important;
+            color: #dbc39c !important;
+            font-size: 12px !important;
+            margin-bottom: 10px !important;
+          }
+
+          .doc-steps {
+            gap: 12px !important;
+          }
+
+          .doc-steps li {
+            gap: 12px !important;
+            align-items: baseline !important;
           }
 
           .doc-step-copy strong {
             font-family: var(--sans) !important;
             letter-spacing: normal !important;
             font-weight: 600 !important;
+            color: #f5eedf !important;
+            font-size: 13.5px !important;
+            line-height: 1.45 !important;
           }
 
-          .doc-step-copy span {
-            font-family: var(--sans) !important;
-            letter-spacing: normal !important;
-            line-height: 1.5 !important;
+          .prompt-block {
+            padding: 12px 16px !important;
+            background: rgba(18, 15, 12, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 8px !important;
           }
 
           .prompt-block code, #detailPrompt {
             font-family: var(--sans) !important;
             letter-spacing: normal !important;
             line-height: 1.5 !important;
-            font-size: 14px !important;
+            font-size: 13px !important;
+            color: #f7edd9 !important;
           }
 
           .doc-review {
             font-family: var(--serif) !important;
             letter-spacing: normal !important;
             font-style: italic !important;
-            line-height: 1.5 !important;
+            line-height: 1.55 !important;
+            color: #eadfc7 !important;
+            font-size: 14px !important;
+          }
+
+          /* Hide commercial bookshop rating stars */
+          .meta-row .stars,
+          .meta-row .meta-divider {
+            display: none !important;
+          }
+
+          .review-source {
+            font-family: var(--sans) !important;
+            font-size: 12px !important;
+            letter-spacing: 0.08em !important;
+            text-transform: uppercase !important;
+            color: #dbc39c !important;
+            font-weight: 600 !important;
+          }
+
+          .year {
+            font-family: var(--sans) !important;
+            font-size: 12px !important;
+            color: #b7976c !important;
+            font-weight: 600 !important;
           }
 
           .pill {
@@ -161,28 +227,60 @@ export function injectVietnameseTypography(doc) {
           .menu-link {
             font-family: var(--serif) !important;
             letter-spacing: normal !important;
-            font-size: clamp(28px, 4vw, 54px) !important;
+            font-size: clamp(24px, 3vw, 38px) !important;
           }
 
-          /* Clean up unused action rail elements so user focuses on the main CTA */
+          /* Refined close button with clear affordance */
+          .close-button {
+            cursor: pointer !important;
+            background: rgba(234, 223, 199, 0.15) !important;
+            border: 1px solid rgba(234, 223, 199, 0.3) !important;
+            color: #eadfc7 !important;
+            border-radius: 50% !important;
+            transition: all 200ms ease !important;
+            top: 24px !important;
+          }
+
+          .close-button:hover {
+            background: rgba(234, 223, 199, 0.3) !important;
+            transform: translate3d(-50%, 0, 0) scale(1.1) !important;
+            color: #fff !important;
+          }
+
+          /* Hide unused action rail buttons */
           .action-rail .pill.language,
-          .action-rail .pill:not(.primary-cta):not(#saveButton),
           #saveButton {
             display: none !important;
           }
 
-          /* Highlight primary reading CTA */
+          /* Primary CTA: Read 3D Book */
           .action-rail .primary-cta {
-            min-width: 220px !important;
+            min-width: 170px !important;
             font-weight: 700 !important;
             background: #eadfc7 !important;
             color: #29251d !important;
             box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3) !important;
+            cursor: pointer !important;
           }
 
           .action-rail .primary-cta:hover {
             background: #fff8e8 !important;
             transform: translateY(-2px) !important;
+          }
+
+          /* Secondary CTA: Close detail & return to 3-book overview */
+          .action-rail .close-rail-btn {
+            min-width: 140px !important;
+            background: rgba(234, 223, 199, 0.12) !important;
+            border: 1px solid rgba(234, 223, 199, 0.25) !important;
+            color: #eadfc7 !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+          }
+
+          .action-rail .close-rail-btn:hover {
+            background: rgba(234, 223, 199, 0.25) !important;
+            color: #fff !important;
           }
         `;
         doc.head.appendChild(styleEl);
@@ -255,7 +353,7 @@ export function bindThreeUiShowcase({
       ticketButton.textContent = "BỘ 3 QUYỂN SÁCH";
       ticketButton.setAttribute(
         "data-toast",
-        "Bộ 3 tác phẩm chuyên khảo Chương 5 HCM202"
+        "Bộ 3 tác phẩm chuyên khảo Chương 5 MLN131"
       );
     }
 
@@ -307,10 +405,11 @@ export function bindThreeUiShowcase({
 
       const detailSteps = doc.querySelector(THREEUI_SELECTORS.detailSteps);
       if (detailSteps && Array.isArray(book.chapters) && book.chapters.length > 0) {
+        // Counter is already added via CSS counter(doc-step, decimal-leading-zero)
         detailSteps.innerHTML = book.chapters
           .map(
             (ch) =>
-              `<li><span class="doc-step-copy"><strong>${ch.id || ""}</strong> <span>${ch.title || ""}</span></span></li>`
+              `<li><span class="doc-step-copy"><strong>${ch.title || ch.id || ""}</strong></span></li>`
           )
           .join("");
       }
@@ -331,7 +430,7 @@ export function bindThreeUiShowcase({
       if (detailYear) detailYear.textContent = book.cover.eyebrow || "Chương 5";
 
       const reviewSource = doc.querySelector(THREEUI_SELECTORS.reviewSource);
-      if (reviewSource) reviewSource.textContent = "Giáo trình MLN";
+      if (reviewSource) reviewSource.textContent = "Giáo trình MLN131";
     } catch (err) {
       console.warn("[ThreeUiAdapter] Error updating detail drawer:", err);
     }
@@ -360,7 +459,7 @@ export function bindThreeUiShowcase({
 
       // Card cover footer
       const footer = card.querySelector(THREEUI_SELECTORS.coverFooter);
-      if (footer) footer.textContent = "HCM202 · CHƯƠNG 5";
+      if (footer) footer.textContent = "MLN131 · CHƯƠNG 5";
 
       // Card open badge
       const badge = card.querySelector(THREEUI_SELECTORS.openBadge);
@@ -416,7 +515,7 @@ export function bindThreeUiShowcase({
     console.warn("[ThreeUiAdapter] Error setting up close handler:", err);
   }
 
-  // 6. Bind Primary CTA button in action rail
+  // 6. Bind Primary CTA button & Secondary Close button in action rail
   try {
     const primaryCta = doc.querySelector(THREEUI_SELECTORS.primaryCta);
     if (primaryCta) {
@@ -434,8 +533,32 @@ export function bindThreeUiShowcase({
       primaryCta.addEventListener("click", handleCtaClick);
       cleanups.push(() => primaryCta.removeEventListener("click", handleCtaClick));
     }
+
+    const railButtons = doc.querySelectorAll(".action-rail .pill:not(.language):not(#saveButton)");
+    if (railButtons && railButtons.length > 1) {
+      const closeCta = railButtons[1];
+      closeCta.classList.add("close-rail-btn");
+      closeCta.textContent = "← QUAY LẠI";
+      if (closeCta.style) {
+        closeCta.style.cursor = "pointer";
+      }
+
+      const handleRailCloseClick = (event) => {
+        event.preventDefault();
+        onCloseDetail?.();
+      };
+
+      closeCta.addEventListener("click", handleRailCloseClick);
+      cleanups.push(() => closeCta.removeEventListener("click", handleRailCloseClick));
+
+      for (let i = 2; i < railButtons.length; i++) {
+        if (railButtons[i].style) {
+          railButtons[i].style.display = "none";
+        }
+      }
+    }
   } catch (err) {
-    console.warn("[ThreeUiAdapter] Error setting up CTA:", err);
+    console.warn("[ThreeUiAdapter] Error setting up rail CTA:", err);
   }
 
   // 7. Synchronize Visual Mode: Gallery (3 books overview) vs Detail
