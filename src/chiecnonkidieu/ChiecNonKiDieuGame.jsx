@@ -184,26 +184,9 @@ export default function ChiecNonKiDieuGame() {
             </div>
 
             {/* Actions Area Under the Wheel */}
-            <div className="mt-8 flex flex-col items-center w-full max-w-lg gap-3">
-              {/* Spin Button */}
-              <button
-                type="button"
-                disabled={isSpinning}
-                onClick={handleSpinClick}
-                className={`w-full py-4 md:py-5 rounded-full font-black text-lg md:text-2xl uppercase tracking-wider shadow-2xl transition-all duration-200 cursor-pointer ${
-                  isSpinning
-                    ? "bg-gray-500/50 text-gray-300 cursor-not-allowed scale-95"
-                    : "bg-gradient-to-r from-[#d97706] via-[#c9922a] to-[#b45309] hover:from-[#b45309] hover:to-[#92400e] text-white hover:scale-105 active:scale-95 ring-4 ring-[#fde68a]/50"
-                }`}
-                style={{ fontFamily: "'Playfair Display', serif" }}
-              >
-                {isSpinning ? "Đang Quay Nón..." : "🎡 BẤM ĐỂ QUAY NÓN 🎡"}
-              </button>
-
+            <div className="mt-6 flex flex-col items-center w-full max-w-lg gap-3">
               <div className="text-xs md:text-sm font-medium text-[#c5b79e] text-center">
-                {isSpinning
-                  ? "Hồi hộp chờ nón dừng lại..."
-                  : "💡 Bấm trực tiếp vào các ô trên nón để xem câu hỏi, hoặc bấm nút để quay!"}
+                💡 Bấm trực tiếp vào các ô trên nón để xem và trả lời câu hỏi!
               </div>
 
               {/* WHEN ALL 5 QUESTIONS ARE ANSWERED: GRAND CELEBRATION & LESSON SUMMARY */}

@@ -28,7 +28,7 @@ const WheelCanvas = forwardRef(function WheelCanvas(
   const lastTickIndexRef = useRef(-1);
   const [needleBounce, setNeedleBounce] = useState(0);
   const [internalSpinning, setInternalSpinning] = useState(false);
-  const [hoverTitle, setHoverTitle] = useState("Bấm vào ô câu hỏi để xem hoặc bấm tâm để quay!");
+  const [hoverTitle, setHoverTitle] = useState("Bấm vào các ô câu hỏi để trả lời!");
 
   const numSlices = slices.length;
   const sliceAngle = (2 * Math.PI) / numSlices;
@@ -379,7 +379,7 @@ const WheelCanvas = forwardRef(function WheelCanvas(
     const dist = Math.sqrt(clickX * clickX + clickY * clickY);
 
     if (dist <= 52) {
-      setHoverTitle("⭐ Bấm vào tâm để quay nón!");
+      setHoverTitle("Chiếc Nón Kỳ Diệu");
       return;
     }
 

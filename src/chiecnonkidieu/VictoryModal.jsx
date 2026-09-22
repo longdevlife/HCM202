@@ -141,16 +141,14 @@ export default function VictoryModal({
           <span>✨</span>
         </div>
 
-        <p className="text-xs md:text-sm text-[#e5dfd5] max-w-lg mb-6 leading-relaxed">
-          Bạn đã xuất sắc vượt qua toàn bộ 5 câu hỏi của Chiếc Nón Kỳ Diệu để ghép trọn vẹn tựa đề bài học:
-        </p>
+        
 
         {/* The Exact Title Banner requested by User */}
         <div className="w-full p-6 md:p-8 rounded-2xl bg-gradient-to-r from-[#2c1808]/90 via-[#4d2a0d]/90 to-[#2c1808]/90 border-2 border-[#f59e0b] shadow-[0_0_40px_rgba(245,158,11,0.3)] mb-6 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#f59e0b]/10 to-transparent pointer-events-none"></div>
 
           <div className="text-[11px] uppercase tracking-widest text-[#fde68a] font-bold mb-2">
-            ⭐ TỰA ĐỀ BÀI HỌC ĐÃ ĐƯỢC GIẢI MÃ ⭐
+            Khái Niệm
           </div>
 
           <h1
