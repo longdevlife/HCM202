@@ -75,7 +75,6 @@ export default function ChiecNonKiDieuGame() {
     setIsSpinning(true);
     setSpinsCount((c) => c + 1);
 
-    // Trigger wheel spin directly via ref
     if (wheelRef.current) {
       wheelRef.current.spin(targetIdx);
     }
@@ -105,13 +104,6 @@ export default function ChiecNonKiDieuGame() {
     }
   };
 
-  // Direct question click
-  const handleDirectQuestionClick = (q) => {
-    if (isSpinning) return;
-    setActiveQuestion(q);
-    setIsQuestionModalOpen(true);
-  };
-
   // When user answers in modal
   const handleAnswerSubmit = (qId, isCorrect, chosenOpt) => {
     const q = questions.find((item) => item.id === qId);
@@ -126,7 +118,7 @@ export default function ChiecNonKiDieuGame() {
       const newCount = Object.keys(updated).length;
       if (newCount >= totalQuestions) {
         sounds.playFanfare();
-        showToast("🎉 XUẤT SẮC! ĐÃ GIẢI MÃ TOÀN BỘ TỰA ĐỀ BÀI HỌC!");
+        showToast("🎉 XUẤT SẮC! BẠN ĐÃ TRẢ LỜI ĐỦ 5 CÂU VÀ MỞ KHÓA TỰA ĐỀ!");
       }
       return updated;
     });
@@ -144,7 +136,7 @@ export default function ChiecNonKiDieuGame() {
   };
 
   return (
-    <div className="chiecnon-game-container min-h-screen bg-[#ede8e1] text-[#2c1a0e] pt-24 pb-16 px-4 md:px-8 relative overflow-hidden">
+    <div className="chiecnon-game-container min-h-screen bg-[#ede8e1] text-[#2c1a0e] pt-24 pb-16 px-4 md:px-8 relative overflow-hidden flex flex-col justify-center">
       {/* Background Decorative Glow */}
       <div className="absolute top-12 -left-20 w-96 h-96 rounded-full bg-[#c9922a]/10 filter blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-10 -right-20 w-96 h-96 rounded-full bg-[#b91c1c]/10 filter blur-3xl pointer-events-none"></div>
@@ -157,7 +149,7 @@ export default function ChiecNonKiDieuGame() {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-4xl mx-auto w-full">
         {/* Simple, Compact Game Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#c9922a]/20 border border-[#c9922a] text-[#855318] text-xs font-bold uppercase tracking-widest mb-2">
@@ -170,11 +162,11 @@ export default function ChiecNonKiDieuGame() {
           >
             Vòng Quay Chiếc Nón Kỳ Diệu
           </h1>
-          <p className="text-xs md:text-sm text-[#6b584a] max-w-xl mx-auto mt-1 font-medium">
-            Quay nón dính câu nào câu hỏi sẽ hiện ra. Trả lời hết 5 câu ghép thành tựa đề bài học, bấm cuối cùng để xem <strong>KẾT NỘI DUNG BÀI HỌC</strong>!
+          <p className="text-xs md:text-sm text-[#6b584a] max-w-lg mx-auto mt-1 font-medium">
+            Quay nón dính câu nào câu hỏi sẽ hiện ra. Trả lời hết 5 câu để kết nội dung bài học!
           </p>
 
-          {/* Clean Top Status Pills */}
+          {/* Clean Top Status Bar */}
           <div className="flex items-center justify-center gap-3 mt-3">
             <div className="bg-white/80 px-3.5 py-1.5 rounded-full border border-[#e5dfd5] text-xs font-bold text-[#2c1a0e] shadow-sm flex items-center gap-1.5">
               <span>🏆 Điểm:</span>
@@ -201,187 +193,67 @@ export default function ChiecNonKiDieuGame() {
           </div>
         </div>
 
-        {/* Main Stage: Left = Wheel & Spin Button; Right = 5 Questions & Grand Conclusion */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Wheel Stage (7 Cols) */}
-          <div className="lg:col-span-7 flex flex-col items-center justify-center">
-            <div className="wheel-stage-card p-4 md:p-6 bg-gradient-to-b from-[#faf8f5] to-[#f4eee6] rounded-3xl shadow-xl border-2 border-[#c9922a]/30 relative flex flex-col items-center w-full max-w-[540px]">
-              {/* Wheel Canvas (Click on wheel also spins) */}
-              <div onClick={handleSpinClick} title="Bấm vào đây để quay nón!">
-                <WheelCanvas
-                  ref={wheelRef}
-                  slices={WHEEL_SLICES}
-                  answeredQuestions={answeredQuestions}
-                  onSpinStart={() => setIsSpinning(true)}
-                  onSpinEnd={handleSpinEnd}
-                />
-              </div>
+        {/* Center Stage: The Wheel is the Pure Centered Focus */}
+        <div className="flex flex-col items-center justify-center w-full">
+          <div className="wheel-stage-card p-4 md:p-8 bg-gradient-to-b from-[#faf8f5] to-[#f4eee6] rounded-3xl shadow-2xl border-2 border-[#c9922a]/30 relative flex flex-col items-center w-full max-w-[560px]">
+            {/* Wheel Canvas (Click on wheel also spins) */}
+            <div onClick={handleSpinClick} title="Bấm vào nón để quay!">
+              <WheelCanvas
+                ref={wheelRef}
+                slices={WHEEL_SLICES}
+                answeredQuestions={answeredQuestions}
+                onSpinStart={() => setIsSpinning(true)}
+                onSpinEnd={handleSpinEnd}
+              />
+            </div>
 
+            {/* Actions Area Under the Wheel */}
+            <div className="mt-6 flex flex-col items-center w-full max-w-md gap-3">
               {/* Spin Button */}
-              <div className="mt-6 flex flex-col items-center gap-1.5">
-                <button
-                  type="button"
-                  disabled={isSpinning}
-                  onClick={handleSpinClick}
-                  className={`px-10 py-3.5 rounded-full font-black text-base md:text-lg uppercase tracking-wider shadow-xl transition-all duration-200 cursor-pointer ${
-                    isSpinning
-                      ? "bg-gray-400 text-gray-200 cursor-not-allowed scale-95"
-                      : "bg-gradient-to-r from-[#d97706] via-[#c9922a] to-[#b45309] hover:from-[#b45309] hover:to-[#92400e] text-white hover:scale-105 active:scale-95 ring-4 ring-[#fde68a]/50"
-                  }`}
-                  style={{ fontFamily: "'Playfair Display', serif" }}
-                >
-                  {isSpinning ? "Đang Quay Nón..." : "🎡 BẤM ĐỂ QUAY NÓN 🎡"}
-                </button>
-                <div className="text-[11px] text-[#786c5e]">
-                  {isSpinning ? "Đang quay..." : `Đã quay: ${spinsCount} lượt (Bấm nút hoặc bấm vào nón)`}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: 5 Questions Checklist & Conclusion Button (5 Cols) */}
-          <div className="lg:col-span-5 flex flex-col gap-4">
-            {/* Checklist */}
-            <div className="bg-white p-5 rounded-3xl shadow-sm border border-[#e5dfd5]">
-              <div className="flex items-center justify-between mb-2">
-                <h3
-                  className="text-base md:text-lg font-bold text-[#2c1a0e]"
-                  style={{ fontFamily: "'Playfair Display', serif" }}
-                >
-                  5 Câu Đố Ghép Tựa Đề Bài Học
-                </h3>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#c9922a]/15 text-[#855318]">
-                  {answeredCount}/5 câu
-                </span>
-              </div>
-              <p className="text-xs text-[#786c5e] mb-3">
-                Xoay dính câu nào câu hỏi sẽ hiện ra (hoặc bấm trực tiếp vào thẻ câu hỏi):
-              </p>
-
-              {/* 5 Questions Items */}
-              <div className="space-y-2">
-                {questions.map((q) => {
-                  const state = answeredQuestions[q.id];
-                  const isDone = Boolean(state);
-
-                  return (
-                    <div
-                      key={q.id}
-                      onClick={() => handleDirectQuestionClick(q)}
-                      className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                        isDone
-                          ? "bg-[#f0fdf4] border-[#86efac] text-[#166534]"
-                          : "bg-[#faf8f5] border-[#e5dfd5] hover:border-[#c9922a] hover:bg-[#fffdf9]"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <span
-                          className={`w-6 h-6 rounded-lg font-bold text-xs flex items-center justify-center flex-shrink-0 ${
-                            isDone
-                              ? "bg-[#10b981] text-white"
-                              : "bg-[#2c1a0e]/10 text-[#2c1a0e]"
-                          }`}
-                        >
-                          {isDone ? "✓" : q.num}
-                        </span>
-                        <div className="truncate">
-                          <div className="text-xs font-bold truncate text-[#2c1a0e]">
-                            {q.title}
-                          </div>
-                          <div className="text-[11px] text-[#786c5e] truncate">
-                            {isDone ? (
-                              <span className="text-emerald-700 font-black">
-                                Mảnh ghép: "{q.secretWord}"
-                              </span>
-                            ) : (
-                              `Thể loại: ${q.typeTag}`
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex-shrink-0">
-                        {isDone ? (
-                          <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                            Đã giải ✓
-                          </span>
-                        ) : (
-                          <span className="text-xs font-bold text-[#c9922a] hover:underline">
-                            Mở →
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Assembled Title Status */}
-              <div className="mt-4 pt-3 border-t border-[#e5dfd5]">
-                <div className="text-[10px] uppercase font-bold text-[#786c5e] mb-1 tracking-wider">
-                  TỰA ĐỀ BÀI HỌC GHÉP ĐƯỢC:
-                </div>
-                <div
-                  className={`text-xs md:text-sm font-bold leading-snug p-2.5 rounded-xl border ${
-                    allAnswered
-                      ? "bg-amber-50 border-amber-300 text-amber-950 font-black animate-pulse"
-                      : "bg-gray-50 border-gray-200 text-gray-600"
-                  }`}
-                  style={{ fontFamily: "'Playfair Display', serif" }}
-                >
-                  👉 "{FULL_LESSON_TITLE}"
-                </div>
-              </div>
-            </div>
-
-            {/* THE CONCLUSION BUTTON: "bấm cuối cùng khi trẢ LỜI HẾT KẾT NỘI DUNG BÀI HC" */}
-            <div
-              className={`p-5 rounded-3xl border-2 transition-all duration-300 relative overflow-hidden ${
-                allAnswered
-                  ? "bg-gradient-to-r from-[#2c1a0e] via-[#452814] to-[#2c1a0e] border-[#c9922a] shadow-xl ring-4 ring-[#c9922a]/40"
-                  : "bg-white border-[#e5dfd5] shadow-sm"
-              }`}
-            >
-              <div className="flex items-center gap-2.5 mb-1.5">
-                <span className="text-2xl">{allAnswered ? "🎉" : "🔒"}</span>
-                <div>
-                  <h4
-                    className={`font-black text-sm md:text-base ${
-                      allAnswered ? "text-[#fef08a]" : "text-[#2c1a0e]"
-                    }`}
-                    style={{ fontFamily: "'Playfair Display', serif" }}
-                  >
-                    KẾT NỘI DUNG BÀI HỌC
-                  </h4>
-                  <div
-                    className={`text-[11px] ${
-                      allAnswered ? "text-amber-100" : "text-[#786c5e]"
-                    }`}
-                  >
-                    {allAnswered
-                      ? "Đã trả lời hết cả 5 câu! Bấm nút bên dưới để xem toàn bộ kết luận bài học."
-                      : `Cần trả lời đủ 5 câu để mở khóa (Hiện tại: ${answeredCount}/5 câu).`}
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Button */}
               <button
                 type="button"
-                onClick={() => setIsSummaryModalOpen(true)}
-                className={`w-full mt-3 py-3 px-4 rounded-xl font-black text-xs md:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all duration-200 ${
-                  allAnswered
-                    ? "bg-gradient-to-r from-[#f59e0b] via-[#c9922a] to-[#d97706] hover:brightness-110 text-white animate-pulse scale-[1.02] active:scale-95 cursor-pointer shadow-amber-900/50"
-                    : "bg-[#2c1a0e]/10 hover:bg-[#2c1a0e]/20 text-[#2c1a0e] cursor-pointer"
+                disabled={isSpinning}
+                onClick={handleSpinClick}
+                className={`w-full py-4 rounded-full font-black text-base md:text-xl uppercase tracking-wider shadow-2xl transition-all duration-200 cursor-pointer ${
+                  isSpinning
+                    ? "bg-gray-400 text-gray-200 cursor-not-allowed scale-95"
+                    : "bg-gradient-to-r from-[#d97706] via-[#c9922a] to-[#b45309] hover:from-[#b45309] hover:to-[#92400e] text-white hover:scale-105 active:scale-95 ring-4 ring-[#fde68a]/50"
                 }`}
+                style={{ fontFamily: "'Playfair Display', serif" }}
               >
-                <span>📜</span>
-                <span>
-                  {allAnswered
-                    ? "BẤM XEM KẾT NỘI DUNG BÀI HỌC"
-                    : "Xem Trước Kết Nội Dung Bài Học"}
-                </span>
+                {isSpinning ? "Đang Quay Nón..." : "🎡 BẤM ĐỂ QUAY NÓN 🎡"}
               </button>
+
+              <div className="text-[11px] text-[#786c5e]">
+                {isSpinning ? "Hồi hộp chờ nón dừng lại..." : `Đã quay: ${spinsCount} lượt (Bấm nút hoặc bấm vào nón)`}
+              </div>
+
+              {/* WHEN ALL 5 QUESTIONS ARE ANSWERED: GRAND CONCLUSION BUTTON REVEALS HERE! */}
+              {allAnswered && (
+                <div className="w-full mt-3 p-5 rounded-2xl bg-gradient-to-r from-[#2c1a0e] via-[#452814] to-[#2c1a0e] border-2 border-[#c9922a] shadow-2xl animate-fade-in text-center flex flex-col items-center gap-2.5">
+                  <div className="text-xs uppercase tracking-widest text-[#fef08a] font-bold">
+                    🎉 ĐÃ HOÀN THÀNH TOÀN BỘ 5 CÂU HỎI
+                  </div>
+
+                  {/* Assembled Title */}
+                  <div
+                    className="text-sm md:text-base font-bold text-white leading-snug px-2"
+                    style={{ fontFamily: "'Playfair Display', serif" }}
+                  >
+                    👉 "{FULL_LESSON_TITLE}"
+                  </div>
+
+                  {/* The Grand Conclusion Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsSummaryModalOpen(true)}
+                    className="w-full mt-2 py-3.5 px-6 rounded-xl font-black text-sm md:text-base uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl bg-gradient-to-r from-[#f59e0b] via-[#c9922a] to-[#d97706] hover:brightness-110 text-white animate-pulse scale-[1.02] active:scale-95 cursor-pointer shadow-amber-900/50"
+                  >
+                    <span>📜</span>
+                    <span>BẤM XEM KẾT NỘI DUNG BÀI HỌC</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
