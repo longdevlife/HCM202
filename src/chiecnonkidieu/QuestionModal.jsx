@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { sounds } from "./SoundEffects";
 
 export default function QuestionModal({
@@ -9,42 +9,126 @@ export default function QuestionModal({
   allAnswered = false,
   onOpenSummary,
 }) {
-  const [selectedOptId, setSelectedOptId] = useState(null);
+  const [typedAnswer, setTypedAnswer] = useState("");
+  // For anagram question 4: state of placed tiles
+  // Array of 11 slots corresponding to the 11 target letters
+  const [placedTiles, setPlacedTiles] = useState([]);
+  const [availableScrambled, setAvailableScrambled] = useState([]);
+
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
 
+  // Initialize or reset when a new question opens
+  useEffect(() => {
+    if (question && isOpen) {
+      setTypedAnswer("");
+      setIsSubmitted(false);
+      setIsCorrect(false);
+
+      if (question.questionType === "anagram" && question.scrambledTiles) {
+        setAvailableScrambled(
+          question.scrambledTiles.map((char, idx) => ({ id: `${char}-${idx}`, char }))
+        );
+        setPlacedTiles([]);
+      }
+    }
+  }, [question, isOpen]);
+
   if (!isOpen || !question) return null;
 
-  const handleSelect = (optId) => {
+  // Normalizing string for accent-insensitive check
+  const normalizeText = (str) =>
+    (str || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "i") // accept both thời kỳ and thời kì
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+  // Anagram tile click: place into next empty slot
+  const handlePickTile = (tile) => {
     if (isSubmitted) return;
-    setSelectedOptId(optId);
+    if (placedTiles.length >= 11) return;
+
+    setAvailableScrambled((prev) => prev.filter((t) => t.id !== tile.id));
+    setPlacedTiles((prev) => [...prev, tile]);
   };
 
-  const handleSubmit = () => {
-    if (!selectedOptId || isSubmitted) return;
-    const opt = question.options.find((o) => o.id === selectedOptId);
-    const correct = Boolean(opt?.isCorrect);
-    setIsCorrect(correct);
+  // Anagram placed slot click: return back to pool
+  const handleRemoveTile = (index) => {
+    if (isSubmitted) return;
+    const tileToRemove = placedTiles[index];
+    if (!tileToRemove) return;
+
+    setPlacedTiles((prev) => prev.filter((_, idx) => idx !== index));
+    setAvailableScrambled((prev) => [...prev, tileToRemove]);
+  };
+
+  // Check / Submit Anagram Answer
+  const handleCheckAnagram = () => {
+    if (isSubmitted) return;
+    const currentWord = placedTiles.map((t) => t.char).join("");
+    const targetNormalized = "THỜIKÌQUÁĐỘ";
+    const targetNormalized2 = "THỜIKỲQUÁĐỘ";
+
+    const isMatch =
+      currentWord.toUpperCase() === targetNormalized ||
+      currentWord.toUpperCase() === targetNormalized2 ||
+      normalizeText(currentWord) === normalizeText("thoikiquado");
+
+    setIsCorrect(isMatch);
     setIsSubmitted(true);
 
-    if (correct) {
+    if (isMatch) {
       sounds.playCorrect();
+      onAnswerSubmit && onAnswerSubmit(question.id, true);
     } else {
       sounds.playWrong();
+      onAnswerSubmit && onAnswerSubmit(question.id, false);
     }
+  };
 
-    onAnswerSubmit && onAnswerSubmit(question.id, correct, opt);
+  // Check / Submit Typed Answer for Riddle / Knowledge questions
+  const handleCheckTyped = (e) => {
+    e?.preventDefault();
+    if (isSubmitted || !typedAnswer.trim()) return;
+
+    const userNorm = normalizeText(typedAnswer);
+    const targetNorm = normalizeText(question.secretWord);
+
+    const isMatch =
+      userNorm === targetNorm ||
+      (question.acceptedAnswers &&
+        question.acceptedAnswers.some((ans) => normalizeText(ans) === userNorm));
+
+    setIsCorrect(isMatch);
+    setIsSubmitted(true);
+
+    if (isMatch) {
+      sounds.playCorrect();
+      onAnswerSubmit && onAnswerSubmit(question.id, true);
+    } else {
+      sounds.playWrong();
+      onAnswerSubmit && onAnswerSubmit(question.id, false);
+    }
+  };
+
+  // Force Reveal Answer
+  const handleRevealAnswer = () => {
+    if (isSubmitted) return;
+    setIsCorrect(true);
+    setIsSubmitted(true);
+    sounds.playCorrect();
+    onAnswerSubmit && onAnswerSubmit(question.id, true);
   };
 
   const handleNext = () => {
-    setSelectedOptId(null);
-    setIsSubmitted(false);
-    setIsCorrect(false);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
       <div
         className="relative w-full max-w-2xl bg-[#faf8f5] text-[#2c1a0e] rounded-3xl shadow-2xl border-2 border-[#c9922a]/50 overflow-hidden flex flex-col my-auto max-h-[94vh]"
         style={{ fontFamily: "'Inter', sans-serif" }}
@@ -52,11 +136,11 @@ export default function QuestionModal({
         {/* Top Header Strip */}
         <div className="bg-gradient-to-r from-[#2c1a0e] via-[#4a2e18] to-[#2c1a0e] text-white px-6 py-4 flex items-center justify-between border-b border-[#c9922a]/50">
           <div className="flex items-center space-x-3">
-            <span className="w-9 h-9 rounded-full bg-[#c9922a] text-[#2c1a0e] font-black flex items-center justify-center text-sm shadow-md">
+            <span className="w-8 h-8 rounded-full bg-[#c9922a] text-[#2c1a0e] font-black flex items-center justify-center text-sm shadow-md">
               {question.num}
             </span>
             <div>
-              <div className="text-xs tracking-widest uppercase text-[#fef08a] font-bold">
+              <div className="text-[11px] tracking-widest uppercase text-[#fef08a] font-bold">
                 {question.badge} · {question.typeTag}
               </div>
               <div
@@ -74,156 +158,312 @@ export default function QuestionModal({
           </div>
         </div>
 
-        {/* Scrollable Question & Clues Body */}
-        <div className="p-6 overflow-y-auto space-y-5 flex-1">
-          {/* Visual Clues / Scrambled Tiles for Puzzle Questions */}
-          {question.visualClues && (
-            <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200/80 shadow-inner">
-              <div className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <span>🎨</span>
-                <span>Gợi ý hình ảnh trực quan:</span>
+        {/* Scrollable Content Body */}
+        <div className="p-5 md:p-6 overflow-y-auto space-y-4 flex-1">
+          {/* REAL IMAGES FOR QUESTION 1 (2 REAL PHOTOS) */}
+          {question.visualImages && question.visualImages.length === 2 && (
+            <div className="flex items-center justify-center gap-3 md:gap-4 p-3 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
+              {/* Image 1 */}
+              <div className="flex-1 flex flex-col items-center">
+                <div className="w-full aspect-[4/3] rounded-xl overflow-hidden shadow border border-gray-200 bg-gray-100 relative group">
+                  <img
+                    src={question.visualImages[0].src}
+                    alt={question.visualImages[0].caption}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <span className="text-xs font-bold text-[#4a3e35] mt-1.5 text-center">
+                  {question.visualImages[0].caption}
+                </span>
               </div>
-              <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
-                {question.visualClues.map((item, idx) =>
-                  item.plus ? (
-                    <span key={idx} className="text-amber-500 font-black text-lg">
-                      {item.plus}
-                    </span>
-                  ) : (
-                    <div
-                      key={idx}
-                      className="flex flex-col items-center bg-white px-3 py-2 rounded-xl shadow-sm border border-amber-200 text-center min-w-[70px]"
-                    >
-                      <span className="text-2xl mb-1">{item.icon}</span>
-                      <span className="text-[10px] text-gray-500 font-medium leading-tight">
-                        {item.label}
-                      </span>
-                      {isSubmitted && (
-                        <span className="text-xs font-black text-amber-700 mt-1 uppercase">
-                          = {item.word}
-                        </span>
-                      )}
+
+              {/* Plus Sign */}
+              <div className="text-2xl md:text-3xl font-black text-[#c9922a] select-none">
+                +
+              </div>
+
+              {/* Image 2 */}
+              <div className="flex-1 flex flex-col items-center">
+                <div className="w-full aspect-[4/3] rounded-xl overflow-hidden shadow border border-gray-200 bg-gray-100 relative group">
+                  <img
+                    src={question.visualImages[1].src}
+                    alt={question.visualImages[1].caption}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {question.visualImages[1].hasAcuteAccent && (
+                    <div className="absolute top-2 right-2 bg-red-600/90 text-white font-black text-xs md:text-sm px-2 py-0.5 rounded-md shadow">
+                      + Dấu Sắc (´)
                     </div>
-                  )
-                )}
+                  )}
+                </div>
+                <span className="text-xs font-bold text-[#4a3e35] mt-1.5 text-center">
+                  {question.visualImages[1].caption}
+                </span>
               </div>
             </div>
           )}
 
-          {/* Scrambled Letter Tiles for Question 4 */}
-          {question.scrambledTiles && (
-            <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl border border-purple-200 shadow-inner">
-              <div className="text-[11px] font-bold text-purple-800 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <span>🔤</span>
-                <span>Hàng ngang gồm 11 chữ cái đang bị đảo lộn:</span>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
-                {question.scrambledTiles.map((char, idx) => (
-                  <span
-                    key={idx}
-                    className="w-8 h-9 md:w-9 md:h-10 rounded-lg bg-white border-2 border-purple-300 text-purple-900 font-black text-base md:text-lg flex items-center justify-center shadow-sm"
-                  >
-                    {char}
+          {/* REAL IMAGES FOR QUESTION 5 (4 REAL PHOTOS GRID) */}
+          {question.visualImages && question.visualImages.length === 4 && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 p-3 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
+              {question.visualImages.map((img, idx) => (
+                <div key={idx} className="flex flex-col items-center">
+                  <div className="w-full aspect-[4/3] rounded-xl overflow-hidden shadow border border-gray-200 bg-gray-100 group">
+                    <img
+                      src={img.src}
+                      alt={img.caption}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <span className="text-[11px] font-bold text-[#4a3e35] mt-1 text-center line-clamp-1">
+                    Ô {idx + 1}: {img.caption}
                   </span>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           )}
 
           {/* Question Text */}
-          <div className="p-4 bg-white rounded-xl shadow-sm border border-[#e5dfd5]">
+          <div className="p-3.5 bg-white rounded-xl shadow-sm border border-[#e5dfd5]">
             <h3
-              className="text-base md:text-lg font-bold text-[#2c1a0e] leading-relaxed whitespace-pre-line"
+              className="text-sm md:text-base font-bold text-[#2c1a0e] leading-relaxed whitespace-pre-line"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
               {question.question}
             </h3>
           </div>
 
-          {/* Options Grid */}
-          <div className="space-y-2.5">
-            {question.options.map((opt) => {
-              const isChosen = selectedOptId === opt.id;
-              let cardClass =
-                "relative flex items-center gap-3.5 p-3.5 rounded-xl border text-left transition-all duration-200 cursor-pointer ";
+          {/* QUESTION 4 (ANAGRAM): NO MULTIPLE CHOICE, ONLY SCRAMBLED TILES AND UNDERLINE SLOTS */}
+          {question.questionType === "anagram" && (
+            <div className="space-y-4 p-4 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
+              {/* Scrambled Letter Bank */}
+              <div className="flex flex-wrap items-center justify-center gap-2 p-2 bg-amber-50/60 rounded-xl border border-amber-200">
+                {availableScrambled.length > 0 ? (
+                  availableScrambled.map((tile) => (
+                    <button
+                      key={tile.id}
+                      type="button"
+                      disabled={isSubmitted}
+                      onClick={() => handlePickTile(tile)}
+                      className="w-9 h-10 md:w-10 md:h-11 rounded-lg bg-white hover:bg-amber-100 active:scale-95 border-2 border-amber-400 text-[#2c1a0e] font-black text-base md:text-lg flex items-center justify-center shadow-md transition-all cursor-pointer"
+                    >
+                      {tile.char}
+                    </button>
+                  ))
+                ) : (
+                  <span className="text-xs text-amber-700 italic py-1">
+                    Đã xếp toàn bộ 11 chữ cái vào các ô gạch chân bên dưới!
+                  </span>
+                )}
+              </div>
 
-              if (!isSubmitted) {
-                if (isChosen) {
-                  cardClass +=
-                    "bg-[#fff9ea] border-[#c9922a] shadow-md ring-2 ring-[#c9922a]/30";
-                } else {
-                  cardClass +=
-                    "bg-white border-[#e5dfd5] hover:border-[#c9922a]/70 hover:bg-[#faf6ee]";
-                }
-              } else {
-                if (opt.isCorrect) {
-                  cardClass +=
-                    "bg-[#ecfdf5] border-[#10b981] text-[#065f46] shadow-sm";
-                } else if (isChosen && !opt.isCorrect) {
-                  cardClass +=
-                    "bg-[#fef2f2] border-[#ef4444] text-[#991b1b] shadow-sm";
-                } else {
-                  cardClass += "bg-gray-50 border-gray-200 opacity-60";
-                }
-              }
+              {/* Underline Slots Formatted as 4 Words: THỜI - KÌ - QUÁ - ĐỘ (4 + 2 + 3 + 2 = 11) */}
+              <div className="p-4 bg-gradient-to-b from-[#faf8f5] to-[#f4eee6] rounded-2xl border border-[#c9922a]/30">
+                <div className="flex flex-wrap items-center justify-center gap-3 md:gap-5">
+                  {/* Word 1: THỜI (4 slots: 0, 1, 2, 3) */}
+                  <div className="flex gap-1.5">
+                    {[0, 1, 2, 3].map((slotIdx) => {
+                      const tile = placedTiles[slotIdx];
+                      return (
+                        <div
+                          key={slotIdx}
+                          onClick={() => handleRemoveTile(slotIdx)}
+                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all cursor-pointer select-none ${
+                            tile
+                              ? "bg-white border-[#c9922a] text-[#2c1a0e] shadow-sm scale-105"
+                              : "bg-black/5 border-gray-400 text-transparent"
+                          }`}
+                        >
+                          {tile ? tile.char : "_"}
+                        </div>
+                      );
+                    })}
+                  </div>
 
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  disabled={isSubmitted}
-                  onClick={() => handleSelect(opt.id)}
-                  className={cardClass}
-                >
-                  <span
-                    className={`w-7 h-7 flex-shrink-0 rounded-lg font-bold text-sm flex items-center justify-center transition-colors ${
-                      isSubmitted && opt.isCorrect
-                        ? "bg-[#10b981] text-white"
-                        : isSubmitted && isChosen && !opt.isCorrect
-                        ? "bg-[#ef4444] text-white"
-                        : isChosen
-                        ? "bg-[#c9922a] text-white"
-                        : "bg-[#2c1a0e]/10 text-[#2c1a0e]"
+                  {/* Word 2: KÌ (2 slots: 4, 5) */}
+                  <div className="flex gap-1.5">
+                    {[4, 5].map((slotIdx) => {
+                      const tile = placedTiles[slotIdx];
+                      return (
+                        <div
+                          key={slotIdx}
+                          onClick={() => handleRemoveTile(slotIdx)}
+                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all cursor-pointer select-none ${
+                            tile
+                              ? "bg-white border-[#c9922a] text-[#2c1a0e] shadow-sm scale-105"
+                              : "bg-black/5 border-gray-400 text-transparent"
+                          }`}
+                        >
+                          {tile ? tile.char : "_"}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Word 3: QUÁ (3 slots: 6, 7, 8) */}
+                  <div className="flex gap-1.5">
+                    {[6, 7, 8].map((slotIdx) => {
+                      const tile = placedTiles[slotIdx];
+                      return (
+                        <div
+                          key={slotIdx}
+                          onClick={() => handleRemoveTile(slotIdx)}
+                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all cursor-pointer select-none ${
+                            tile
+                              ? "bg-white border-[#c9922a] text-[#2c1a0e] shadow-sm scale-105"
+                              : "bg-black/5 border-gray-400 text-transparent"
+                          }`}
+                        >
+                          {tile ? tile.char : "_"}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Word 4: ĐỘ (2 slots: 9, 10) */}
+                  <div className="flex gap-1.5">
+                    {[9, 10].map((slotIdx) => {
+                      const tile = placedTiles[slotIdx];
+                      return (
+                        <div
+                          key={slotIdx}
+                          onClick={() => handleRemoveTile(slotIdx)}
+                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all cursor-pointer select-none ${
+                            tile
+                              ? "bg-white border-[#c9922a] text-[#2c1a0e] shadow-sm scale-105"
+                              : "bg-black/5 border-gray-400 text-transparent"
+                          }`}
+                        >
+                          {tile ? tile.char : "_"}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Anagram Actions */}
+              {!isSubmitted && (
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  {placedTiles.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAvailableScrambled(
+                          question.scrambledTiles.map((char, idx) => ({ id: `${char}-${idx}`, char }))
+                        );
+                        setPlacedTiles([]);
+                      }}
+                      className="px-3 py-2 text-xs font-bold text-gray-500 hover:text-gray-800"
+                    >
+                      Xếp lại
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleRevealAnswer}
+                    className="px-3.5 py-2 rounded-xl text-xs font-bold border border-[#c9922a] text-[#855318] hover:bg-amber-50"
+                  >
+                    Xem đáp án
+                  </button>
+                  <button
+                    type="button"
+                    disabled={placedTiles.length < 11}
+                    onClick={handleCheckAnagram}
+                    className={`px-5 py-2 rounded-xl font-bold text-xs uppercase tracking-wider shadow transition-all ${
+                      placedTiles.length >= 11
+                        ? "bg-[#c9922a] hover:bg-[#b8860b] text-white hover:scale-105 active:scale-95"
+                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }`}
                   >
-                    {opt.id}
-                  </span>
-                  <span className="flex-1 text-sm md:text-base font-medium leading-relaxed">
-                    {opt.text}
-                  </span>
-                  {isSubmitted && opt.isCorrect && (
-                    <span className="text-emerald-600 font-bold text-sm ml-2">✓ Đáp án đúng</span>
-                  )}
-                  {isSubmitted && isChosen && !opt.isCorrect && (
-                    <span className="text-rose-600 font-bold text-sm ml-2">✗ Sai</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                    Kiểm Tra
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
-          {/* Feedback & Secret Word Reveal */}
+          {/* QUESTIONS 1, 2, 3, 5: ELEGANT ANSWER INPUT BOX WITH UNDERLINES */}
+          {question.questionType !== "anagram" && (
+            <div className="space-y-3 p-4 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
+              {/* Word Pattern Underlines Display */}
+              {question.wordPattern && (
+                <div className="flex items-center justify-center gap-3 py-1">
+                  {question.wordPattern.map((pat, pIdx) => (
+                    <span
+                      key={pIdx}
+                      className="font-mono text-base md:text-lg font-bold text-[#c9922a] tracking-widest bg-amber-50/80 px-2.5 py-1 rounded-md border border-amber-200"
+                    >
+                      {pat}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Form Input */}
+              {!isSubmitted ? (
+                <form onSubmit={handleCheckTyped} className="space-y-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      autoFocus
+                      value={typedAnswer}
+                      onChange={(e) => setTypedAnswer(e.target.value)}
+                      placeholder="Nhập từ ghép suy đoán..."
+                      className="flex-1 px-4 py-2.5 border-2 border-[#e5dfd5] focus:border-[#c9922a] rounded-xl text-sm md:text-base font-bold text-[#2c1a0e] outline-none shadow-inner"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!typedAnswer.trim()}
+                      className={`px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm uppercase tracking-wider shadow transition-all ${
+                        typedAnswer.trim()
+                          ? "bg-[#c9922a] hover:bg-[#b8860b] text-white active:scale-95 cursor-pointer"
+                          : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      }`}
+                    >
+                      Kiểm Tra
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[11px] text-[#786c5e]">
+                      Gợi ý: Nhập có dấu hoặc không dấu đều được chấp nhận
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleRevealAnswer}
+                      className="text-xs font-bold text-[#c9922a] hover:underline"
+                    >
+                      Xem đáp án →
+                    </button>
+                  </div>
+                </form>
+              ) : null}
+            </div>
+          )}
+
+          {/* Success / Result Box */}
           {isSubmitted && (
             <div
-              className={`p-4 rounded-xl border space-y-2 ${
+              className={`p-4 rounded-2xl border space-y-2 animate-fade-in ${
                 isCorrect
-                  ? "bg-emerald-50/90 border-emerald-300 text-emerald-950"
-                  : "bg-rose-50/90 border-rose-300 text-rose-950"
+                  ? "bg-emerald-50 border-emerald-300 text-emerald-950"
+                  : "bg-rose-50 border-rose-300 text-rose-950"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="font-bold text-sm flex items-center gap-1.5">
-                  <span>{isCorrect ? "🎯 CHÍNH XÁC!" : "💡 CHƯA CHÍNH XÁC!"}</span>
+                <div className="font-black text-sm md:text-base flex items-center gap-1.5">
+                  <span>{isCorrect ? "🎯 CHÍNH XÁC!" : "💡 ĐÁP ÁN ĐÚNG:"}</span>
                 </div>
-                <div className="px-3 py-1 bg-white/80 rounded-full border border-current text-xs font-black uppercase tracking-wider">
-                  Mảnh ghép: {question.secretWord}
+                <div className="px-3.5 py-1 bg-white rounded-full border border-current text-xs font-black uppercase tracking-wider shadow-sm">
+                  Mảnh ghép: "{question.secretWord}"
                 </div>
               </div>
               <p className="text-xs md:text-sm leading-relaxed">{question.explanation}</p>
             </div>
           )}
 
-          {/* All 5 questions completed notification */}
+          {/* Banner notification if all 5 completed */}
           {isSubmitted && allAnswered && (
             <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg flex items-center justify-between animate-pulse">
               <div className="flex items-center space-x-3">
@@ -231,7 +471,7 @@ export default function QuestionModal({
                 <div>
                   <div className="font-bold text-sm">ĐÃ GIẢI MÃ ĐỦ 5 MẢNH GHÉP TỰA ĐỀ!</div>
                   <div className="text-xs text-amber-100">
-                    Toàn bộ tựa đề bài học đã được ghép hoàn chỉnh. Bấm xem Kết luận nội dung ngay!
+                    Bấm để mở toàn cảnh KẾT NỘI DUNG BÀI HỌC
                   </div>
                 </div>
               </div>
@@ -252,37 +492,24 @@ export default function QuestionModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="bg-[#f2ece4] px-6 py-4 border-t border-[#e5dfd5] flex items-center justify-between">
-          <div className="text-xs text-[#786c5e]">
-            {!isSubmitted
-              ? "Chọn 1 đáp án và bấm Xác nhận"
-              : `Mảnh ghép mở khóa: "${question.secretWord}"`}
-          </div>
-
-          <div className="flex items-center space-x-3">
-            {!isSubmitted ? (
-              <button
-                type="button"
-                disabled={!selectedOptId}
-                onClick={handleSubmit}
-                className={`px-6 py-2.5 rounded-full font-bold text-sm shadow-md transition-all ${
-                  selectedOptId
-                    ? "bg-[#c9922a] hover:bg-[#b8860b] text-white hover:scale-105 active:scale-95"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-              >
-                Xác Nhận Câu Trả Lời
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleNext}
-                className="px-6 py-2.5 rounded-full font-bold text-sm bg-[#2c1a0e] hover:bg-[#4a2e18] text-white shadow-md hover:scale-105 active:scale-95 transition-all"
-              >
-                {allAnswered ? "Đóng & Đến Bảng Tựa Đề 📜" : "Tiếp Tục Vòng Quay 🎡"}
-              </button>
-            )}
-          </div>
+        <div className="bg-[#f2ece4] px-6 py-3.5 border-t border-[#e5dfd5] flex items-center justify-end">
+          {isSubmitted ? (
+            <button
+              type="button"
+              onClick={handleNext}
+              className="px-6 py-2.5 rounded-full font-bold text-sm bg-[#2c1a0e] hover:bg-[#4a2e18] text-white shadow-md hover:scale-105 active:scale-95 transition-all"
+            >
+              {allAnswered ? "Đóng & Đến Bảng Tựa Đề 📜" : "Tiếp Tục Vòng Quay 🎡"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2 rounded-full text-xs font-bold text-gray-600 hover:bg-black/5"
+            >
+              Đóng
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -13,34 +13,29 @@ export const DEFAULT_QUESTIONS = [
     secretWord: "Cơ cấu",
     points: 100,
     badge: "MẢNH GHÉP 1",
-    visualClues: [
-      { icon: "💪", label: "Vận động viên khoe bắp", word: "CƠ" },
-      { plus: "+" },
-      { icon: "🎣", label: "Người câu cá + dấu sắc", word: "CẤU" },
+    questionType: "image_riddle",
+    wordPattern: ["_ _", "_ _ _"], // CƠ - CẤU
+    acceptedAnswers: ["cơ cấu", "co cau", "cơ cấu ", "co cau "],
+    visualImages: [
+      {
+        src: "/images/chiecnon/bodybuilder_muscle.jpg",
+        caption: "Bắp cơ",
+        wordClue: "CƠ",
+      },
+      {
+        src: "/images/chiecnon/fisherman_angling.jpg",
+        caption: "Câu cá (+ dấu sắc ' )",
+        wordClue: "CẤU",
+        hasAcuteAccent: true,
+      },
     ],
     question:
       "Bên trái là hình ảnh vận động viên thể hình đang gồng mình khoe từng múi bắp cơ, bên phải là hình 1 người đang câu cá có thêm dấu sắc. Ghép hai hình lại ta được từ gì?",
     options: [
-      {
-        id: "A",
-        text: "Cơ cấu",
-        isCorrect: true,
-      },
-      {
-        id: "B",
-        text: "Cơ bắp",
-        isCorrect: false,
-      },
-      {
-        id: "C",
-        text: "Câu cá",
-        isCorrect: false,
-      },
-      {
-        id: "D",
-        text: "Cấu trúc",
-        isCorrect: false,
-      },
+      { id: "A", text: "Cơ cấu", isCorrect: true },
+      { id: "B", text: "Cơ bắp", isCorrect: false },
+      { id: "C", text: "Câu cá", isCorrect: false },
+      { id: "D", text: "Cấu trúc", isCorrect: false },
     ],
     explanation:
       "Chính xác! 'Bắp cơ' (CƠ) ghép với 'Câu cá thêm dấu sắc' (CẤU) = 'CƠ CẤU' — Mảnh ghép đầu tiên cấu thành tựa đề bài học!",
@@ -54,34 +49,16 @@ export const DEFAULT_QUESTIONS = [
     secretWord: "Xã hội",
     points: 100,
     badge: "MẢNH GHÉP 2",
-    visualClues: [
-      { icon: "👥", label: "Tập thể con người tương tác", word: "XÃ HỘI" },
-      { plus: "🔗" },
-      { icon: "🌍", label: "Thường ghép với 'loài người'", word: "LOÀI NGƯỜI" },
-    ],
+    questionType: "text_quiz",
+    wordPattern: ["_ _", "_ _ _"], // XÃ - HỘI
+    acceptedAnswers: ["xã hội", "xa hoi", "xã hội ", "xa hoi "],
     question:
       "Từ nào gồm 2 chữ, dùng để chỉ một tập thể đông đảo con người cùng sinh sống, gắn kết và tương tác với nhau trong một quốc gia hay cộng đồng (thường ghép chung với từ 'loài người')?",
     options: [
-      {
-        id: "A",
-        text: "Xã hội",
-        isCorrect: true,
-      },
-      {
-        id: "B",
-        text: "Xã đoàn",
-        isCorrect: false,
-      },
-      {
-        id: "C",
-        text: "Cộng đồng",
-        isCorrect: false,
-      },
-      {
-        id: "D",
-        text: "Tập thể",
-        isCorrect: false,
-      },
+      { id: "A", text: "Xã hội", isCorrect: true },
+      { id: "B", text: "Xã đoàn", isCorrect: false },
+      { id: "C", text: "Cộng đồng", isCorrect: false },
+      { id: "D", text: "Tập thể", isCorrect: false },
     ],
     explanation:
       "Chính xác! 'XÃ HỘI' là khái niệm chỉ cộng đồng tập thể con người gắn kết qua các quan hệ sinh sống và sản xuất ('Xã hội loài người') — Mảnh ghép thứ hai!",
@@ -95,34 +72,16 @@ export const DEFAULT_QUESTIONS = [
     secretWord: "Giai cấp",
     points: 100,
     badge: "MẢNH GHÉP 3",
-    visualClues: [
-      { icon: "🏭", label: "Công nhân", word: "GIAI" },
-      { plus: "+" },
-      { icon: "🌾", label: "Nông dân", word: "CẤP" },
-    ],
+    questionType: "text_quiz",
+    wordPattern: ["_ _ _ _", "_ _ _"], // GIAI - CẤP
+    acceptedAnswers: ["giai cấp", "giai cap", "giai cấp ", "giai cap "],
     question:
       "Trong lịch sử và xã hội học, công nhân, nông dân hay tư sản được gọi chung bằng thuật ngữ 2 chữ nào?",
     options: [
-      {
-        id: "A",
-        text: "Giai tầng",
-        isCorrect: false,
-      },
-      {
-        id: "B",
-        text: "Giai cấp",
-        isCorrect: true,
-      },
-      {
-        id: "C",
-        text: "Tầng lớp",
-        isCorrect: false,
-      },
-      {
-        id: "D",
-        text: "Giới tính",
-        isCorrect: false,
-      },
+      { id: "A", text: "Giai cấp", isCorrect: true },
+      { id: "B", text: "Giai tầng", isCorrect: false },
+      { id: "C", text: "Tầng lớp", isCorrect: false },
+      { id: "D", text: "Giới tính", isCorrect: false },
     ],
     explanation:
       "Chính xác! 'GIAI CẤP' là các tập đoàn người to lớn khác nhau về địa vị trong hệ thống sản xuất xã hội (Công nhân, Nông dân, Tư sản...) — Mảnh ghép thứ ba!",
@@ -136,30 +95,20 @@ export const DEFAULT_QUESTIONS = [
     secretWord: "Thời kì quá độ",
     points: 100,
     badge: "MẢNH GHÉP 4",
+    questionType: "anagram", // purely letter tiles & underlines, no multiple choice!
     scrambledTiles: ["Ờ", "K", "Á", "Đ", "I", "Ộ", "T", "H", "Ì", "U", "Q"],
+    wordPattern: ["_ _ _ _", "_ _", "_ _ _", "_ _"], // THỜI - KÌ - QUÁ - ĐỘ
+    targetWords: ["THỜI", "KÌ", "QUÁ", "ĐỘ"],
+    acceptedAnswers: [
+      "thời kì quá độ",
+      "thoi ki qua do",
+      "thời kỳ quá độ",
+      "thoi ky qua do",
+    ],
     question:
       "Sắp xếp lại dãy chữ cái đang bị đảo lộn trong một hàng ngang sau đây để tìm tên giai đoạn chuyển tiếp lên CNXH (gồm 4 tiếng, 11 chữ cái):\n[ Ờ ] [ K ] [ Á ] [ Đ ] [ I ] [ Ộ ] [ T ] [ H ] [ Ì ] [ U ] [ Q ]",
     options: [
-      {
-        id: "A",
-        text: "Thời kì quá độ",
-        isCorrect: true,
-      },
-      {
-        id: "B",
-        text: "Thời đại quá cảnh",
-        isCorrect: false,
-      },
-      {
-        id: "C",
-        text: "Quá độ thời kỳ",
-        isCorrect: false,
-      },
-      {
-        id: "D",
-        text: "Thời kỳ đổi mới",
-        isCorrect: false,
-      },
+      { id: "A", text: "Thời kì quá độ", isCorrect: true },
     ],
     explanation:
       "Chính xác! 11 chữ cái [ Ờ, K, Á, Đ, I, Ộ, T, H, Ì, U, Q ] ghép lại thành 'THỜI KÌ QUÁ ĐỘ' — Giai đoạn cải biến cách mạng sâu sắc chuyển tiếp từ xã hội cũ lên CNXH!",
@@ -173,38 +122,43 @@ export const DEFAULT_QUESTIONS = [
     secretWord: "Chủ nghĩa xã hội",
     points: 100,
     badge: "MẢNH GHÉP 5",
-    visualClues: [
-      { icon: "📕", label: "Sổ đỏ quyền làm chủ", word: "CHỦ" },
-      { plus: "+" },
-      { icon: "🤝", label: "Hiệp khách giữ trọn", word: "NGHĨA" },
-      { plus: "+" },
-      { icon: "🌿", label: "Củ sả (lái âm)", word: "XÃ" },
-      { plus: "+" },
-      { icon: "🎊", label: "Cờ hoa trẩy", word: "HỘI" },
+    questionType: "image_riddle",
+    wordPattern: ["_ _ _", "_ _ _ _ _", "_ _", "_ _ _"], // CHỦ - NGHĨA - XÃ - HỘI
+    acceptedAnswers: [
+      "chủ nghĩa xã hội",
+      "chu nghia xa hoi",
+      "chủ nghĩa xã hội ",
+      "chu nghia xa hoi ",
+    ],
+    visualImages: [
+      {
+        src: "/images/chiecnon/red_ownership_book.jpg",
+        caption: "Sổ đỏ quyền làm chủ",
+        wordClue: "CHỦ",
+      },
+      {
+        src: "/images/chiecnon/chivalric_handshake.jpg",
+        caption: "Hiệp khách trọn chữ nghĩa",
+        wordClue: "NGHĨA",
+      },
+      {
+        src: "/images/chiecnon/fresh_lemongrass.jpg",
+        caption: "Bó củ sả (lái âm xã)",
+        wordClue: "XÃ",
+      },
+      {
+        src: "/images/chiecnon/festive_crowd.jpg",
+        caption: "Dòng người đi trẩy hội",
+        wordClue: "HỘI",
+      },
     ],
     question:
       "Bức tranh bốn ô liên hoàn: ô thứ nhất là cuốn sổ đỏ xác nhận quyền sở hữu của người làm chủ; ô thứ hai là hai hiệp khách bắt tay nhau thề giữ trọn chữ nghĩa; ô thứ ba là một bó củ sả thơm lừng dùng để nấu lẩu (đọc lái âm với từ xã)... ; ô cuối cùng là dòng người nô nức cờ hoa kéo nhau đi trẩy hội. Ghép bốn ô lại ta được cụm từ gì?",
     options: [
-      {
-        id: "A",
-        text: "Chủ nghĩa xã hội",
-        isCorrect: true,
-      },
-      {
-        id: "B",
-        text: "Sở hữu toàn dân",
-        isCorrect: false,
-      },
-      {
-        id: "C",
-        text: "Xã hội chủ nghĩa",
-        isCorrect: false,
-      },
-      {
-        id: "D",
-        text: "Hiệp nghĩa xã hội",
-        isCorrect: false,
-      },
+      { id: "A", text: "Chủ nghĩa xã hội", isCorrect: true },
+      { id: "B", text: "Sở hữu toàn dân", isCorrect: false },
+      { id: "C", text: "Xã hội chủ nghĩa", isCorrect: false },
+      { id: "D", text: "Hiệp nghĩa xã hội", isCorrect: false },
     ],
     explanation:
       "Chính xác! 'Người làm CHỦ' + 'Trọn chữ NGHĨA' + 'Củ sả lái XÃ' + 'Trẩy HỘI' = 'CHỦ NGHĨA XÃ HỘI' — Mảnh ghép thứ năm hoàn tất tựa đề bài học!",

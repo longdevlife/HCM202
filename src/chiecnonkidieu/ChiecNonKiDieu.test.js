@@ -17,15 +17,20 @@ test("DEFAULT_QUESTIONS contains exactly 5 valid puzzle questions with secret wo
     assert.strictEqual(q.num, idx + 1, `Question ${idx + 1} has correct index`);
     assert.ok(q.title && q.title.length > 0, `Question ${idx + 1} has a title`);
     assert.ok(q.question && q.question.length > 10, `Question ${idx + 1} has valid text`);
-    assert.ok(q.options && q.options.length === 4, `Question ${idx + 1} has 4 options`);
 
     // Verify secret word matches expected riddle answer
     assert.strictEqual(q.secretWord, expectedSecretWords[idx], `Secret word for Question ${idx + 1} matches`);
 
-    // Verify exactly one option is correct
-    const correctOptions = q.options.filter((o) => o.isCorrect === true);
-    assert.strictEqual(correctOptions.length, 1, `Question ${idx + 1} must have exactly 1 correct answer`);
-    assert.strictEqual(correctOptions[0].text, expectedSecretWords[idx], `Correct option text matches secret word`);
+    // Question 4 is anagram (no multiple-choice options, purely scrambled tiles & underline slots)
+    if (q.questionType === "anagram") {
+      assert.ok(q.scrambledTiles && q.scrambledTiles.length === 11, "Question 4 has 11 scrambled letter tiles");
+      assert.ok(q.targetWords && q.targetWords.length === 4, "Question 4 has 4 target words");
+    } else {
+      assert.ok(q.options && q.options.length >= 2, `Question ${idx + 1} has options`);
+      const correctOptions = q.options.filter((o) => o.isCorrect === true);
+      assert.strictEqual(correctOptions.length, 1, `Question ${idx + 1} must have exactly 1 correct answer`);
+      assert.strictEqual(correctOptions[0].text, expectedSecretWords[idx], `Correct option text matches secret word`);
+    }
 
     assert.ok(q.explanation && q.explanation.length > 10, `Question ${idx + 1} has academic explanation`);
   });
