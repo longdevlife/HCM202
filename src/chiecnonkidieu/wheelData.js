@@ -1,186 +1,224 @@
-// Dữ liệu 5 câu hỏi trọng tâm & Kết nội dung bài học - Chiếc Nón Kỳ Diệu (Chương 5 MLN131)
+// BỘ 5 CÂU ĐỐ GHÉP TỰA ĐỀ BÀI HỌC - CHIẾC NÓN KỲ DIỆU (CHƯƠNG 5 MLN131)
+
+export const FULL_LESSON_TITLE =
+  "Cơ cấu xã hội – giai cấp trong thời kì quá độ lên chủ nghĩa xã hội";
 
 export const DEFAULT_QUESTIONS = [
   {
     id: "q1",
     num: 1,
-    title: "Câu 1: Vị trí của Cơ cấu XH - Giai cấp",
+    typeTag: "Đuổi hình bắt chữ",
+    title: "Câu 1: Đuổi Hình Bắt Chữ",
     shortLabel: "Câu 1",
+    secretWord: "Cơ cấu",
     points: 100,
-    badge: "LÝ LUẬN CỐT LÕI",
+    badge: "MẢNH GHÉP 1",
+    visualClues: [
+      { icon: "💪", label: "Vận động viên khoe bắp", word: "CƠ" },
+      { plus: "+" },
+      { icon: "🎣", label: "Người câu cá + dấu sắc", word: "CẤU" },
+    ],
     question:
-      "Trong hệ thống các loại hình cơ cấu xã hội (dân cư, nghề nghiệp, dân tộc, tôn giáo...), vì sao cơ cấu xã hội – giai cấp lại giữ vị trí trung tâm và có ý nghĩa quyết định nhất?",
+      "Bên trái là hình ảnh vận động viên thể hình đang gồng mình khoe từng múi bắp cơ, bên phải là hình 1 người đang câu cá có thêm dấu sắc. Ghép hai hình lại ta được từ gì?",
     options: [
       {
         id: "A",
-        text: "Vì cơ cấu xã hội – giai cấp liên quan trực tiếp đến quan hệ sở hữu tư liệu sản xuất, quyền lực nhà nước và quyết định bản chất kinh tế – chính trị của chế độ xã hội.",
+        text: "Cơ cấu",
         isCorrect: true,
       },
       {
         id: "B",
-        text: "Vì đây là cơ cấu xã hội duy nhất tồn tại và vận động trong mọi thời kỳ lịch sử.",
+        text: "Cơ bắp",
         isCorrect: false,
       },
       {
         id: "C",
-        text: "Vì các loại hình cơ cấu xã hội khác không hề có bất kỳ vai trò hay tác động nào đến đời sống con người.",
+        text: "Câu cá",
         isCorrect: false,
       },
       {
         id: "D",
-        text: "Vì cơ cấu xã hội – giai cấp chỉ đơn thuần đo lường tỷ lệ phân bố dân số theo khu vực địa lý.",
+        text: "Cấu trúc",
         isCorrect: false,
       },
     ],
     explanation:
-      "Chủ nghĩa Mác - Lênin khẳng định: Cơ cấu xã hội - giai cấp giữ vị trí hàng đầu và chi phối các cơ cấu khác vì nó liên quan trực tiếp đến quan hệ sản xuất, địa vị thống trị/lãnh đạo, quyền lực nhà nước và sự phân phối của cải trong xã hội.",
+      "Chính xác! 'Bắp cơ' (CƠ) ghép với 'Câu cá thêm dấu sắc' (CẤU) = 'CƠ CẤU' — Mảnh ghép đầu tiên cấu thành tựa đề bài học!",
   },
   {
     id: "q2",
     num: 2,
-    title: "Câu 2: Quy luật biến đổi trong thời kỳ quá độ",
+    typeTag: "Câu hỏi kiến thức ngắn",
+    title: "Câu 2: Câu Hỏi Kiến Thức Ngắn",
     shortLabel: "Câu 2",
+    secretWord: "Xã hội",
     points: 100,
-    badge: "QUY LUẬT KINH TẾ",
+    badge: "MẢNH GHÉP 2",
+    visualClues: [
+      { icon: "👥", label: "Tập thể con người tương tác", word: "XÃ HỘI" },
+      { plus: "🔗" },
+      { icon: "🌍", label: "Thường ghép với 'loài người'", word: "LOÀI NGƯỜI" },
+    ],
     question:
-      "Yếu tố khách quan nào quy định tính biến đổi đa dạng, phức tạp và đan xen của cơ cấu xã hội – giai cấp trong thời kỳ quá độ lên CNXH ở Việt Nam?",
+      "Từ nào gồm 2 chữ, dùng để chỉ một tập thể đông đảo con người cùng sinh sống, gắn kết và tương tác với nhau trong một quốc gia hay cộng đồng (thường ghép chung với từ 'loài người')?",
     options: [
       {
         id: "A",
-        text: "Ý chí chủ quan và mệnh lệnh hành chính của các cơ quan quản lý nhà nước.",
-        isCorrect: false,
-      },
-      {
-        id: "B",
-        text: "Sự biến đổi của cơ cấu kinh tế nhiều thành phần, nhiều hình thức sở hữu vận hành theo cơ chế thị trường định hướng XHCN.",
+        text: "Xã hội",
         isCorrect: true,
       },
       {
+        id: "B",
+        text: "Xã đoàn",
+        isCorrect: false,
+      },
+      {
         id: "C",
-        text: "Sự tác động ngẫu nhiên của các trào lưu tiêu dùng và lối sống cá nhân hóa trong giới trẻ.",
+        text: "Cộng đồng",
         isCorrect: false,
       },
       {
         id: "D",
-        text: "Sự du nhập ồ ạt không kiểm soát của các tôn giáo và tín ngưỡng mới từ phương Tây.",
+        text: "Tập thể",
         isCorrect: false,
       },
     ],
     explanation:
-      "Cơ cấu kinh tế quy định cơ cấu xã hội - giai cấp. Nền kinh tế nhiều thành phần (kinh tế nhà nước, tập thể, tư nhân, có vốn đầu tư nước ngoài) tất yếu dẫn đến một cơ cấu xã hội - giai cấp phong phú, đa dạng và đan xen lợi ích.",
+      "Chính xác! 'XÃ HỘI' là khái niệm chỉ cộng đồng tập thể con người gắn kết qua các quan hệ sinh sống và sản xuất ('Xã hội loài người') — Mảnh ghép thứ hai!",
   },
   {
     id: "q3",
     num: 3,
-    title: "Câu 3: Sứ mệnh & Vị trí của Giai cấp Công nhân",
+    typeTag: "Câu hỏi kiến thức ngắn",
+    title: "Câu 3: Câu Hỏi Kiến Thức Ngắn",
     shortLabel: "Câu 3",
+    secretWord: "Giai cấp",
     points: 100,
-    badge: "LỰC LƯỢNG TIÊN PHONG",
+    badge: "MẢNH GHÉP 3",
+    visualClues: [
+      { icon: "🏭", label: "Công nhân", word: "GIAI" },
+      { plus: "+" },
+      { icon: "🌾", label: "Nông dân", word: "CẤP" },
+    ],
     question:
-      "Trong thời kỳ đẩy mạnh CNH - HĐH và hội nhập quốc tế, giai cấp công nhân Việt Nam giữ vị trí và vai trò gì trong cơ cấu xã hội?",
+      "Trong lịch sử và xã hội học, công nhân, nông dân hay tư sản được gọi chung bằng thuật ngữ 2 chữ nào?",
     options: [
       {
         id: "A",
-        text: "Là giai cấp lãnh đạo cách mạng thông qua Đảng Cộng sản, lực lượng nòng cốt đi đầu trong sự nghiệp công nghiệp hóa, hiện đại hóa đất nước.",
-        isCorrect: true,
-      },
-      {
-        id: "B",
-        text: "Là lực lượng chỉ tham gia gia công giản đơn, không cần phát triển năng lực tri thức hay công nghệ số.",
+        text: "Giai tầng",
         isCorrect: false,
       },
       {
+        id: "B",
+        text: "Giai cấp",
+        isCorrect: true,
+      },
+      {
         id: "C",
-        text: "Là tập hợp những người lao động chỉ phục vụ cho lợi ích riêng của các doanh nghiệp nhà nước.",
+        text: "Tầng lớp",
         isCorrect: false,
       },
       {
         id: "D",
-        text: "Là lực lượng sẽ dần bị triệt tiêu hoàn toàn và nhường toàn bộ quyền lực cho các nhà tư bản tài chính.",
+        text: "Giới tính",
         isCorrect: false,
       },
     ],
     explanation:
-      "Giai cấp công nhân Việt Nam là lực lượng lãnh đạo cách mạng thông qua đội tiên phong là Đảng Cộng sản Việt Nam; là giai cấp tiên phong trong phát triển kinh tế số, công nghiệp hiện đại và là hạt nhân liên minh giai cấp.",
+      "Chính xác! 'GIAI CẤP' là các tập đoàn người to lớn khác nhau về địa vị trong hệ thống sản xuất xã hội (Công nhân, Nông dân, Tư sản...) — Mảnh ghép thứ ba!",
   },
   {
     id: "q4",
     num: 4,
-    title: "Câu 4: Nội dung cốt lõi của Liên minh Giai tầng",
+    typeTag: "Sắp xếp ô chữ đảo lộn",
+    title: "Câu 4: Sắp Xếp Ô Chữ Ngang Lộn Xộn",
     shortLabel: "Câu 4",
+    secretWord: "Thời kì quá độ",
     points: 100,
-    badge: "NỀN TẢNG LIÊN MINH",
+    badge: "MẢNH GHÉP 4",
+    scrambledTiles: ["Ờ", "K", "Á", "Đ", "I", "Ộ", "T", "H", "Ì", "U", "Q"],
     question:
-      "Trong các nội dung của liên minh giai cấp, tầng lớp (kinh tế, chính trị, văn hóa – xã hội) ở nước ta, nội dung nào giữ vai trò quyết định nhất?",
+      "Sắp xếp lại dãy chữ cái đang bị đảo lộn trong một hàng ngang sau đây để tìm tên giai đoạn chuyển tiếp lên CNXH (gồm 4 tiếng, 11 chữ cái):\n[ Ờ ] [ K ] [ Á ] [ Đ ] [ I ] [ Ộ ] [ T ] [ H ] [ Ì ] [ U ] [ Q ]",
     options: [
       {
         id: "A",
-        text: "Nội dung chính trị về việc giữ vững vai trò lãnh đạo độc tôn của các tầng lớp tư sản.",
-        isCorrect: false,
+        text: "Thời kì quá độ",
+        isCorrect: true,
       },
       {
         id: "B",
-        text: "Nội dung văn hóa - tinh thần về việc tổ chức các phong trào sinh hoạt tập thể.",
+        text: "Thời đại quá cảnh",
         isCorrect: false,
       },
       {
         id: "C",
-        text: "Nội dung kinh tế (thỏa mãn lợi ích thiết thực, kết hợp hài hòa lợi ích, hợp tác sản xuất - kinh doanh và phân phối công bằng).",
-        isCorrect: true,
+        text: "Quá độ thời kỳ",
+        isCorrect: false,
       },
       {
         id: "D",
-        text: "Nội dung áp đặt các chỉ tiêu pháp lệnh và phân phối cào bằng theo thời kỳ bao cấp.",
+        text: "Thời kỳ đổi mới",
         isCorrect: false,
       },
     ],
     explanation:
-      "Theo quan điểm Mác - Lênin, liên minh về kinh tế là cơ sở vật chất - kỹ thuật vững chắc nhất của khối liên minh. Lợi ích kinh tế chính là động lực trực tiếp gắn kết công nhân, nông dân, trí thức và doanh nhân cùng phát triển.",
+      "Chính xác! 11 chữ cái [ Ờ, K, Á, Đ, I, Ộ, T, H, Ì, U, Q ] ghép lại thành 'THỜI KÌ QUÁ ĐỘ' — Giai đoạn cải biến cách mạng sâu sắc chuyển tiếp từ xã hội cũ lên CNXH!",
   },
   {
     id: "q5",
     num: 5,
-    title: "Câu 5: Mục tiêu chiến lược & Đại đoàn kết",
+    typeTag: "Đuổi hình bắt chữ 4 ô",
+    title: "Câu 5: Đuổi Hình Bắt Chữ (4 Ô Liên Hoàn)",
     shortLabel: "Câu 5",
+    secretWord: "Chủ nghĩa xã hội",
     points: 100,
-    badge: "ĐÍCH ĐẾN PHÁT TRIỂN",
+    badge: "MẢNH GHÉP 5",
+    visualClues: [
+      { icon: "📕", label: "Sổ đỏ quyền làm chủ", word: "CHỦ" },
+      { plus: "+" },
+      { icon: "🤝", label: "Hiệp khách giữ trọn", word: "NGHĨA" },
+      { plus: "+" },
+      { icon: "🌿", label: "Củ sả (lái âm)", word: "XÃ" },
+      { plus: "+" },
+      { icon: "🎊", label: "Cờ hoa trẩy", word: "HỘI" },
+    ],
     question:
-      "Mục tiêu chung cao nhất quy tụ mọi giai cấp, tầng lớp xã hội trong khối đại đoàn kết toàn dân tộc ở Việt Nam hiện nay là gì?",
+      "Bức tranh bốn ô liên hoàn: ô thứ nhất là cuốn sổ đỏ xác nhận quyền sở hữu của người làm chủ; ô thứ hai là hai hiệp khách bắt tay nhau thề giữ trọn chữ nghĩa; ô thứ ba là một bó củ sả thơm lừng dùng để nấu lẩu (đọc lái âm với từ xã)... ; ô cuối cùng là dòng người nô nức cờ hoa kéo nhau đi trẩy hội. Ghép bốn ô lại ta được cụm từ gì?",
     options: [
       {
         id: "A",
-        text: "Thực hiện thành công mục tiêu: Dân giàu, nước mạnh, dân chủ, công bằng, văn minh, vững bước đi lên chủ nghĩa xã hội.",
+        text: "Chủ nghĩa xã hội",
         isCorrect: true,
       },
       {
         id: "B",
-        text: "Bảo tồn tuyệt đối phương thức sản xuất thủ công truyền thống, hạn chế tiếp nhận công nghệ cao.",
+        text: "Sở hữu toàn dân",
         isCorrect: false,
       },
       {
         id: "C",
-        text: "Xóa bỏ tính chủ động và sở hữu hợp pháp của các thành phần kinh tế tư nhân trong nước.",
+        text: "Xã hội chủ nghĩa",
         isCorrect: false,
       },
       {
         id: "D",
-        text: "Đóng cửa biên giới kinh tế để tự cung tự cấp hoàn toàn, không phụ thuộc vào chuỗi cung ứng thế giới.",
+        text: "Hiệp nghĩa xã hội",
         isCorrect: false,
       },
     ],
     explanation:
-      "Mục tiêu độc lập dân tộc gắn liền với CNXH — 'Dân giàu, nước mạnh, dân chủ, công bằng, văn minh' chính là điểm tương đồng lớn nhất để khơi dậy lòng yêu nước, ý chí tự lực tự cường và đoàn kết mọi người Việt Nam.",
+      "Chính xác! 'Người làm CHỦ' + 'Trọn chữ NGHĨA' + 'Củ sả lái XÃ' + 'Trẩy HỘI' = 'CHỦ NGHĨA XÃ HỘI' — Mảnh ghép thứ năm hoàn tất tựa đề bài học!",
   },
 ];
 
-// 10 Slices on the spinning wheel (incorporating the 5 questions + lucky/bonus elements in classic Wheel of Fortune style)
+// 10 Slices on the spinning wheel
 export const WHEEL_SLICES = [
   {
     id: "slice_q1",
     type: "question",
     questionId: "q1",
     label: "CÂU 1",
-    subLabel: "Vị trí CCXH",
+    subLabel: "Đuổi Hình",
     color: "#e11d48", // Crimson
     textColor: "#ffffff",
     points: 100,
@@ -199,7 +237,7 @@ export const WHEEL_SLICES = [
     type: "question",
     questionId: "q2",
     label: "CÂU 2",
-    subLabel: "Quy luật BĐ",
+    subLabel: "Kiến Thức",
     color: "#059669", // Emerald
     textColor: "#ffffff",
     points: 100,
@@ -218,7 +256,7 @@ export const WHEEL_SLICES = [
     type: "question",
     questionId: "q3",
     label: "CÂU 3",
-    subLabel: "Công Nhân",
+    subLabel: "Giai Cấp",
     color: "#2563eb", // Blue
     textColor: "#ffffff",
     points: 100,
@@ -237,7 +275,7 @@ export const WHEEL_SLICES = [
     type: "question",
     questionId: "q4",
     label: "CÂU 4",
-    subLabel: "Liên Minh",
+    subLabel: "Xếp Chữ",
     color: "#d97706", // Dark Amber
     textColor: "#ffffff",
     points: 100,
@@ -256,7 +294,7 @@ export const WHEEL_SLICES = [
     type: "question",
     questionId: "q5",
     label: "CÂU 5",
-    subLabel: "Đích Đến",
+    subLabel: "4 Ô Hình",
     color: "#7c3aed", // Violet
     textColor: "#ffffff",
     points: 100,
@@ -275,51 +313,57 @@ export const WHEEL_SLICES = [
 // Nội dung Tổng kết Bài học chi tiết và hàn lâm (KẾT NỘI DUNG BÀI HỌC)
 export const LESSON_SUMMARY = {
   header: {
-    tag: "TỔNG KẾT BÀI HỌC CHƯƠNG 5 · MLN131",
-    title: "Cơ Cấu Xã Hội – Giai Cấp & Liên Minh Giai Cấp Trong Thời Kỳ Quá Độ",
-    subtitle: "Hệ thống hóa toàn bộ tri thức nền tảng, quy luật vận động khách quan và bài học thực tiễn đối với sự nghiệp xây dựng CNXH tại Việt Nam.",
+    tag: "TỔNG KẾT TOÀN DIỆN BÀI HỌC · CHƯƠNG 5 MLN131",
+    title: "Cơ Cấu Xã Hội – Giai Cấp Trong Thời Kì Quá Độ Lên Chủ Nghĩa Xã Hội",
+    subtitle:
+      "Tựa đề bài học được giải mã trọn vẹn từ 5 câu đố: [Cơ cấu] + [Xã hội] + [Giai cấp] + [Thời kì quá độ] + [Chủ nghĩa xã hội]. Dưới đây là toàn bộ hệ thống tri thức và kết luận cốt lõi.",
     academicRef: "Giáo trình Chủ nghĩa xã hội khoa học (Bộ GD&ĐT) – Chương 5",
   },
   takeaways: [
     {
       num: "01",
-      title: "Tính quy định khách quan của Cơ cấu kinh tế đối với Cơ cấu giai cấp",
+      keyword: "CƠ CẤU",
+      title: "Tính hệ thống & Các mối quan hệ xã hội nền tảng",
       content:
-        "Cơ cấu xã hội – giai cấp không bao giờ là bất biến hay tách rời thực tại vật chất, mà bị quy định trực tiếp bởi cơ cấu kinh tế. Trong thời kỳ quá độ, sự tồn tại của nền kinh tế nhiều thành phần theo định hướng XHCN tất yếu sản sinh ra một cơ cấu giai tầng vừa đa dạng, phong phú, vừa thống nhất trong mục tiêu dân giàu, nước mạnh.",
-      badge: "QUY LUẬT CỐT LÕI",
-      accent: "#b91c1c",
+        "Cơ cấu xã hội không đơn thuần là phép cộng cơ học giữa các nhóm người, mà là hệ thống các giai cấp, tầng lớp tồn tại khách quan cùng các mối quan hệ xã hội về sở hữu tư liệu sản xuất, tổ chức quản lý lao động và phân phối của cải vật chất.",
+      badge: "MẢNH GHÉP 1",
+      accent: "#e11d48",
     },
     {
       num: "02",
-      title: "Vị trí trung tâm & Bản chất dẫn dắt của Giai cấp Công nhân",
+      keyword: "XÃ HỘI",
+      title: "Vị trí trung tâm chi phối các loại hình cơ cấu khác",
       content:
-        "Trong mọi loại hình cơ cấu xã hội, cơ cấu xã hội – giai cấp giữ vị trí trung tâm vì nó liên quan trực tiếp đến quan hệ sản xuất và quyền lực chính trị nhà nước. Giai cấp công nhân Việt Nam là giai cấp lãnh đạo cách mạng thông qua Đảng Cộng sản, tiên phong trong công cuộc CNH, HĐH và chuyển đổi số quốc gia.",
-      badge: "VỊ TRÍ LÃNH ĐẠO",
-      accent: "#1d4ed8",
+        "Trong toàn bộ xã hội (gồm cơ cấu dân số, nghề nghiệp, dân tộc, tôn giáo), cơ cấu xã hội – giai cấp giữ vị trí trung tâm, quyết định bản chất kinh tế – chính trị của chế độ và là căn cứ hoạch định chính sách đại đoàn kết.",
+      badge: "MẢNH GHÉP 2",
+      accent: "#059669",
     },
     {
       num: "03",
-      title: "Liên minh Công – Nông – Trí thức: Nền tảng chính trị – xã hội vững bền",
+      keyword: "GIAI CẤP",
+      title: "Sứ mệnh giai cấp công nhân & Hạt nhân liên minh",
       content:
-        "Liên minh giai cấp không phải là khẩu hiệu cảm tính, mà dựa trên sự kết hợp hài hòa lợi ích kinh tế thiết thực, ổn định chính trị và bảo đảm an sinh văn hóa – xã hội. Khối liên minh công – nông – trí thức dưới sự lãnh đạo của Đảng là 'hạt nhân sống còn' quy tụ sức mạnh đại đoàn kết toàn dân tộc.",
-      badge: "HẠT NHÂN ĐOÀN KẾT",
-      accent: "#047857",
+        "Giai cấp công nhân Việt Nam là giai cấp lãnh đạo cách mạng thông qua Đảng Cộng sản; cùng với giai cấp nông dân và đội ngũ trí thức tạo thành khối liên minh nòng cốt, đồng thời phát huy mạnh mẽ vai trò của đội ngũ doanh nhân trong thời đại mới.",
+      badge: "MẢNH GHÉP 3",
+      accent: "#2563eb",
     },
     {
       num: "04",
-      title: "Phát huy vai trò của mọi giai tầng: Trí thức & Đội ngũ Doanh nhân",
+      keyword: "THỜI KÌ QUÁ ĐỘ",
+      title: "Quy luật biến đổi kinh tế quy định giai cấp",
       content:
-        "Xây dựng CNXH hiện đại đòi hỏi sự bứt phá của đội ngũ trí thức (nền kinh tế tri thức, sáng tạo công nghệ) song hành cùng sự lớn mạnh của đội ngũ doanh nhân yêu nước, thượng tôn pháp luật, tạo việc làm và làm giàu chính đáng cho đất nước.",
-      badge: "NGUỒN LỰC MỚI",
-      accent: "#b45309",
+        "Trong thời kì quá độ lên CNXH, sự tồn tại khách quan của nền kinh tế nhiều thành phần vận hành theo cơ chế thị trường định hướng XHCN quy định tính chất phong phú, đa dạng, vừa hợp tác vừa đấu tranh của các giai cấp, tầng lớp xã hội.",
+      badge: "MẢNH GHÉP 4",
+      accent: "#d97706",
     },
     {
       num: "05",
-      title: "Bài học thực tiễn đối với thế hệ trẻ và sinh viên",
+      keyword: "CHỦ NGHĨA XÃ HỘI",
+      title: "Đích đến tối thượng: Dân giàu, nước mạnh, dân chủ, công bằng, văn minh",
       content:
-        "Nắm vững lý luận Mác - Lênin không phải để giáo điều trên sách vở, mà để soi đường cho hành động: Chủ động trau dồi chuyên môn, rèn luyện bản lĩnh chính trị, tôn trọng người lao động, sáng tạo khởi nghiệp và đóng góp thiết thực cho cộng đồng và quê hương.",
-      badge: "HÀNH ĐỘNG THỰC TIỄN",
-      accent: "#6d28d9",
+        "Mục tiêu cao nhất của liên minh giai cấp và đại đoàn kết toàn dân tộc là đưa đất nước vững bước đi lên chủ nghĩa xã hội — giải phóng con người, phát triển lực lượng sản xuất hiện đại và bảo đảm cuộc sống ấm no, tự do, hạnh phúc cho toàn thể nhân dân.",
+      badge: "MẢNH GHÉP 5",
+      accent: "#7c3aed",
     },
   ],
   quote: {

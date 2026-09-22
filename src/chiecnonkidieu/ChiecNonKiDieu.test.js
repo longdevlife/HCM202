@@ -1,9 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert";
-import { DEFAULT_QUESTIONS, WHEEL_SLICES, LESSON_SUMMARY } from "./wheelData.js";
+import { DEFAULT_QUESTIONS, WHEEL_SLICES, LESSON_SUMMARY, FULL_LESSON_TITLE } from "./wheelData.js";
 
-test("DEFAULT_QUESTIONS contains exactly 5 valid questions for Chapter 5", () => {
+test("DEFAULT_QUESTIONS contains exactly 5 valid puzzle questions with secret words", () => {
   assert.strictEqual(DEFAULT_QUESTIONS.length, 5, "Must have exactly 5 questions");
+
+  const expectedSecretWords = [
+    "Cơ cấu",
+    "Xã hội",
+    "Giai cấp",
+    "Thời kì quá độ",
+    "Chủ nghĩa xã hội",
+  ];
 
   DEFAULT_QUESTIONS.forEach((q, idx) => {
     assert.strictEqual(q.num, idx + 1, `Question ${idx + 1} has correct index`);
@@ -11,18 +19,33 @@ test("DEFAULT_QUESTIONS contains exactly 5 valid questions for Chapter 5", () =>
     assert.ok(q.question && q.question.length > 10, `Question ${idx + 1} has valid text`);
     assert.ok(q.options && q.options.length === 4, `Question ${idx + 1} has 4 options`);
 
+    // Verify secret word matches expected riddle answer
+    assert.strictEqual(q.secretWord, expectedSecretWords[idx], `Secret word for Question ${idx + 1} matches`);
+
     // Verify exactly one option is correct
     const correctOptions = q.options.filter((o) => o.isCorrect === true);
     assert.strictEqual(correctOptions.length, 1, `Question ${idx + 1} must have exactly 1 correct answer`);
+    assert.strictEqual(correctOptions[0].text, expectedSecretWords[idx], `Correct option text matches secret word`);
 
     assert.ok(q.explanation && q.explanation.length > 10, `Question ${idx + 1} has academic explanation`);
+  });
+});
+
+test("FULL_LESSON_TITLE contains all 5 secret words", () => {
+  assert.ok(FULL_LESSON_TITLE && FULL_LESSON_TITLE.length > 0);
+  const normalizedTitle = FULL_LESSON_TITLE.toLowerCase();
+
+  DEFAULT_QUESTIONS.forEach((q) => {
+    assert.ok(
+      normalizedTitle.includes(q.secretWord.toLowerCase()),
+      `Full title contains secret word: ${q.secretWord}`
+    );
   });
 });
 
 test("WHEEL_SLICES contains valid slices covering all 5 questions", () => {
   assert.ok(WHEEL_SLICES.length >= 5, "Wheel has at least 5 slices");
 
-  // Every question 1 to 5 must have a corresponding slice
   for (let i = 1; i <= 5; i++) {
     const qId = `q${i}`;
     const slice = WHEEL_SLICES.find((s) => s.type === "question" && s.questionId === qId);

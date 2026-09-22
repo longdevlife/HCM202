@@ -1,8 +1,8 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback } from "react";
 import WheelCanvas from "./WheelCanvas";
 import QuestionModal from "./QuestionModal";
 import LessonSummaryModal from "./LessonSummaryModal";
-import { DEFAULT_QUESTIONS, WHEEL_SLICES } from "./wheelData";
+import { DEFAULT_QUESTIONS, WHEEL_SLICES, FULL_LESSON_TITLE } from "./wheelData";
 import { sounds } from "./SoundEffects";
 import "./chiecnonkidieu.css";
 
@@ -47,25 +47,21 @@ export default function ChiecNonKiDieuGame() {
   const handleSpinClick = () => {
     if (isSpinning) return;
 
-    // Determine candidate slices:
-    // If not all questions are answered, bias strongly towards unanswered question slices
+    // Prioritize slices for unanswered questions
     const unansweredQuestions = questions.filter((q) => !answeredQuestions[q.id]);
 
     let targetIdx;
     if (unansweredQuestions.length > 0) {
-      // 70% chance to target an unanswered question directly, 30% chance for a bonus slice
       const pickQuestion = Math.random() < 0.75 || answeredCount === 0;
 
       if (pickQuestion) {
         const randomUnansweredQ =
           unansweredQuestions[Math.floor(Math.random() * unansweredQuestions.length)];
-        // Find slice index for this question
         const sliceIdx = WHEEL_SLICES.findIndex(
           (s) => s.type === "question" && s.questionId === randomUnansweredQ.id
         );
         targetIdx = sliceIdx !== -1 ? sliceIdx : Math.floor(Math.random() * WHEEL_SLICES.length);
       } else {
-        // Pick a bonus or lucky slice
         const bonusIndices = WHEEL_SLICES.map((s, i) => (s.type !== "question" ? i : null)).filter(
           (i) => i !== null
         );
@@ -75,7 +71,6 @@ export default function ChiecNonKiDieuGame() {
             : Math.floor(Math.random() * WHEEL_SLICES.length);
       }
     } else {
-      // All questions already answered, spin freely
       targetIdx = Math.floor(Math.random() * WHEEL_SLICES.length);
     }
 
@@ -85,7 +80,7 @@ export default function ChiecNonKiDieuGame() {
   };
 
   // When spin finishes
-  const handleSpinEnd = (slice, index) => {
+  const handleSpinEnd = (slice) => {
     setIsSpinning(false);
     setTargetSliceIndex(null);
 
@@ -109,7 +104,7 @@ export default function ChiecNonKiDieuGame() {
     }
   };
 
-  // Direct question click (facilitating classroom presentation / manual choice)
+  // Direct question click
   const handleDirectQuestionClick = (q) => {
     if (isSpinning) return;
     setActiveQuestion(q);
@@ -129,9 +124,8 @@ export default function ChiecNonKiDieuGame() {
 
       const newCount = Object.keys(updated).length;
       if (newCount >= totalQuestions) {
-        // All 5 answered!
         sounds.playFanfare();
-        showToast("🎉 XUẤT SẮC! BẠN ĐÃ HOÀN THÀNH TOÀN BỘ 5 CÂU HỎI BÀI HỌC!");
+        showToast("🎉 XUẤT SẮC! TOÀN BỘ 5 MẢNH GHÉP TỰA ĐỀ ĐÃ ĐƯỢC GIẢI MÃ THÀNH CÔNG!");
       }
       return updated;
     });
@@ -158,7 +152,7 @@ export default function ChiecNonKiDieuGame() {
 
   return (
     <div className="chiecnon-game-container min-h-screen bg-[#ede8e1] text-[#2c1a0e] pt-24 pb-16 px-4 md:px-8 relative overflow-hidden">
-      {/* Background Decorative Circles */}
+      {/* Background Decorative Glow */}
       <div className="absolute top-12 -left-20 w-96 h-96 rounded-full bg-[#c9922a]/10 filter blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-10 -right-20 w-96 h-96 rounded-full bg-[#b91c1c]/10 filter blur-3xl pointer-events-none"></div>
 
@@ -171,39 +165,38 @@ export default function ChiecNonKiDieuGame() {
       )}
 
       <div className="max-w-7xl mx-auto">
-        {/* Game Header Bar */}
-        <div className="text-center mb-8">
+        {/* Game Header */}
+        <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#c9922a]/20 border border-[#c9922a] text-[#855318] text-xs font-bold uppercase tracking-widest mb-3">
             <span>🎡</span>
-            <span>Trò Chơi Tương Tác Giảng Dạy · MLN131</span>
+            <span>Trò Chơi Chiếc Nón Kỳ Diệu · MLN131</span>
           </div>
           <h1
             className="text-3xl md:text-5xl font-black text-[#2c1a0e] tracking-tight uppercase"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            Chiếc Nón Kỳ Diệu
+            Giải Mã Tựa Đề Bài Học
           </h1>
           <p className="text-sm md:text-base text-[#6b584a] max-w-2xl mx-auto mt-2 font-medium">
-            Quay vòng quay để mở 5 câu hỏi chuyên đề Chương 5. Khi trả lời hết toàn bộ 5 câu, nút{" "}
-            <strong className="text-[#92400e]">Tổng Kết Nội Dung Bài Học</strong> sẽ mở ra!
+            Quay trúng câu nào câu hỏi sẽ hiện ra để giải mã từng mảnh ghép. Khi trả lời hết 5 câu ghép thành tựa đề bài học, bấm nút cuối cùng để xem <strong>KẾT NỘI DUNG BÀI HỌC</strong>!
           </p>
 
           {/* Quick HUD Toolbar */}
-          <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
-            <div className="bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-[#e5dfd5] flex items-center gap-3">
-              <span className="text-xl">🏆</span>
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-5">
+            <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-[#e5dfd5] flex items-center gap-2.5">
+              <span className="text-lg">🏆</span>
               <div className="text-left">
                 <div className="text-[10px] uppercase font-bold text-[#786c5e]">Điểm Số</div>
-                <div className="text-lg font-black text-[#c9922a]">{score}</div>
+                <div className="text-base font-black text-[#c9922a]">{score}</div>
               </div>
             </div>
 
-            <div className="bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-[#e5dfd5] flex items-center gap-3">
-              <span className="text-xl">🎯</span>
+            <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-[#e5dfd5] flex items-center gap-2.5">
+              <span className="text-lg">🧩</span>
               <div className="text-left">
-                <div className="text-[10px] uppercase font-bold text-[#786c5e]">Tiến Độ Câu Hỏi</div>
-                <div className="text-lg font-black text-[#2c1a0e]">
-                  {answeredCount} / {totalQuestions} Câu
+                <div className="text-[10px] uppercase font-bold text-[#786c5e]">Tiến Độ Tựa Đề</div>
+                <div className="text-base font-black text-[#2c1a0e]">
+                  {answeredCount} / {totalQuestions} Mảnh ghép
                 </div>
               </div>
             </div>
@@ -211,35 +204,110 @@ export default function ChiecNonKiDieuGame() {
             <button
               type="button"
               onClick={handleToggleMute}
-              className="bg-white hover:bg-[#faf6ee] px-4 py-2.5 rounded-2xl shadow-sm border border-[#e5dfd5] flex items-center gap-2 text-xs font-bold text-[#4a3e35] transition-all"
-              title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
+              className="bg-white hover:bg-[#faf6ee] px-4 py-2 rounded-2xl shadow-sm border border-[#e5dfd5] flex items-center gap-2 text-xs font-bold text-[#4a3e35] transition-all"
             >
-              <span>{isMuted ? "🔇 Âm thanh: Tắt" : "🔊 Âm thanh: Bật"}</span>
+              <span>{isMuted ? "🔇 Tắt âm" : "🔊 Bật âm"}</span>
             </button>
 
             <button
               type="button"
               onClick={() => setIsEditorOpen(true)}
-              className="bg-white hover:bg-[#faf6ee] px-4 py-2.5 rounded-2xl shadow-sm border border-[#e5dfd5] flex items-center gap-2 text-xs font-bold text-[#4a3e35] transition-all"
+              className="bg-white hover:bg-[#faf6ee] px-4 py-2 rounded-2xl shadow-sm border border-[#e5dfd5] flex items-center gap-2 text-xs font-bold text-[#4a3e35] transition-all"
             >
               <span>⚙️</span>
-              <span>Tùy Chỉnh 5 Câu Hỏi</span>
+              <span>Tùy chỉnh câu hỏi</span>
             </button>
 
             <button
               type="button"
               onClick={handleRestart}
-              className="bg-white hover:bg-[#faf6ee] px-4 py-2.5 rounded-2xl shadow-sm border border-[#e5dfd5] flex items-center gap-2 text-xs font-bold text-[#991b1b] transition-all"
+              className="bg-white hover:bg-[#faf6ee] px-4 py-2 rounded-2xl shadow-sm border border-[#e5dfd5] flex items-center gap-2 text-xs font-bold text-[#991b1b] transition-all"
             >
               <span>🔄</span>
-              <span>Làm Mới</span>
+              <span>Chơi lại</span>
             </button>
           </div>
         </div>
 
-        {/* Main Game Stage: 2 Columns (Wheel on Left/Center, Questions Status & Conclusion on Right) */}
+        {/* INTERACTIVE TITLE PUZZLE BOARD (5 SECRET WORDS FLIP BOARD) */}
+        <div className="mb-8 p-5 md:p-6 bg-gradient-to-r from-[#2c1a0e] via-[#3d2715] to-[#2c1a0e] rounded-3xl border-2 border-[#c9922a] shadow-xl text-white">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-4 border-b border-[#c9922a]/40 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🧩</span>
+              <h2
+                className="text-base md:text-lg font-bold text-[#fef08a] uppercase tracking-wider"
+                style={{ fontFamily: "'Playfair Display', serif" }}
+              >
+                Bảng Giải Mã 5 Mảnh Ghép Tựa Đề Bài Học
+              </h2>
+            </div>
+            <div className="text-xs text-[#e5dfd5]">
+              {allAnswered
+                ? "✨ Đã ghép hoàn chỉnh tựa đề bài học!"
+                : `Còn thiếu ${totalQuestions - answeredCount} mảnh ghép để hoàn tất tựa đề`}
+            </div>
+          </div>
+
+          {/* 5 Secret Word Puzzle Tiles */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            {questions.map((q) => {
+              const isUnlocked = Boolean(answeredQuestions[q.id]);
+
+              return (
+                <div
+                  key={q.id}
+                  onClick={() => handleDirectQuestionClick(q)}
+                  className={`p-3.5 rounded-2xl border-2 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center text-center relative overflow-hidden ${
+                    isUnlocked
+                      ? "bg-gradient-to-b from-[#15803d] to-[#166534] border-[#4ade80] shadow-lg shadow-green-950/40 transform hover:scale-105"
+                      : "bg-[#1e1b18]/80 border-dashed border-[#c9922a]/50 hover:border-[#c9922a] hover:bg-[#1e1b18]"
+                  }`}
+                >
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-[#fef08a] mb-1">
+                    Mảnh {q.num} · {q.typeTag}
+                  </span>
+
+                  {isUnlocked ? (
+                    <div className="animate-fade-in flex flex-col items-center">
+                      <span className="text-sm md:text-base font-black text-white uppercase tracking-wider">
+                        {q.secretWord}
+                      </span>
+                      <span className="text-[10px] text-emerald-200 mt-0.5">✓ Đã giải mã</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center opacity-60">
+                      <span className="text-base md:text-lg font-mono font-bold text-amber-200/80 tracking-widest">
+                        ❓ [ ? ? ? ]
+                      </span>
+                      <span className="text-[10px] text-amber-200/70 mt-0.5">Quay để mở</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Full Assembled Title Reveal (Shown dynamically as unlocked) */}
+          <div className="mt-4 pt-3 border-t border-[#c9922a]/40 text-center">
+            <span className="text-[11px] uppercase tracking-widest text-[#c9922a] font-bold block mb-1">
+              TỰA ĐỀ BÀI HỌC HOÀN CHỈNH:
+            </span>
+            <div
+              className={`text-sm md:text-xl font-bold tracking-wide transition-all ${
+                allAnswered
+                  ? "text-[#fef08a] animate-pulse py-1"
+                  : "text-white/60"
+              }`}
+              style={{ fontFamily: "'Playfair Display', serif" }}
+            >
+              👉 "{FULL_LESSON_TITLE}"
+            </div>
+          </div>
+        </div>
+
+        {/* Main Game Stage: Wheel on Left, Checklist & Conclusion Button on Right */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Wheel Stage (7 Cols on desktop) */}
+          {/* Wheel Stage */}
           <div className="lg:col-span-7 flex flex-col items-center justify-center relative">
             <div className="wheel-stage-card p-4 md:p-8 bg-gradient-to-b from-[#faf8f5] to-[#f4eee6] rounded-3xl shadow-xl border-2 border-[#c9922a]/30 relative flex flex-col items-center">
               {/* Wheel Canvas */}
@@ -276,26 +344,26 @@ export default function ChiecNonKiDieuGame() {
             </div>
           </div>
 
-          {/* Right Column: 5 Questions Cards & The Grand Conclusion Button (5 Cols on desktop) */}
+          {/* Right Column: 5 Questions Checklist & Conclusion Button */}
           <div className="lg:col-span-5 flex flex-col gap-4">
-            {/* Header for Questions Checklist */}
+            {/* Checklist */}
             <div className="bg-white p-5 rounded-3xl shadow-sm border border-[#e5dfd5]">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <h3
                   className="text-lg font-bold text-[#2c1a0e]"
                   style={{ fontFamily: "'Playfair Display', serif" }}
                 >
-                  Hồ Sơ 5 Câu Hỏi Chuyên Đề
+                  5 Câu Đố Ghép Tựa Đề
                 </h3>
                 <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#c9922a]/15 text-[#855318]">
-                  {answeredCount}/5 Hoàn Thành
+                  {answeredCount}/5 Đã Giải
                 </span>
               </div>
-              <p className="text-xs text-[#786c5e] mb-4">
-                Quay trúng câu nào câu hỏi sẽ hiện ra. Hoặc bạn có thể nhấp trực tiếp vào thẻ câu hỏi để mở nhanh:
+              <p className="text-xs text-[#786c5e] mb-3">
+                Xoay dính câu nào câu hỏi sẽ hiện ra. Hoặc bấm trực tiếp vào thẻ câu hỏi để mở nhanh:
               </p>
 
-              {/* 5 Questions Checklist */}
+              {/* 5 Questions Items */}
               <div className="space-y-2.5">
                 {questions.map((q) => {
                   const state = answeredQuestions[q.id];
@@ -326,7 +394,13 @@ export default function ChiecNonKiDieuGame() {
                             {q.title}
                           </div>
                           <div className="text-[11px] text-[#786c5e] truncate">
-                            {q.badge} · {q.points}đ
+                            {isDone ? (
+                              <strong className="text-emerald-700 font-bold">
+                                Từ khóa: {q.secretWord}
+                              </strong>
+                            ) : (
+                              `Thể loại: ${q.typeTag}`
+                            )}
                           </div>
                         </div>
                       </div>
@@ -334,7 +408,7 @@ export default function ChiecNonKiDieuGame() {
                       <div className="flex-shrink-0">
                         {isDone ? (
                           <span className="text-xs font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                            Đã giải {state.isCorrect ? "+100đ" : ""}
+                            Đã giải ✓
                           </span>
                         ) : (
                           <span className="text-xs font-bold text-[#c9922a] hover:underline">
@@ -377,8 +451,8 @@ export default function ChiecNonKiDieuGame() {
                     }`}
                   >
                     {allAnswered
-                      ? "Đã trả lời xong 5/5 câu hỏi! Bấm nút bên dưới để mở toàn cảnh kết luận bài học."
-                      : `Cần hoàn thành đủ 5 câu hỏi để mở khóa (Hiện tại: ${answeredCount}/5 câu).`}
+                      ? "Đã trả lời hết 5 câu và hoàn thành tựa đề! Bấm nút bên dưới để mở toàn cảnh KẾT NỘI DUNG BÀI HỌC."
+                      : `Cần trả lời đủ 5 câu để mở khóa kết luận bài học (Hiện tại: ${answeredCount}/5 câu).`}
                   </div>
                 </div>
               </div>
@@ -396,7 +470,7 @@ export default function ChiecNonKiDieuGame() {
                 <span>📜</span>
                 <span>
                   {allAnswered
-                    ? "BẤM XEM TỔNG KẾT BÀI HỌC NGAY"
+                    ? "BẤM XEM KẾT NỘI DUNG BÀI HỌC"
                     : "Xem Trước Kết Nội Dung Bài Học"}
                 </span>
               </button>
@@ -405,7 +479,7 @@ export default function ChiecNonKiDieuGame() {
         </div>
       </div>
 
-      {/* Question Modal (Opens when wheel stops or clicked) */}
+      {/* Question Modal */}
       <QuestionModal
         question={activeQuestion}
         isOpen={isQuestionModalOpen}
@@ -452,18 +526,31 @@ export default function ChiecNonKiDieuGame() {
               {editingQuestions.map((q, qIndex) => (
                 <div key={q.id} className="p-4 bg-white rounded-xl border border-gray-200 space-y-2">
                   <div className="font-bold text-xs text-[#c9922a] uppercase">
-                    Câu hỏi {q.num} - Tiêu đề
+                    Câu hỏi {q.num} - Tiêu đề & Từ khóa
                   </div>
-                  <input
-                    type="text"
-                    value={q.title}
-                    onChange={(e) => {
-                      const copy = [...editingQuestions];
-                      copy[qIndex].title = e.target.value;
-                      setEditingQuestions(copy);
-                    }}
-                    className="w-full p-2 border border-gray-300 rounded-lg text-xs font-bold"
-                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={q.title}
+                      onChange={(e) => {
+                        const copy = [...editingQuestions];
+                        copy[qIndex].title = e.target.value;
+                        setEditingQuestions(copy);
+                      }}
+                      className="w-full p-2 border border-gray-300 rounded-lg text-xs font-bold"
+                    />
+                    <input
+                      type="text"
+                      value={q.secretWord}
+                      placeholder="Từ khóa ghép tựa đề"
+                      onChange={(e) => {
+                        const copy = [...editingQuestions];
+                        copy[qIndex].secretWord = e.target.value;
+                        setEditingQuestions(copy);
+                      }}
+                      className="w-full p-2 border border-gray-300 rounded-lg text-xs font-bold text-emerald-700"
+                    />
+                  </div>
                   <div className="font-bold text-xs text-gray-600">Nội dung câu hỏi:</div>
                   <textarea
                     rows={2}
