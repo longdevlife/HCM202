@@ -21,9 +21,18 @@ test('openBook(1) updates view to book and selectedBook to 1', () => {
 test('openLibrary() preserves selectedBook (does not reset to 0)', () => {
   useBookLibraryStore.getState().setSelectedBook(2);
   useBookLibraryStore.getState().openBook(2);
-  useBookLibraryStore.getState().openLibrary();
+  useBookLibraryStore.getState().openLibrary({ restoreDetail: true });
 
   const state = useBookLibraryStore.getState();
   assert.equal(state.view, 'library');
   assert.equal(state.selectedBook, 2, 'Must keep selectedBook 2 when returning to library');
+  assert.equal(state.isDetailOpen, true);
+});
+
+test('closeDetail() closes detail drawer leaving library in gallery mode', () => {
+  useBookLibraryStore.getState().setSelectedBook(1, true);
+  assert.equal(useBookLibraryStore.getState().isDetailOpen, true);
+
+  useBookLibraryStore.getState().closeDetail();
+  assert.equal(useBookLibraryStore.getState().isDetailOpen, false);
 });

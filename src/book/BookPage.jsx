@@ -17,10 +17,13 @@ export const BookPage = ({ skipIntro = false, onIntroFinish }) => {
   const openBook = useBookLibraryStore((state) => state.openBook);
   const openLibrary = useBookLibraryStore((state) => state.openLibrary);
 
+  const isDetailOpen = useBookLibraryStore((state) => state.isDetailOpen);
+  const closeDetail = useBookLibraryStore((state) => state.closeDetail);
+
   const setPage = useSetAtom(pageAtom);
   const setViewMode = useSetAtom(viewModeAtom);
 
-  const currentBook = getBookByIndex(selectedBook);
+  const currentBook = getBookByIndex(selectedBook ?? 0);
 
   useEffect(() => {
     if (!isStarted || libraryView === "library") return undefined;
@@ -28,7 +31,7 @@ export const BookPage = ({ skipIntro = false, onIntroFinish }) => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        openLibrary();
+        openLibrary({ restoreDetail: true });
       }
     };
 
@@ -37,7 +40,7 @@ export const BookPage = ({ skipIntro = false, onIntroFinish }) => {
   }, [isStarted, libraryView, openLibrary]);
 
   const handleEnter = () => {
-    openLibrary();
+    openLibrary({ restoreDetail: false });
     setIsStarted(true);
     if (onIntroFinish) onIntroFinish();
   };
@@ -56,7 +59,9 @@ export const BookPage = ({ skipIntro = false, onIntroFinish }) => {
     return (
       <BestsellersBookShowcase
         selectedBook={selectedBook}
+        isDetailOpen={isDetailOpen}
         onSelectBook={setSelectedBook}
+        onCloseDetail={closeDetail}
         onOpenBook={handleOpenBook}
       />
     );
@@ -74,7 +79,7 @@ export const BookPage = ({ skipIntro = false, onIntroFinish }) => {
         backgroundColor: "#1E1A14",
       }}
     >
-      <UI book={currentBook} onBackToLibrary={openLibrary} />
+      <UI book={currentBook} onBackToLibrary={() => openLibrary({ restoreDetail: true })} />
       <Loader />
       <Canvas
         shadows={false}

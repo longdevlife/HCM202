@@ -58,7 +58,7 @@ export default function Navbar({ activeTab, onTabChange }) {
               fontFeatureSettings: '"lnum" 1, "tnum" 1',
             }}
           >
-            Lịch Sử Đảng - VNR-T17
+            HCM202 · Chương 5
           </span>
           <span
             className="sm:hidden"
@@ -67,7 +67,7 @@ export default function Navbar({ activeTab, onTabChange }) {
               fontFeatureSettings: '"lnum" 1, "tnum" 1',
             }}
           >
-            VNR-T17
+            HCM202
           </span>
         </a>
 
