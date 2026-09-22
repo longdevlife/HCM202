@@ -41,6 +41,17 @@ export default function QuestionModal({
     }
   }, [question, isOpen, isAlreadyAnswered]);
 
+  // Auto transition to victory celebration screen when all 5 questions are freshly completed
+  useEffect(() => {
+    if (isOpen && question && !isAlreadyAnswered && isSubmitted && allAnswered && onOpenVictory) {
+      const timer = setTimeout(() => {
+        onClose();
+        onOpenVictory();
+      }, 2400);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, question, isAlreadyAnswered, isSubmitted, allAnswered, onOpenVictory, onClose]);
+
   if (!isOpen || !question) return null;
 
   const normalizeText = (str) =>
@@ -163,17 +174,6 @@ export default function QuestionModal({
       onOpenVictory();
     }
   };
-
-  // Auto transition to victory celebration screen when all 5 questions are freshly completed
-  useEffect(() => {
-    if (!isAlreadyAnswered && isSubmitted && allAnswered && onOpenVictory) {
-      const timer = setTimeout(() => {
-        onClose();
-        onOpenVictory();
-      }, 2400);
-      return () => clearTimeout(timer);
-    }
-  }, [isAlreadyAnswered, isSubmitted, allAnswered, onOpenVictory, onClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">

@@ -140,22 +140,15 @@ export default function ChiecNonKiDieuGame() {
       <div className="max-w-5xl mx-auto w-full flex flex-col items-center relative z-10">
         {/* Simple, Compact Game Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#3a382b]/80 border border-[#c3a47b]/50 text-[#dbc39c] text-xs font-bold uppercase tracking-widest mb-2 shadow-sm">
-            <span>🎡</span>
-            <span>Chiếc Nón Kỳ Diệu · MLN131</span>
-          </div>
           <h1
             className="text-2xl md:text-4xl font-black text-[#eee2ca] tracking-tight uppercase"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
             Vòng Quay Chiếc Nón Kỳ Diệu
           </h1>
-          <p className="text-xs md:text-sm text-[#c5b79e] max-w-lg mx-auto mt-1 font-medium">
-            Quay nón dính câu nào câu hỏi sẽ hiện ra. Trả lời đúng các câu đố để kết nội dung bài học!
-          </p>
 
           {/* Clean Top Status Bar */}
-          <div className="flex items-center justify-center gap-3 mt-3">
+          <div className="flex items-center justify-center gap-3 mt-4">
             <div className="bg-[#3a382b]/80 px-4 py-1.5 rounded-full border border-[#c3a47b]/30 text-xs font-bold text-[#eee2ca] shadow-sm flex items-center gap-1.5">
               <span>🧩 Tiến độ:</span>
               <span className="font-black text-emerald-400">{answeredCount}/5</span>
