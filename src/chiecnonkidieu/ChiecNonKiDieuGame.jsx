@@ -1,7 +1,6 @@
 import React, { useState, useRef, useCallback } from "react";
 import WheelCanvas from "./WheelCanvas";
 import QuestionModal from "./QuestionModal";
-import LessonSummaryModal from "./LessonSummaryModal";
 import VictoryModal from "./VictoryModal";
 import { DEFAULT_QUESTIONS, WHEEL_SLICES, FULL_LESSON_TITLE, VICTORY_TITLE } from "./wheelData";
 import { sounds } from "./SoundEffects";
@@ -18,7 +17,6 @@ export default function ChiecNonKiDieuGame() {
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
   const [isVictoryModalOpen, setIsVictoryModalOpen] = useState(false);
-  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
 
@@ -116,7 +114,6 @@ export default function ChiecNonKiDieuGame() {
     setSpinsCount(0);
     setIsSpinning(false);
     setIsVictoryModalOpen(false);
-    setIsSummaryModalOpen(false);
     showToast("🔄 Đã làm mới trò chơi Chiếc Nón Kỳ Diệu!");
   };
 
@@ -224,23 +221,15 @@ export default function ChiecNonKiDieuGame() {
                     {VICTORY_TITLE}
                   </div>
 
-                  {/* Two Main Actions: View Celebration Screen & View Academic Summary */}
-                  <div className="flex flex-col sm:flex-row items-center gap-2 w-full mt-2">
+                  {/* Action: View Celebration Screen */}
+                  <div className="w-full max-w-sm mt-2">
                     <button
                       type="button"
                       onClick={() => setIsVictoryModalOpen(true)}
-                      className="w-full sm:flex-1 py-3.5 px-4 rounded-xl font-black text-xs md:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg bg-gradient-to-r from-[#d97706] to-[#b45309] hover:brightness-110 text-white cursor-pointer active:scale-95 transition-all"
+                      className="w-full py-3.5 px-4 rounded-xl font-black text-xs md:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg bg-gradient-to-r from-[#d97706] to-[#b45309] hover:brightness-110 text-white cursor-pointer active:scale-95 transition-all"
                     >
                       <span>🎉</span>
                       <span>XEM MÀN CHÚC MỪNG</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsSummaryModalOpen(true)}
-                      className="w-full sm:flex-1 py-3.5 px-4 rounded-xl font-black text-xs md:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl bg-gradient-to-r from-[#f59e0b] via-[#c9922a] to-[#d97706] hover:brightness-110 text-white animate-pulse cursor-pointer shadow-amber-900/50 active:scale-95 transition-all"
-                    >
-                      <span>📜</span>
-                      <span>KẾT NỘI DUNG BÀI HỌC</span>
                     </button>
                   </div>
                 </div>
@@ -257,7 +246,6 @@ export default function ChiecNonKiDieuGame() {
         onClose={() => setIsQuestionModalOpen(false)}
         onAnswerSubmit={handleAnswerSubmit}
         allAnswered={allAnswered}
-        onOpenSummary={() => setIsSummaryModalOpen(true)}
         onOpenVictory={() => {
           setIsQuestionModalOpen(false);
           setIsVictoryModalOpen(true);
@@ -269,20 +257,7 @@ export default function ChiecNonKiDieuGame() {
       <VictoryModal
         isOpen={isVictoryModalOpen}
         onClose={() => setIsVictoryModalOpen(false)}
-        onOpenLessonSummary={() => {
-          setIsVictoryModalOpen(false);
-          setIsSummaryModalOpen(true);
-        }}
         onRestart={handleRestart}
-      />
-
-      {/* Grand Lesson Summary Modal */}
-      <LessonSummaryModal
-        isOpen={isSummaryModalOpen}
-        onClose={() => setIsSummaryModalOpen(false)}
-        onRestart={handleRestart}
-        answeredCount={answeredCount}
-        totalQuestions={totalQuestions}
       />
     </div>
   );

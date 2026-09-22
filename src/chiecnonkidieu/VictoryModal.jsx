@@ -179,28 +179,15 @@ export default function VictoryModal({
           </div>
         </div>
 
-        {/* Primary Call-to-Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md">
-          {onOpenLessonSummary && (
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                onOpenLessonSummary();
-              }}
-              className="w-full py-4 px-6 rounded-2xl font-black text-sm md:text-base uppercase tracking-wider flex items-center justify-center gap-2 shadow-2xl bg-gradient-to-r from-[#f59e0b] via-[#eab308] to-[#d97706] hover:brightness-110 text-[#2c1a0e] animate-pulse active:scale-95 cursor-pointer shadow-amber-900/60 transition-transform"
-            >
-              <span>📜</span>
-              <span>BẤM XEM KẾT NỘI DUNG BÀI HỌC</span>
-            </button>
-          )}
-
+        {/* Action Buttons */}
+        <div className="flex flex-col items-center justify-center gap-3 w-full max-w-sm">
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto py-4 px-6 rounded-2xl font-bold text-xs md:text-sm bg-white/10 hover:bg-white/20 text-[#e5dfd5] transition-colors cursor-pointer border border-white/15"
+            className="w-full py-4 px-6 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl bg-gradient-to-r from-[#d97706] via-[#c9922a] to-[#b45309] hover:from-[#b45309] hover:to-[#92400e] text-white active:scale-95 cursor-pointer ring-2 ring-[#fde68a]/40 transition-all"
           >
-            🎡 Xem lại Vòng Quay
+            <span>🎡</span>
+            <span>Quay lại Vòng Quay</span>
           </button>
         </div>
 
