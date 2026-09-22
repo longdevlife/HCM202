@@ -1,7 +1,7 @@
 import { atom, useAtom } from "jotai";
 import { useEffect, useRef } from "react";
 
-// ── State atoms ──
+// ── Magazine state atoms ──
 export const pageAtom = atom(0);
 export const viewModeAtom = atom("showcase"); // "showcase" | "reading"
 
@@ -37,15 +37,6 @@ const pageLabels = [
   "Bìa sau",
 ];
 
-const pageTitles = [
-  null,
-  "Trang 1–2",
-  "Trang 3–4",
-  "Trang 5–6",
-  "Trang 7–8",
-  null,
-];
-
 /* ── SVG Icons ── */
 const MagazineIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -75,8 +66,23 @@ const ChevronRight = () => (
   </svg>
 );
 
+const LibraryIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    <path d="M9 2v15" />
+  </svg>
+);
 
-export const UI = () => {
+const defaultBook = {
+  roman: "I",
+  shortTitle: "Cơ cấu xã hội – giai cấp",
+  magazineName: "TẠP CHÍ CHUYÊN ĐỀ · QUYỂN I",
+  edgeLabel: "CƠ CẤU XÃ HỘI – GIAI CẤP",
+  foil: "#C5A028",
+};
+
+export const UI = ({ book = defaultBook, onBackToLibrary }) => {
   const [page, setPage] = useAtom(pageAtom);
   const [viewMode, setViewMode] = useAtom(viewModeAtom);
   const hasPlayedInitialPage = useRef(false);
@@ -91,57 +97,71 @@ export const UI = () => {
     audio.play().catch(() => {});
   }, [page]);
 
-  const totalPages = pages.length + 1; // includes "bia sau"
-  const progress = ((page) / (totalPages - 1)) * 100;
-  const currentTitle = pageTitles[page] || null;
+  const totalPages = pages.length + 1;
+  const foil = book?.foil || "#C5A028";
 
   return (
     <>
-      {/* Noise + Vignette overlays */}
       <div className="noise-overlay" />
       <div className="vignette-overlay" />
 
       <main className="pointer-events-none select-none z-10 fixed inset-0 overflow-hidden">
-        {/* ── Premium Magazine Edge Branding ── */}
-        
-        {/* Left Vertical */}
-        <div 
+        <div
           className="absolute left-6 top-1/2 -translate-y-1/2 -rotate-90 origin-center text-[12px] tracking-[0.3em] font-light opacity-50 whitespace-nowrap uppercase"
-          style={{ fontFamily: "'Inter', sans-serif", color: '#E5D5B5' }}
+          style={{ fontFamily: "'Inter', sans-serif", color: "#E5D5B5" }}
         >
-          Tạp Chí Lịch Sử Đảng <span className="mx-4 text-[#C5272D] opacity-80">●</span> VNR-T17
+          {book?.magazineName || defaultBook.magazineName}
+          <span className="mx-4" style={{ color: foil, opacity: 0.85 }}>●</span>
+          HCM202
         </div>
 
-        {/* Right Vertical */}
-        <div 
+        <div
           className="absolute right-6 top-1/2 -translate-y-1/2 rotate-90 origin-center text-[12px] tracking-[0.3em] font-light opacity-50 whitespace-nowrap uppercase"
-          style={{ fontFamily: "'Inter', sans-serif", color: '#E5D5B5' }}
+          style={{ fontFamily: "'Inter', sans-serif", color: "#E5D5B5" }}
         >
-          "Sản Xuất Bung Ra" (1979-1981)
+          {book?.edgeLabel || defaultBook.edgeLabel}
         </div>
 
-        {/* Top Left: Issue Stamp */}
         <div className="absolute top-28 left-12 flex flex-col items-center opacity-80">
-          <div className="w-[1.5px] h-16 bg-[#C5272D] mb-4 opacity-80" />
-          <span className="text-[13px] tracking-[0.3em] font-bold text-[#C5272D]" style={{ writingMode: 'vertical-rl' }}>
-            KỲ 05
+          <div className="w-[1.5px] h-16 mb-4 opacity-80" style={{ background: foil }} />
+          <span
+            className="text-[13px] tracking-[0.3em] font-bold"
+            style={{ writingMode: "vertical-rl", color: foil }}
+          >
+            QUYỂN {book?.roman || "I"}
           </span>
         </div>
 
-        {/* Top Right: Current Focus */}
         <div className="absolute top-28 right-12 flex flex-col items-end text-right">
-          <span className="text-[11px] tracking-[0.3em] uppercase text-[#E5D5B5] opacity-50 mb-2" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <span
+            className="text-[11px] tracking-[0.3em] uppercase text-[#E5D5B5] opacity-50 mb-2"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
             Tiêu Điểm
           </span>
-          <span className="text-[22px] max-w-[300px]" style={{ fontFamily: 'Playfair Display, serif', color: '#C5A028', fontStyle: 'italic', lineHeight: 1.2, fontSize: 'clamp(16px, 4.6vw, 22px)', width: 'min(300px, calc(100vw - 6rem))', whiteSpace: 'normal', overflowWrap: 'break-word' }}>
-            Chuyên Đề · "Sản Xuất Bung Ra"
+          <span
+            className="text-[22px] max-w-[300px]"
+            style={{
+              fontFamily: "Playfair Display, serif",
+              color: foil,
+              fontStyle: "italic",
+              lineHeight: 1.2,
+              fontSize: "clamp(16px, 4.6vw, 22px)",
+              width: "min(300px, calc(100vw - 6rem))",
+              whiteSpace: "normal",
+              overflowWrap: "break-word",
+            }}
+          >
+            {book?.shortTitle || defaultBook.shortTitle}
           </span>
         </div>
 
-        {/* Bottom Left: Elegant Page Indicator */}
         <div className="absolute bottom-12 left-12 flex items-end gap-4 opacity-90">
-          <span className="text-6xl leading-none font-medium" style={{ fontFamily: 'Playfair Display, serif', color: '#C5A028' }}>
-            {String(page).padStart(2, '0')}
+          <span
+            className="text-6xl leading-none font-medium"
+            style={{ fontFamily: "Playfair Display, serif", color: foil }}
+          >
+            {String(page).padStart(2, "0")}
           </span>
           <div className="flex flex-col pb-1.5">
             <div className="w-16 h-[2px] bg-[#E5D5B5] opacity-30 mb-2" />
@@ -151,49 +171,47 @@ export const UI = () => {
           </div>
         </div>
 
-        {/* ── Side Navigation Arrows ── */}
         <div className="pointer-events-auto flex items-center justify-between px-4 absolute top-1/2 left-0 right-0 -translate-y-1/2">
           <button
             className="view-toggle"
             style={{
-              padding: '10px',
+              padding: "10px",
               opacity: page > 0 ? 1 : 0.3,
-              pointerEvents: page > 0 ? 'auto' : 'none',
+              pointerEvents: page > 0 ? "auto" : "none",
             }}
             onClick={() => setPage(Math.max(0, page - 1))}
+            aria-label="Trang trước"
           >
             <ChevronLeft />
           </button>
           <button
             className="view-toggle"
             style={{
-              padding: '10px',
+              padding: "10px",
               opacity: page < totalPages - 1 ? 1 : 0.3,
-              pointerEvents: page < totalPages - 1 ? 'auto' : 'none',
+              pointerEvents: page < totalPages - 1 ? "auto" : "none",
             }}
             onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+            aria-label="Trang sau"
           >
             <ChevronRight />
           </button>
         </div>
 
-        {/* ── Bottom: Floating Nav Island ── */}
         <div className="absolute bottom-6 left-0 right-0 w-full pointer-events-auto flex justify-center">
-          <div className="book-nav rounded-full px-2 py-2 flex flex-col items-center gap-0" style={{ maxWidth: '90vw' }}>
-
-            {/* Nav buttons */}
+          <div className="book-nav rounded-full px-2 py-2 flex flex-col items-center gap-0" style={{ maxWidth: "90vw" }}>
             <div className="flex items-center gap-1 overflow-x-auto px-1">
               {[...pages].map((_, index) => (
                 <button
                   key={index}
-                  className={`book-nav-btn shrink-0 ${index === page ? 'active' : ''}`}
+                  className={`book-nav-btn shrink-0 ${index === page ? "active" : ""}`}
                   onClick={() => setPage(index)}
                 >
                   {pageLabels[index]}
                 </button>
               ))}
               <button
-                className={`book-nav-btn shrink-0 ${page === pages.length ? 'active' : ''}`}
+                className={`book-nav-btn shrink-0 ${page === pages.length ? "active" : ""}`}
                 onClick={() => setPage(pages.length)}
               >
                 {pageLabels[pages.length]}
@@ -203,15 +221,27 @@ export const UI = () => {
         </div>
       </main>
 
-      {/* ── View Mode Toggle (fixed bottom-right) ── */}
-      <button
-        className={`view-toggle fixed z-20 ${viewMode === 'reading' ? 'active' : ''}`}
-        style={{ bottom: '100px', right: '32px' }}
-        onClick={() => setViewMode(viewMode === 'showcase' ? 'reading' : 'showcase')}
+      <div
+        className="fixed z-20 flex items-center gap-2"
+        style={{ bottom: "100px", right: "32px" }}
       >
-        {viewMode === 'showcase' ? <MagazineIcon /> : <CubeIcon />}
-        <span>{viewMode === 'showcase' ? 'Đọc tạp chí' : '3D View'}</span>
-      </button>
+        <button
+          className="view-toggle"
+          onClick={onBackToLibrary}
+          aria-label="Quay lại thư viện ba quyển"
+        >
+          <LibraryIcon />
+          <span>Thư viện</span>
+        </button>
+
+        <button
+          className={`view-toggle ${viewMode === "reading" ? "active" : ""}`}
+          onClick={() => setViewMode(viewMode === "showcase" ? "reading" : "showcase")}
+        >
+          {viewMode === "showcase" ? <MagazineIcon /> : <CubeIcon />}
+          <span>{viewMode === "showcase" ? "Đọc tạp chí" : "3D View"}</span>
+        </button>
+      </div>
     </>
   );
 };
