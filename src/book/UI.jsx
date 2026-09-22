@@ -1,11 +1,13 @@
 import { atom, useAtom } from "jotai";
 import { useEffect, useRef } from "react";
+import { BOOKS } from "./content/bookContent.js";
 
 // ── State atoms ──
 export const pageAtom = atom(0);
 export const viewModeAtom = atom("showcase"); // "showcase" | "reading"
 
-export const pages = [
+// Legacy 3D Book page texture pairs preserved from HCM202 repository
+export const legacyPages = [
   {
     front: "/textures/hinh/hinh1.png",
     back: "/textures/hinh/hinh2.png",
@@ -28,26 +30,10 @@ export const pages = [
   },
 ];
 
-const pageLabels = [
-  "Bìa",
-  "Trang 1–2",
-  "Trang 3–4",
-  "Trang 5–6",
-  "Trang 7–8",
-  "Bìa sau",
-];
-
-const pageTitles = [
-  null,
-  "Trang 1–2",
-  "Trang 3–4",
-  "Trang 5–6",
-  "Trang 7–8",
-  null,
-];
+export const pages = legacyPages;
 
 /* ── SVG Icons ── */
-const MagazineIcon = () => (
+const BookIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="3" width="18" height="18" rx="2" />
     <line x1="3" y1="9" x2="21" y2="9" />
@@ -75,8 +61,15 @@ const ChevronRight = () => (
   </svg>
 );
 
+const LibraryIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    <path d="M9 2v15" />
+  </svg>
+);
 
-export const UI = () => {
+export const UI = ({ book = BOOKS[0], onBackToLibrary }) => {
   const [page, setPage] = useAtom(pageAtom);
   const [viewMode, setViewMode] = useAtom(viewModeAtom);
   const hasPlayedInitialPage = useRef(false);
@@ -91,57 +84,89 @@ export const UI = () => {
     audio.play().catch(() => {});
   }, [page]);
 
-  const totalPages = pages.length + 1; // includes "bia sau"
-  const progress = ((page) / (totalPages - 1)) * 100;
-  const currentTitle = pageTitles[page] || null;
+  const bookPages = book?.pages?.length > 0 ? book.pages : legacyPages;
+  const totalPages = bookPages.length > 0 ? bookPages.length + 1 : 1;
+  const pageLabels = bookPages.length > 0
+    ? [
+        ...bookPages.map((p, idx) => p.label || (idx === 0 ? "Bìa" : `Trang ${idx * 2 - 1}–${idx * 2}`)),
+        "Bìa sau",
+      ]
+    : ["Bìa"];
+
+  const foil = book?.cover?.foilColor || "#C5A028";
+  const roman = book?.roman || "I";
+  const shortTitle = Array.isArray(book?.cover?.title)
+    ? book.cover.title.join(" ")
+    : (book?.shortTitle || "Cơ cấu xã hội – giai cấp");
 
   return (
     <>
-      {/* Noise + Vignette overlays */}
       <div className="noise-overlay" />
       <div className="vignette-overlay" />
 
+      {/* Book Engine HUD */}
       <main className="pointer-events-none select-none z-10 fixed inset-0 overflow-hidden">
-        {/* ── Premium Magazine Edge Branding ── */}
-        
-        {/* Left Vertical */}
-        <div 
+        {/* Left Vertical Edge Label */}
+        <div
           className="absolute left-6 top-1/2 -translate-y-1/2 -rotate-90 origin-center text-[12px] tracking-[0.3em] font-light opacity-50 whitespace-nowrap uppercase"
-          style={{ fontFamily: "'Inter', sans-serif", color: '#E5D5B5' }}
+          style={{ fontFamily: "'Inter', sans-serif", color: "#E5D5B5" }}
         >
-          Tạp Chí Lịch Sử Đảng <span className="mx-4 text-[#C5272D] opacity-80">●</span> VNR-T17
+          SÁCH HỌC THUẬT · QUYỂN {roman}
+          <span className="mx-4" style={{ color: foil, opacity: 0.85 }}>●</span>
+          MLN131
         </div>
 
-        {/* Right Vertical */}
-        <div 
+        {/* Right Vertical Edge Label */}
+        <div
           className="absolute right-6 top-1/2 -translate-y-1/2 rotate-90 origin-center text-[12px] tracking-[0.3em] font-light opacity-50 whitespace-nowrap uppercase"
-          style={{ fontFamily: "'Inter', sans-serif", color: '#E5D5B5' }}
+          style={{ fontFamily: "'Inter', sans-serif", color: "#E5D5B5" }}
         >
-          "Sản Xuất Bung Ra" (1979-1981)
+          {shortTitle}
         </div>
 
-        {/* Top Left: Issue Stamp */}
+        {/* Top Left: Volume Stamp */}
         <div className="absolute top-28 left-12 flex flex-col items-center opacity-80">
-          <div className="w-[1.5px] h-16 bg-[#C5272D] mb-4 opacity-80" />
-          <span className="text-[13px] tracking-[0.3em] font-bold text-[#C5272D]" style={{ writingMode: 'vertical-rl' }}>
-            KỲ 05
+          <div className="w-[1.5px] h-16 mb-4 opacity-80" style={{ background: foil }} />
+          <span
+            className="text-[13px] tracking-[0.3em] font-bold"
+            style={{ writingMode: "vertical-rl", color: foil }}
+          >
+            QUYỂN {roman}
           </span>
         </div>
 
-        {/* Top Right: Current Focus */}
+        {/* Top Right: Focus Title */}
         <div className="absolute top-28 right-12 flex flex-col items-end text-right">
-          <span className="text-[11px] tracking-[0.3em] uppercase text-[#E5D5B5] opacity-50 mb-2" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <span
+            className="text-[11px] tracking-[0.3em] uppercase text-[#E5D5B5] opacity-50 mb-2"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
             Tiêu Điểm
           </span>
-          <span className="text-[22px] max-w-[300px]" style={{ fontFamily: 'Playfair Display, serif', color: '#C5A028', fontStyle: 'italic', lineHeight: 1.2, fontSize: 'clamp(16px, 4.6vw, 22px)', width: 'min(300px, calc(100vw - 6rem))', whiteSpace: 'normal', overflowWrap: 'break-word' }}>
-            Chuyên Đề · "Sản Xuất Bung Ra"
+          <span
+            className="text-[22px] max-w-[320px]"
+            style={{
+              fontFamily: "Playfair Display, serif",
+              color: foil,
+              fontStyle: "italic",
+              lineHeight: 1.2,
+              fontSize: "clamp(16px, 4.6vw, 22px)",
+              width: "min(320px, calc(100vw - 6rem))",
+              whiteSpace: "normal",
+              overflowWrap: "break-word",
+            }}
+          >
+            {shortTitle}
           </span>
         </div>
 
-        {/* Bottom Left: Elegant Page Indicator */}
+        {/* Bottom Left: Page Indicator */}
         <div className="absolute bottom-12 left-12 flex items-end gap-4 opacity-90">
-          <span className="text-6xl leading-none font-medium" style={{ fontFamily: 'Playfair Display, serif', color: '#C5A028' }}>
-            {String(page).padStart(2, '0')}
+          <span
+            className="text-6xl leading-none font-medium"
+            style={{ fontFamily: "Playfair Display, serif", color: foil }}
+          >
+            {String(page).padStart(2, "0")}
           </span>
           <div className="flex flex-col pb-1.5">
             <div className="w-16 h-[2px] bg-[#E5D5B5] opacity-30 mb-2" />
@@ -151,67 +176,85 @@ export const UI = () => {
           </div>
         </div>
 
-        {/* ── Side Navigation Arrows ── */}
-        <div className="pointer-events-auto flex items-center justify-between px-4 absolute top-1/2 left-0 right-0 -translate-y-1/2">
-          <button
-            className="view-toggle"
-            style={{
-              padding: '10px',
-              opacity: page > 0 ? 1 : 0.3,
-              pointerEvents: page > 0 ? 'auto' : 'none',
-            }}
-            onClick={() => setPage(Math.max(0, page - 1))}
-          >
-            <ChevronLeft />
-          </button>
-          <button
-            className="view-toggle"
-            style={{
-              padding: '10px',
-              opacity: page < totalPages - 1 ? 1 : 0.3,
-              pointerEvents: page < totalPages - 1 ? 'auto' : 'none',
-            }}
-            onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
-          >
-            <ChevronRight />
-          </button>
-        </div>
+        {/* Side Arrows */}
+        {bookPages.length > 0 && (
+          <div className="pointer-events-auto flex items-center justify-between px-4 absolute top-1/2 left-0 right-0 -translate-y-1/2">
+            <button
+              className="view-toggle"
+              style={{
+                padding: "10px",
+                opacity: page > 0 ? 1 : 0.3,
+                pointerEvents: page > 0 ? "auto" : "none",
+              }}
+              onClick={() => setPage(Math.max(0, page - 1))}
+              aria-label="Trang trước"
+            >
+              <ChevronLeft />
+            </button>
+            <button
+              className="view-toggle"
+              style={{
+                padding: "10px",
+                opacity: page < totalPages - 1 ? 1 : 0.3,
+                pointerEvents: page < totalPages - 1 ? "auto" : "none",
+              }}
+              onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+              aria-label="Trang sau"
+            >
+              <ChevronRight />
+            </button>
+          </div>
+        )}
 
-        {/* ── Bottom: Floating Nav Island ── */}
-        <div className="absolute bottom-6 left-0 right-0 w-full pointer-events-auto flex justify-center">
-          <div className="book-nav rounded-full px-2 py-2 flex flex-col items-center gap-0" style={{ maxWidth: '90vw' }}>
-
-            {/* Nav buttons */}
-            <div className="flex items-center gap-1 overflow-x-auto px-1">
-              {[...pages].map((_, index) => (
+        {/* Bottom Nav Island */}
+        {bookPages.length > 0 && (
+          <div className="absolute bottom-6 left-0 right-0 w-full pointer-events-auto flex justify-center">
+            <div className="book-nav rounded-full px-2 py-2 flex flex-col items-center gap-0" style={{ maxWidth: "90vw" }}>
+              <div className="flex items-center gap-1 overflow-x-auto px-1">
+                {bookPages.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`book-nav-btn shrink-0 ${index === page ? "active" : ""}`}
+                    onClick={() => setPage(index)}
+                  >
+                    {pageLabels[index]}
+                  </button>
+                ))}
                 <button
-                  key={index}
-                  className={`book-nav-btn shrink-0 ${index === page ? 'active' : ''}`}
-                  onClick={() => setPage(index)}
+                  className={`book-nav-btn shrink-0 ${page === bookPages.length ? "active" : ""}`}
+                  onClick={() => setPage(bookPages.length)}
                 >
-                  {pageLabels[index]}
+                  {pageLabels[bookPages.length]}
                 </button>
-              ))}
-              <button
-                className={`book-nav-btn shrink-0 ${page === pages.length ? 'active' : ''}`}
-                onClick={() => setPage(pages.length)}
-              >
-                {pageLabels[pages.length]}
-              </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </main>
 
-      {/* ── View Mode Toggle (fixed bottom-right) ── */}
-      <button
-        className={`view-toggle fixed z-20 ${viewMode === 'reading' ? 'active' : ''}`}
-        style={{ bottom: '100px', right: '32px' }}
-        onClick={() => setViewMode(viewMode === 'showcase' ? 'reading' : 'showcase')}
+      {/* Floating Bottom Right Controls */}
+      <div
+        className="fixed z-20 flex items-center gap-2"
+        style={{ bottom: "100px", right: "32px" }}
       >
-        {viewMode === 'showcase' ? <MagazineIcon /> : <CubeIcon />}
-        <span>{viewMode === 'showcase' ? 'Đọc tạp chí' : '3D View'}</span>
-      </button>
+        <button
+          className="view-toggle"
+          onClick={onBackToLibrary}
+          aria-label="Quay lại thư viện sách ba quyển"
+        >
+          <LibraryIcon />
+          <span>Thư viện sách</span>
+        </button>
+
+        <button
+          className={`view-toggle ${viewMode === "reading" ? "active" : ""}`}
+          onClick={() => setViewMode(viewMode === "showcase" ? "reading" : "showcase")}
+          aria-label="Chuyển chế độ xem sách"
+        >
+          {viewMode === "showcase" ? <BookIcon /> : <CubeIcon />}
+          <span>{viewMode === "showcase" ? "Đọc sách" : "3D View"}</span>
+        </button>
+      </div>
     </>
   );
 };

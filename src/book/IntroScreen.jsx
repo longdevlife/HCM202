@@ -29,7 +29,7 @@ export const IntroScreen = ({ onEnter }) => {
         </span>
       </div>
 
-      {/* Magazine Cover Content */}
+      {/* Book Cover Content */}
       <div className="relative z-10 flex flex-col items-center text-center w-full max-w-5xl px-6">
         
         {/* Issue info */}
@@ -37,24 +37,24 @@ export const IntroScreen = ({ onEnter }) => {
           className="flex items-center gap-3 mb-6 opacity-0 animate-[fadeIn_1s_ease_0.3s_forwards]"
           style={{ fontFamily: "'Inter', sans-serif" }}
         >
-          <span className="text-[10px] tracking-[0.3em] uppercase font-semibold" style={{ color: '#8B7355' }}>Đề tài VNR-T17</span>
+          <span className="text-[10px] tracking-[0.3em] uppercase font-semibold" style={{ color: '#8B7355' }}>Chủ Nghĩa Xã Hội Khoa Học</span>
           <span style={{ color: '#C5272D', fontSize: '8px' }}>●</span>
-          <span className="text-[10px] tracking-[0.3em] uppercase font-semibold" style={{ color: '#8B7355' }}>Giai đoạn 1979–1981</span>
+          <span className="text-[10px] tracking-[0.3em] uppercase font-semibold" style={{ color: '#8B7355' }}>Chương 5: Cơ Cấu Xã Hội – Giai Cấp</span>
         </div>
 
-        {/* Masthead — Magazine title */}
+        {/* Masthead — Book title */}
         <h1
           className="text-2xl md:text-3xl font-semibold mb-4 opacity-0 animate-[slideInFromTop_1s_ease_0.5s_forwards]"
           style={{ fontFamily: "'EB Garamond', serif", color: '#C5272D', letterSpacing: '0.15em', textTransform: 'uppercase' }}
         >
-          Tạp chí Lịch sử Đảng
+          Sách Học Thuật Chuyên Đề
         </h1>
         
         <h2
           className="text-3xl md:text-5xl font-bold mb-4 opacity-0 animate-[slideInFromTop_1s_ease_0.7s_forwards] w-full"
           style={{ fontFamily: "'EB Garamond', serif", color: '#1A1A1A', lineHeight: 1.4 }}
         >
-          SẢN XUẤT BUNG RA – BƯỚC ĐỘT PHÁ TƯ DUY TỪ RUỘNG ĐỒNG VÀ NHÀ MÁY
+          CƠ CẤU XÃ HỘI – GIAI CẤP TRONG THỜI KỲ QUÁ ĐỘ LÊN CHỦ NGHĨA XÃ HỘI
         </h2>
 
         {/* Decorative line */}
@@ -69,7 +69,7 @@ export const IntroScreen = ({ onEnter }) => {
           className="tracking-[0.15em] uppercase text-xs mb-3 opacity-0 animate-[fadeIn_1s_ease_1.1s_forwards]"
           style={{ fontFamily: "'Inter', sans-serif", color: '#8B7355' }}
         >
-          CHUYÊN ĐỀ ĐỔI MỚI KINH TẾ (1979–1981) • ĐỀ TÀI VNR-T17
+          CHUYÊN KHẢO LÝ LUẬN & THỰC TIỄN VIỆT NAM • BỘ 3 TẬP SÁCH 3D
         </p>
 
         {/* Tagline */}
@@ -77,7 +77,7 @@ export const IntroScreen = ({ onEnter }) => {
           className="text-sm md:text-base max-w-md mx-auto leading-relaxed mb-10 opacity-0 animate-[fadeIn_1s_ease_1.3s_forwards]"
           style={{ fontFamily: "'EB Garamond', serif", color: '#5C5044', fontStyle: 'italic' }}
         >
-          Cơ chế học hỏi và điều chỉnh chính sách thích ứng (Adaptive Policy Learning)
+          Nghiên cứu vị trí, quy luật biến đổi và sứ mệnh liên minh các giai cấp, tầng lớp trong thời kỳ quá độ
         </p>
 
         {/* CTA Button */}
@@ -93,7 +93,7 @@ export const IntroScreen = ({ onEnter }) => {
           }}
         >
           <span className="relative z-10 flex items-center gap-3">
-            Bắt đầu khám phá
+            Khám phá Thư viện Sách
             <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>

@@ -36,7 +36,7 @@ export default function Hero() {
 
         <img
           src="/!!!!ảnh nền.png"
-          alt="Lịch Sử Đảng 1979-1981"
+          alt="Cơ cấu xã hội – giai cấp MLN131"
           className="gsap-parallax h-[100dvh] md:h-[110dvh] w-full md:w-[60%] object-cover object-center z-0 opacity-75 mix-blend-multiply"
           data-speed="0.15"
           style={{

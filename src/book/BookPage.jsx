@@ -1,47 +1,105 @@
 import { Loader } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useState } from "react";
+import { useSetAtom } from "jotai";
+import { Suspense, useEffect, useState } from "react";
 import { Experience } from "./Experience";
-import { UI } from "./UI";
+import { UI, pageAtom, viewModeAtom } from "./UI";
 import { IntroScreen } from "./IntroScreen";
+import { BestsellersBookShowcase } from "./showcase/BestsellersBookShowcase";
+import { getBookByIndex } from "./content/bookContent.js";
+import { useBookLibraryStore } from "./showcase/useBookLibraryStore";
 
 export const BookPage = ({ skipIntro = false, onIntroFinish }) => {
   const [isStarted, setIsStarted] = useState(skipIntro);
+  const selectedBook = useBookLibraryStore((state) => state.selectedBook);
+  const libraryView = useBookLibraryStore((state) => state.view);
+  const setSelectedBook = useBookLibraryStore((state) => state.setSelectedBook);
+  const openBook = useBookLibraryStore((state) => state.openBook);
+  const openLibrary = useBookLibraryStore((state) => state.openLibrary);
+
+  const isDetailOpen = useBookLibraryStore((state) => state.isDetailOpen);
+  const closeDetail = useBookLibraryStore((state) => state.closeDetail);
+
+  const setPage = useSetAtom(pageAtom);
+  const setViewMode = useSetAtom(viewModeAtom);
+
+  const currentBook = getBookByIndex(selectedBook ?? 0);
+
+  useEffect(() => {
+    if (!isStarted || libraryView === "library") return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        openLibrary({ restoreDetail: true });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isStarted, libraryView, openLibrary]);
 
   const handleEnter = () => {
+    openLibrary({ restoreDetail: false });
     setIsStarted(true);
     if (onIntroFinish) onIntroFinish();
   };
 
-  return (
-    <>
-      {!isStarted && <IntroScreen onEnter={handleEnter} />}
+  const handleOpenBook = (index) => {
+    setPage(0);
+    setViewMode("showcase");
+    openBook(index);
+  };
 
-      {isStarted && (
-        <div style={{ opacity: 1, transition: 'opacity 1s ease', width: '100%', height: '100vh', overflow: 'hidden', pointerEvents: 'auto', backgroundColor: '#1E1A14' }}>
-          <UI />
-          <Loader />
-          <Canvas
-            shadows={false}
-            dpr={[1, 1.5]}
-            camera={{
-              position: [-0.5, 1, window.innerWidth > 800 ? 4 : 9],
-              fov: 45,
-            }}
-            gl={{
-              antialias: true,
-              powerPreference: "high-performance",
-            }}
-            performance={{ min: 0.5 }}
-          >
-            <group position-y={0}>
-              <Suspense fallback={null}>
-                <Experience />
-              </Suspense>
-            </group>
-          </Canvas>
-        </div>
-      )}
-    </>
+  if (!isStarted) {
+    return <IntroScreen onEnter={handleEnter} />;
+  }
+
+  if (libraryView === "library") {
+    return (
+      <BestsellersBookShowcase
+        selectedBook={selectedBook}
+        isDetailOpen={isDetailOpen}
+        onSelectBook={setSelectedBook}
+        onCloseDetail={closeDetail}
+        onOpenBook={handleOpenBook}
+      />
+    );
+  }
+
+  return (
+    <div
+      style={{
+        opacity: 1,
+        transition: "opacity 1s ease",
+        width: "100%",
+        height: "100vh",
+        overflow: "hidden",
+        pointerEvents: "auto",
+        backgroundColor: "#1E1A14",
+      }}
+    >
+      <UI book={currentBook} onBackToLibrary={() => openLibrary({ restoreDetail: true })} />
+      <Loader />
+      <Canvas
+        shadows={false}
+        dpr={[1, 1.5]}
+        camera={{
+          position: [-0.5, 1, window.innerWidth > 800 ? 4 : 9],
+          fov: 45,
+        }}
+        gl={{
+          antialias: true,
+          powerPreference: "high-performance",
+        }}
+        performance={{ min: 0.5 }}
+      >
+        <group position-y={0}>
+          <Suspense fallback={null}>
+            <Experience book={currentBook} />
+          </Suspense>
+        </group>
+      </Canvas>
+    </div>
   );
 };
