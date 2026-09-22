@@ -178,7 +178,7 @@ export default function QuestionModal({
           </div>
           <div className="flex items-center space-x-2">
             <span className="px-3 py-1 text-xs font-bold rounded-full bg-[#c9922a]/20 border border-[#c9922a] text-[#fef08a]">
-              +{question.points || 100} Điểm
+              Mảnh ghép {question.num}/5
             </span>
           </div>
         </div>

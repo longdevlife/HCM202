@@ -161,16 +161,14 @@ export const WHEEL_SLICES = [
     subLabel: "Đuổi Hình",
     color: "#e11d48", // Crimson
     textColor: "#ffffff",
-    points: 100,
   },
   {
-    id: "slice_bonus_100",
-    type: "bonus",
-    label: "+100 ĐIỂM",
-    subLabel: "May Mắn 🎁",
+    id: "slice_special_1",
+    type: "special",
+    label: "MAY MẮN",
+    subLabel: "Quay Tiếp 🍀",
     color: "#f59e0b", // Amber
     textColor: "#1f2937",
-    points: 100,
   },
   {
     id: "slice_q2",
@@ -180,16 +178,14 @@ export const WHEEL_SLICES = [
     subLabel: "Trắc Nghiệm",
     color: "#059669", // Emerald
     textColor: "#ffffff",
-    points: 100,
   },
   {
-    id: "slice_x2",
-    type: "multiplier",
-    label: "X2 ĐIỂM",
-    subLabel: "Nhân đôi ⚡",
+    id: "slice_special_2",
+    type: "special",
+    label: "THỬ THÁCH",
+    subLabel: "Tự Tin ⚡",
     color: "#8b5cf6", // Purple
     textColor: "#ffffff",
-    multiplier: 2,
   },
   {
     id: "slice_q3",
@@ -199,16 +195,14 @@ export const WHEEL_SLICES = [
     subLabel: "Trắc Nghiệm",
     color: "#2563eb", // Blue
     textColor: "#ffffff",
-    points: 100,
   },
   {
-    id: "slice_lucky",
-    type: "lucky",
-    label: "MAY MẮN",
-    subLabel: "+1 Lượt 🍀",
+    id: "slice_special_3",
+    type: "special",
+    label: "CƠ HỘI",
+    subLabel: "Tiến Lên 🎲",
     color: "#10b981", // Teal
     textColor: "#ffffff",
-    points: 50,
   },
   {
     id: "slice_q4",
@@ -218,16 +212,14 @@ export const WHEEL_SLICES = [
     subLabel: "Xếp Chữ",
     color: "#d97706", // Dark Amber
     textColor: "#ffffff",
-    points: 100,
   },
   {
-    id: "slice_bonus_200",
-    type: "bonus",
-    label: "+200 ĐIỂM",
-    subLabel: "Thưởng 🏆",
+    id: "slice_special_4",
+    type: "special",
+    label: "NIỀM VUI",
+    subLabel: "Hào Hứng 🎁",
     color: "#ec4899", // Pink
     textColor: "#ffffff",
-    points: 200,
   },
   {
     id: "slice_q5",
@@ -237,16 +229,14 @@ export const WHEEL_SLICES = [
     subLabel: "4 Ô Hình",
     color: "#7c3aed", // Violet
     textColor: "#ffffff",
-    points: 100,
   },
   {
-    id: "slice_star",
-    type: "star",
+    id: "slice_special_5",
+    type: "special",
     label: "TRI THỨC",
-    subLabel: "+150 Đ ⭐",
+    subLabel: "Khám Phá ⭐",
     color: "#0891b2", // Cyan
     textColor: "#ffffff",
-    points: 150,
   },
 ];
 

@@ -11,7 +11,6 @@ export default function ChiecNonKiDieuGame() {
 
   const [questions, setQuestions] = useState(DEFAULT_QUESTIONS);
   const [answeredQuestions, setAnsweredQuestions] = useState({});
-  const [score, setScore] = useState(0);
   const [spinsCount, setSpinsCount] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
 
@@ -90,29 +89,17 @@ export default function ChiecNonKiDieuGame() {
         setActiveQuestion(q);
         setIsQuestionModalOpen(true);
       }
-    } else if (slice.type === "bonus") {
-      const pts = slice.points || 100;
-      setScore((s) => s + pts);
-      showToast(`🎁 Tuyệt vời! Bạn quay trúng ô ${slice.label} (+${pts} điểm)!`);
-    } else if (slice.type === "multiplier") {
-      setScore((s) => (s === 0 ? 200 : s * 2));
-      showToast(`⚡ Bùng nổ! Bạn quay trúng ô X2 NHÂN ĐÔI ĐIỂM SỐ!`);
-    } else if (slice.type === "lucky" || slice.type === "star") {
-      const pts = slice.points || 150;
-      setScore((s) => s + pts);
-      showToast(`⭐ Chúc mừng! Bạn nhận được ${slice.label} (+${pts} điểm)!`);
+    } else {
+      showToast(`🎁 Bạn quay trúng ô ${slice.label}! Hãy tiếp tục quay để mở các mảnh ghép!`);
     }
   };
 
   // When user answers in modal
   const handleAnswerSubmit = (qId, isCorrect, chosenOpt) => {
-    const q = questions.find((item) => item.id === qId);
-    const pts = isCorrect ? (q?.points || 100) : 20;
-
     setAnsweredQuestions((prev) => {
       const updated = {
         ...prev,
-        [qId]: { isCorrect, pointsEarned: pts, chosenOptId: chosenOpt?.id },
+        [qId]: { isCorrect, chosenOptId: chosenOpt?.id },
       };
 
       const newCount = Object.keys(updated).length;
@@ -122,14 +109,11 @@ export default function ChiecNonKiDieuGame() {
       }
       return updated;
     });
-
-    setScore((s) => s + pts);
   };
 
   // Restart the game
   const handleRestart = () => {
     setAnsweredQuestions({});
-    setScore(0);
     setSpinsCount(0);
     setIsSpinning(false);
     showToast("🔄 Đã làm mới trò chơi Chiếc Nón Kỳ Diệu!");
@@ -168,25 +152,21 @@ export default function ChiecNonKiDieuGame() {
 
           {/* Clean Top Status Bar */}
           <div className="flex items-center justify-center gap-3 mt-3">
-            <div className="bg-white/80 px-3.5 py-1.5 rounded-full border border-[#e5dfd5] text-xs font-bold text-[#2c1a0e] shadow-sm flex items-center gap-1.5">
-              <span>🏆 Điểm:</span>
-              <span className="text-[#c9922a] font-black">{score}</span>
-            </div>
-            <div className="bg-white/80 px-3.5 py-1.5 rounded-full border border-[#e5dfd5] text-xs font-bold text-[#2c1a0e] shadow-sm flex items-center gap-1.5">
+            <div className="bg-white/80 px-4 py-1.5 rounded-full border border-[#e5dfd5] text-xs font-bold text-[#2c1a0e] shadow-sm flex items-center gap-1.5">
               <span>🧩 Tiến độ:</span>
               <span className="font-black text-emerald-700">{answeredCount}/5 câu</span>
             </div>
             <button
               type="button"
               onClick={handleToggleMute}
-              className="bg-white/80 hover:bg-white px-3 py-1.5 rounded-full border border-[#e5dfd5] text-xs font-bold text-[#4a3e35] shadow-sm transition-all"
+              className="bg-white/80 hover:bg-white px-3.5 py-1.5 rounded-full border border-[#e5dfd5] text-xs font-bold text-[#4a3e35] shadow-sm transition-all"
             >
               {isMuted ? "🔇 Tắt âm" : "🔊 Âm thanh"}
             </button>
             <button
               type="button"
               onClick={handleRestart}
-              className="bg-white/80 hover:bg-white px-3 py-1.5 rounded-full border border-[#e5dfd5] text-xs font-bold text-[#991b1b] shadow-sm transition-all"
+              className="bg-white/80 hover:bg-white px-3.5 py-1.5 rounded-full border border-[#e5dfd5] text-xs font-bold text-[#991b1b] shadow-sm transition-all"
             >
               🔄 Chơi lại
             </button>
