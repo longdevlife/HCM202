@@ -121,53 +121,56 @@ export default function ChiecNonKiDieuGame() {
   };
 
   return (
-    <div className="chiecnon-game-container min-h-screen bg-[#ede8e1] text-[#2c1a0e] pt-24 pb-16 px-4 md:px-8 relative overflow-hidden flex flex-col justify-center items-center">
+    <div className="chiecnon-game-container min-h-screen text-[#eee2ca] pt-24 pb-16 px-4 md:px-8 relative overflow-hidden flex flex-col justify-center items-center">
+      {/* Texture grain overlay matching book library */}
+      <div className="chiecnon-grain"></div>
+
       {/* Background Decorative Glow */}
-      <div className="absolute top-12 -left-20 w-96 h-96 rounded-full bg-[#c9922a]/10 filter blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-10 -right-20 w-96 h-96 rounded-full bg-[#b91c1c]/10 filter blur-3xl pointer-events-none"></div>
+      <div className="absolute top-12 -left-20 w-96 h-96 rounded-full bg-[#c3a47b]/15 filter blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-10 -right-20 w-96 h-96 rounded-full bg-[#a96346]/12 filter blur-3xl pointer-events-none"></div>
 
       {/* Floating Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-[#2c1a0e] text-[#fef08a] px-6 py-3 rounded-full shadow-2xl border border-[#c9922a] flex items-center gap-2 font-bold text-sm md:text-base animate-bounce">
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-[#1d1a15] text-[#fef08a] px-6 py-3 rounded-full shadow-2xl border border-[#c3a47b] flex items-center gap-2 font-bold text-sm md:text-base animate-bounce">
           <span>🔔</span>
           <span>{toastMessage}</span>
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto w-full flex flex-col items-center">
+      <div className="max-w-5xl mx-auto w-full flex flex-col items-center relative z-10">
         {/* Simple, Compact Game Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#c9922a]/20 border border-[#c9922a] text-[#855318] text-xs font-bold uppercase tracking-widest mb-2">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#3a382b]/80 border border-[#c3a47b]/50 text-[#dbc39c] text-xs font-bold uppercase tracking-widest mb-2 shadow-sm">
             <span>🎡</span>
             <span>Chiếc Nón Kỳ Diệu · MLN131</span>
           </div>
           <h1
-            className="text-2xl md:text-4xl font-black text-[#2c1a0e] tracking-tight uppercase"
+            className="text-2xl md:text-4xl font-black text-[#eee2ca] tracking-tight uppercase"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
             Vòng Quay Chiếc Nón Kỳ Diệu
           </h1>
-          <p className="text-xs md:text-sm text-[#6b584a] max-w-lg mx-auto mt-1 font-medium">
+          <p className="text-xs md:text-sm text-[#c5b79e] max-w-lg mx-auto mt-1 font-medium">
             Quay nón dính câu nào câu hỏi sẽ hiện ra. Trả lời đúng các câu đố để kết nội dung bài học!
           </p>
 
           {/* Clean Top Status Bar */}
           <div className="flex items-center justify-center gap-3 mt-3">
-            <div className="bg-white/80 px-4 py-1.5 rounded-full border border-[#e5dfd5] text-xs font-bold text-[#2c1a0e] shadow-sm flex items-center gap-1.5">
+            <div className="bg-[#3a382b]/80 px-4 py-1.5 rounded-full border border-[#c3a47b]/30 text-xs font-bold text-[#eee2ca] shadow-sm flex items-center gap-1.5">
               <span>🧩 Tiến độ:</span>
-              <span className="font-black text-emerald-700">{answeredCount}/5</span>
+              <span className="font-black text-emerald-400">{answeredCount}/5</span>
             </div>
             <button
               type="button"
               onClick={handleToggleMute}
-              className="bg-white/80 hover:bg-white px-3.5 py-1.5 rounded-full border border-[#e5dfd5] text-xs font-bold text-[#4a3e35] shadow-sm transition-all"
+              className="bg-[#3a382b]/80 hover:bg-[#4a4738] px-3.5 py-1.5 rounded-full border border-[#c3a47b]/30 text-xs font-bold text-[#eee2ca] shadow-sm transition-all cursor-pointer"
             >
               {isMuted ? "🔇 Tắt âm" : "🔊 Âm thanh"}
             </button>
             <button
               type="button"
               onClick={handleRestart}
-              className="bg-white/80 hover:bg-white px-3.5 py-1.5 rounded-full border border-[#e5dfd5] text-xs font-bold text-[#991b1b] shadow-sm transition-all"
+              className="bg-[#3a382b]/80 hover:bg-[#4a4738] px-3.5 py-1.5 rounded-full border border-[#a96346]/50 text-xs font-bold text-[#fca5a5] shadow-sm transition-all cursor-pointer"
             >
               🔄 Chơi lại
             </button>
@@ -176,7 +179,7 @@ export default function ChiecNonKiDieuGame() {
 
         {/* Center Stage: The Wheel is the Pure Centered Focus */}
         <div className="flex flex-col items-center justify-center w-full">
-          <div className="wheel-stage-card p-6 md:p-10 bg-gradient-to-b from-[#faf8f5] to-[#f4eee6] rounded-3xl shadow-2xl border-2 border-[#c9922a]/30 relative flex flex-col items-center w-full max-w-[760px] mx-auto">
+          <div className="wheel-stage-card p-6 md:p-10 rounded-3xl relative flex flex-col items-center w-full max-w-[760px] mx-auto">
             {/* Wheel Canvas (Click directly on any slice to view question, click center or button to spin) */}
             <div className="flex justify-center items-center">
               <WheelCanvas
@@ -199,7 +202,7 @@ export default function ChiecNonKiDieuGame() {
                 onClick={handleSpinClick}
                 className={`w-full py-4 md:py-5 rounded-full font-black text-lg md:text-2xl uppercase tracking-wider shadow-2xl transition-all duration-200 cursor-pointer ${
                   isSpinning
-                    ? "bg-gray-400 text-gray-200 cursor-not-allowed scale-95"
+                    ? "bg-gray-500/50 text-gray-300 cursor-not-allowed scale-95"
                     : "bg-gradient-to-r from-[#d97706] via-[#c9922a] to-[#b45309] hover:from-[#b45309] hover:to-[#92400e] text-white hover:scale-105 active:scale-95 ring-4 ring-[#fde68a]/50"
                 }`}
                 style={{ fontFamily: "'Playfair Display', serif" }}
@@ -207,7 +210,7 @@ export default function ChiecNonKiDieuGame() {
                 {isSpinning ? "Đang Quay Nón..." : "🎡 BẤM ĐỂ QUAY NÓN 🎡"}
               </button>
 
-              <div className="text-xs md:text-sm font-medium text-[#786c5e] text-center">
+              <div className="text-xs md:text-sm font-medium text-[#c5b79e] text-center">
                 {isSpinning
                   ? "Hồi hộp chờ nón dừng lại..."
                   : "💡 Bấm trực tiếp vào các ô trên nón để xem câu hỏi, hoặc bấm nút để quay!"}

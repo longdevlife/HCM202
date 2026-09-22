@@ -8,7 +8,6 @@ const ChiecNonKiDieuGame = lazy(() => import("./chiecnonkidieu/ChiecNonKiDieuGam
 
 const TABS = [
   { id: "book", label: "Sách 3D" },
-  { id: "minigame", label: "Mini Game" },
   { id: "chiecnon", label: "Chiếc Nón Kỳ Diệu" },
 ];
 
