@@ -1,7 +1,7 @@
 import { Loader } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useSetAtom } from "jotai";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Experience } from "./Experience";
 import { UI, pageAtom, viewModeAtom } from "./UI";
 import { IntroScreen } from "./IntroScreen";
@@ -21,6 +21,20 @@ export const BookPage = ({ skipIntro = false, onIntroFinish }) => {
   const setViewMode = useSetAtom(viewModeAtom);
 
   const currentBook = getBookByIndex(selectedBook);
+
+  useEffect(() => {
+    if (!isStarted || libraryView !== "magazine") return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        openLibrary();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isStarted, libraryView, openLibrary]);
 
   const handleEnter = () => {
     openLibrary();
