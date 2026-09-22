@@ -8,11 +8,11 @@ export const DEFAULT_QUESTIONS = [
     id: "q1",
     num: 1,
     typeTag: "Đuổi hình bắt chữ",
-    title: "Câu 1: Đuổi Hình Bắt Chữ",
-    shortLabel: "Câu 1",
+    title: "Đuổi Hình Bắt Chữ",
+    shortLabel: "Đuổi Hình",
     secretWord: "Cơ cấu",
     points: 100,
-    badge: "CÂU HỎI 1",
+    badge: "ĐỐ VUI",
     questionType: "image_riddle",
     wordPattern: ["_ _", "_ _ _"], // CƠ - CẤU
     acceptedAnswers: ["cơ cấu", "co cau", "cơ cấu ", "co cau "],
@@ -39,11 +39,11 @@ export const DEFAULT_QUESTIONS = [
     id: "q2",
     num: 2,
     typeTag: "Câu hỏi trắc nghiệm",
-    title: "Câu 2: Câu Hỏi Trắc Nghiệm",
-    shortLabel: "Câu 2",
+    title: "Câu Hỏi Kiến Thức",
+    shortLabel: "Khái Niệm",
     secretWord: "Xã hội",
     points: 100,
-    badge: "CÂU HỎI 2",
+    badge: "TRẮC NGHIỆM",
     questionType: "multiple_choice",
     wordPattern: ["_ _", "_ _ _"], // XÃ - HỘI
     acceptedAnswers: ["xã hội", "xa hoi", "xã hội ", "xa hoi "],
@@ -62,11 +62,11 @@ export const DEFAULT_QUESTIONS = [
     id: "q3",
     num: 3,
     typeTag: "Câu hỏi trắc nghiệm",
-    title: "Câu 3: Câu Hỏi Trắc Nghiệm",
-    shortLabel: "Câu 3",
+    title: "Câu Hỏi Thuật Ngữ",
+    shortLabel: "Xã Hội Học",
     secretWord: "Giai cấp",
     points: 100,
-    badge: "CÂU HỎI 3",
+    badge: "TRẮC NGHIỆM",
     questionType: "multiple_choice",
     wordPattern: ["_ _ _ _", "_ _ _"], // GIAI - CẤP
     acceptedAnswers: ["giai cấp", "giai cap", "giai cấp ", "giai cap "],
@@ -85,11 +85,11 @@ export const DEFAULT_QUESTIONS = [
     id: "q4",
     num: 4,
     typeTag: "Sắp xếp ô chữ đảo lộn",
-    title: "Câu 4: Sắp Xếp Ô Chữ Ngang Lộn Xộn",
-    shortLabel: "Câu 4",
+    title: "Sắp Xếp Dãy Ô Chữ",
+    shortLabel: "Xếp Chữ",
     secretWord: "Thời kì quá độ",
     points: 100,
-    badge: "CÂU HỎI 4",
+    badge: "XẾP CHỮ",
     questionType: "anagram", // purely letter tiles & underlines, no multiple choice!
     scrambledTiles: ["Ờ", "K", "Á", "Đ", "I", "Ộ", "T", "H", "Ì", "U", "Q"],
     wordPattern: ["_ _ _ _", "_ _", "_ _ _", "_ _"], // THỜI - KÌ - QUÁ - ĐỘ
@@ -112,11 +112,11 @@ export const DEFAULT_QUESTIONS = [
     id: "q5",
     num: 5,
     typeTag: "Đuổi hình bắt chữ",
-    title: "Câu 5: Đuổi Hình Bắt Chữ (4 Ô Liên Hoàn)",
-    shortLabel: "Câu 5",
+    title: "Đuổi Hình 4 Ô Liên Hoàn",
+    shortLabel: "4 Ô Hình",
     secretWord: "Chủ nghĩa xã hội",
     points: 100,
-    badge: "CÂU HỎI 5",
+    badge: "LIÊN HOÀN",
     questionType: "image_riddle",
     wordPattern: ["_ _ _", "_ _ _ _ _", "_ _", "_ _ _"], // CHỦ - NGHĨA - XÃ - HỘI
     acceptedAnswers: [
@@ -151,14 +151,14 @@ export const DEFAULT_QUESTIONS = [
   },
 ];
 
-// 5 Slices on the spinning wheel (chỉ giữ lại các ô câu hỏi)
+// 5 Slices on the spinning wheel (ẩn thứ tự mảnh ghép)
 export const WHEEL_SLICES = [
   {
     id: "slice_q1",
     type: "question",
     questionId: "q1",
-    label: "CÂU 1",
-    subLabel: "Đuổi Hình",
+    label: "ĐUỔI HÌNH",
+    subLabel: "Bắt Chữ",
     color: "#e11d48", // Crimson
     textColor: "#ffffff",
   },
@@ -166,8 +166,8 @@ export const WHEEL_SLICES = [
     id: "slice_q2",
     type: "question",
     questionId: "q2",
-    label: "CÂU 2",
-    subLabel: "Trắc Nghiệm",
+    label: "TRẮC NGHIỆM",
+    subLabel: "Khái Niệm",
     color: "#059669", // Emerald
     textColor: "#ffffff",
   },
@@ -175,8 +175,8 @@ export const WHEEL_SLICES = [
     id: "slice_q3",
     type: "question",
     questionId: "q3",
-    label: "CÂU 3",
-    subLabel: "Trắc Nghiệm",
+    label: "TRẮC NGHIỆM",
+    subLabel: "Xã Hội Học",
     color: "#2563eb", // Blue
     textColor: "#ffffff",
   },
@@ -184,8 +184,8 @@ export const WHEEL_SLICES = [
     id: "slice_q4",
     type: "question",
     questionId: "q4",
-    label: "CÂU 4",
-    subLabel: "Xếp Chữ",
+    label: "XẾP CHỮ",
+    subLabel: "11 Chữ Cái",
     color: "#d97706", // Dark Amber
     textColor: "#ffffff",
   },
@@ -193,7 +193,7 @@ export const WHEEL_SLICES = [
     id: "slice_q5",
     type: "question",
     questionId: "q5",
-    label: "CÂU 5",
+    label: "LIÊN HOÀN",
     subLabel: "4 Ô Hình",
     color: "#7c3aed", // Violet
     textColor: "#ffffff",

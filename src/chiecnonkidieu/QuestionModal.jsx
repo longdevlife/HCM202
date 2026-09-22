@@ -163,11 +163,11 @@ export default function QuestionModal({
         <div className="bg-gradient-to-r from-[#2c1a0e] via-[#4a2e18] to-[#2c1a0e] text-white px-6 py-3.5 flex items-center justify-between border-b border-[#c9922a]/50">
           <div className="flex items-center space-x-3">
             <span className="w-8 h-8 rounded-full bg-[#c9922a] text-[#2c1a0e] font-black flex items-center justify-center text-sm shadow-md">
-              {question.num}
+              💡
             </span>
             <div>
               <div className="text-[11px] tracking-widest uppercase text-[#fef08a] font-bold">
-                {question.badge} · {question.typeTag}
+                {question.typeTag}
               </div>
               <div
                 className="text-base md:text-lg font-bold text-white"
