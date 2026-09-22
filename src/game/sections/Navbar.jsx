@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 const NAV_LINKS = [
   { href: '#book', label: 'Sách 3D', id: 'book' },
-  { href: '#minigame', label: 'Mini Game', id: 'minigame' },
+  { href: '#chiecnon', label: 'Chiếc Nón Kỳ Diệu', id: 'chiecnon' },
 ];
 
 export default function Navbar({ activeTab, onTabChange }) {
@@ -23,12 +23,14 @@ export default function Navbar({ activeTab, onTabChange }) {
     }
   };
 
-  const isBook = activeTab === 'book';
+  const isDarkBg = activeTab === 'book' || activeTab === 'chiecnon';
 
   return (
     <div className="navbar-theory-wrapper w-full flex justify-center z-[100] fixed top-6 pointer-events-none px-4">
       <div
-        className="absolute left-6 md:left-10 top-1/2 -translate-y-1/2 text-[#3D3529] font-bold tracking-widest text-xs md:text-sm uppercase pointer-events-auto"
+        className={`absolute left-6 md:left-10 top-1/2 -translate-y-1/2 font-bold tracking-widest text-xs md:text-sm uppercase pointer-events-auto transition-colors ${
+          isDarkBg ? 'text-[#eee2ca]' : 'text-[#3D3529]'
+        }`}
         style={{
           fontFamily: "'Playfair Display', serif",
           fontVariantNumeric: 'lining-nums',
@@ -37,7 +39,7 @@ export default function Navbar({ activeTab, onTabChange }) {
       >
         Group 1
       </div>
-      <nav className={`navbar-theory pointer-events-auto ${isBook ? 'nav-mode-book' : ''}`}>
+      <nav className={`navbar-theory pointer-events-auto ${isDarkBg ? 'nav-mode-book' : ''}`}>
         <a
           href="#book"
           className="navbar-brand"
