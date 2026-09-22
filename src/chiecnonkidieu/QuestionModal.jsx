@@ -8,6 +8,7 @@ export default function QuestionModal({
   onAnswerSubmit,
   allAnswered = false,
   onOpenSummary,
+  onOpenVictory,
   isAlreadyAnswered = false,
 }) {
   // State for typed answer (questions 1 & 5)
@@ -151,7 +152,28 @@ export default function QuestionModal({
 
   const handleNext = () => {
     onClose();
+    if (allAnswered && onOpenVictory) {
+      onOpenVictory();
+    }
   };
+
+  const handleModalClose = () => {
+    onClose();
+    if (allAnswered && onOpenVictory) {
+      onOpenVictory();
+    }
+  };
+
+  // Auto transition to victory celebration screen when all 5 questions are freshly completed
+  useEffect(() => {
+    if (!isAlreadyAnswered && isSubmitted && allAnswered && onOpenVictory) {
+      const timer = setTimeout(() => {
+        onClose();
+        onOpenVictory();
+      }, 2400);
+      return () => clearTimeout(timer);
+    }
+  }, [isAlreadyAnswered, isSubmitted, allAnswered, onOpenVictory, onClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
@@ -179,9 +201,9 @@ export default function QuestionModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleModalClose}
             aria-label="Đóng"
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-base"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-base cursor-pointer"
           >
             ✕
           </button>
@@ -566,22 +588,17 @@ export default function QuestionModal({
                 <div>
                   <div className="font-bold text-sm">ĐÃ HOÀN THÀNH TẤT CẢ CÂU ĐỐ!</div>
                   <div className="text-xs text-amber-100">
-                    Bấm để mở toàn cảnh KẾT NỘI DUNG BÀI HỌC
+                    Bấm để mở màn chúc mừng & tựa đề bài học
                   </div>
                 </div>
               </div>
-              {onOpenSummary && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleNext();
-                    onOpenSummary();
-                  }}
-                  className="px-4 py-2 bg-white text-amber-900 font-black text-xs uppercase rounded-lg shadow-md hover:bg-amber-50 active:scale-95 transition-transform whitespace-nowrap ml-2"
-                >
-                  Xem Kết Luận 📜
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleNext}
+                className="px-4 py-2 bg-white text-amber-900 font-black text-xs uppercase rounded-lg shadow-md hover:bg-amber-50 active:scale-95 transition-transform whitespace-nowrap ml-2 cursor-pointer"
+              >
+                Màn Chúc Mừng 🎉
+              </button>
             </div>
           )}
         </div>
@@ -592,9 +609,13 @@ export default function QuestionModal({
             <button
               type="button"
               onClick={handleNext}
-              className="px-6 py-2 rounded-full font-bold text-sm bg-[#2c1a0e] hover:bg-[#4a2e18] text-white shadow-md hover:scale-105 active:scale-95 transition-all"
+              className={`px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer ${
+                allAnswered
+                  ? "bg-gradient-to-r from-[#d97706] to-[#b45309] text-white ring-2 ring-[#fde68a] animate-pulse"
+                  : "bg-[#2c1a0e] hover:bg-[#4a2e18] text-white"
+              }`}
             >
-              {allAnswered ? "Đóng & Đến Bảng Tựa Đề 📜" : "Tiếp Tục Vòng Quay 🎡"}
+              {allAnswered ? "🎉 Xem Màn Chúc Mừng 🎉" : "Tiếp Tục Vòng Quay 🎡"}
             </button>
           ) : (
             <button

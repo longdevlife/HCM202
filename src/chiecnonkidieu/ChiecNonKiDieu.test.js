@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert";
-import { DEFAULT_QUESTIONS, WHEEL_SLICES, LESSON_SUMMARY, FULL_LESSON_TITLE } from "./wheelData.js";
+import { DEFAULT_QUESTIONS, WHEEL_SLICES, LESSON_SUMMARY, FULL_LESSON_TITLE, VICTORY_TITLE } from "./wheelData.js";
 
 test("DEFAULT_QUESTIONS contains exactly 5 valid puzzle questions with secret words", () => {
   assert.strictEqual(DEFAULT_QUESTIONS.length, 5, "Must have exactly 5 questions");
@@ -46,6 +46,11 @@ test("FULL_LESSON_TITLE contains all 5 secret words", () => {
       `Full title contains secret word: ${q.secretWord}`
     );
   });
+});
+
+test("VICTORY_TITLE matches exact user-requested celebration title", () => {
+  const expected = "CƠ CẤU XÃ HỘI - GIAI CẤP TRONG THỜI KỲ QUÁ ĐỘ LÊN CHỦ NGHĨA XÃ HỘI";
+  assert.strictEqual(VICTORY_TITLE, expected);
 });
 
 test("WHEEL_SLICES contains valid slices covering all 5 questions", () => {

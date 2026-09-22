@@ -1,5 +1,8 @@
 // BỘ 5 CÂU ĐỐ GHÉP TỰA ĐỀ BÀI HỌC - CHIẾC NÓN KỲ DIỆU (CHƯƠNG 5 MLN131)
 
+export const VICTORY_TITLE =
+  "CƠ CẤU XÃ HỘI - GIAI CẤP TRONG THỜI KỲ QUÁ ĐỘ LÊN CHỦ NGHĨA XÃ HỘI";
+
 export const FULL_LESSON_TITLE =
   "Cơ cấu xã hội – giai cấp trong thời kì quá độ lên chủ nghĩa xã hội";
 
@@ -204,7 +207,7 @@ export const WHEEL_SLICES = [
 export const LESSON_SUMMARY = {
   header: {
     tag: "TỔNG KẾT TOÀN DIỆN BÀI HỌC · CHƯƠNG 5 MLN131",
-    title: "Cơ Cấu Xã Hội – Giai Cấp Trong Thời Kì Quá Độ Lên Chủ Nghĩa Xã Hội",
+    title: "CƠ CẤU XÃ HỘI - GIAI CẤP TRONG THỜI KỲ QUÁ ĐỘ LÊN CHỦ NGHĨA XÃ HỘI",
     subtitle:
       "Tựa đề bài học được giải mã trọn vẹn từ 5 câu đố: [Cơ cấu] + [Xã hội] + [Giai cấp] + [Thời kì quá độ] + [Chủ nghĩa xã hội]. Dưới đây là toàn bộ hệ thống tri thức và kết luận cốt lõi.",
     academicRef: "Giáo trình Chủ nghĩa xã hội khoa học (Bộ GD&ĐT) – Chương 5",

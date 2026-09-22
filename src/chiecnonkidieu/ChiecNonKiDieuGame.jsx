@@ -2,7 +2,8 @@ import React, { useState, useRef, useCallback } from "react";
 import WheelCanvas from "./WheelCanvas";
 import QuestionModal from "./QuestionModal";
 import LessonSummaryModal from "./LessonSummaryModal";
-import { DEFAULT_QUESTIONS, WHEEL_SLICES, FULL_LESSON_TITLE } from "./wheelData";
+import VictoryModal from "./VictoryModal";
+import { DEFAULT_QUESTIONS, WHEEL_SLICES, FULL_LESSON_TITLE, VICTORY_TITLE } from "./wheelData";
 import { sounds } from "./SoundEffects";
 import "./chiecnonkidieu.css";
 
@@ -16,6 +17,7 @@ export default function ChiecNonKiDieuGame() {
 
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+  const [isVictoryModalOpen, setIsVictoryModalOpen] = useState(false);
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
@@ -113,6 +115,8 @@ export default function ChiecNonKiDieuGame() {
     setAnsweredQuestions({});
     setSpinsCount(0);
     setIsSpinning(false);
+    setIsVictoryModalOpen(false);
+    setIsSummaryModalOpen(false);
     showToast("🔄 Đã làm mới trò chơi Chiếc Nón Kỳ Diệu!");
   };
 
@@ -209,30 +213,40 @@ export default function ChiecNonKiDieuGame() {
                   : "💡 Bấm trực tiếp vào các ô trên nón để xem câu hỏi, hoặc bấm nút để quay!"}
               </div>
 
-              {/* WHEN ALL 5 QUESTIONS ARE ANSWERED: GRAND CONCLUSION BUTTON REVEALS HERE! */}
+              {/* WHEN ALL 5 QUESTIONS ARE ANSWERED: GRAND CELEBRATION & LESSON SUMMARY */}
               {allAnswered && (
-                <div className="w-full mt-3 p-5 md:p-6 rounded-2xl bg-gradient-to-r from-[#2c1a0e] via-[#452814] to-[#2c1a0e] border-2 border-[#c9922a] shadow-2xl animate-fade-in text-center flex flex-col items-center gap-3">
+                <div className="w-full mt-3 p-5 md:p-6 rounded-2xl bg-gradient-to-r from-[#2c1a0e] via-[#452814] to-[#2c1a0e] border-2 border-[#f59e0b] shadow-2xl animate-fade-in text-center flex flex-col items-center gap-3">
                   <div className="text-xs uppercase tracking-widest text-[#fef08a] font-bold">
-                    🎉 ĐÃ HOÀN THÀNH TẤT CẢ CÂU ĐỐ
+                    🎉 ĐÃ HOÀN THÀNH TẤT CẢ 5 CÂU ĐỐ
                   </div>
 
-                  {/* Assembled Title */}
+                  {/* Assembled Victory Title */}
                   <div
-                    className="text-base md:text-lg font-bold text-white leading-snug px-2"
+                    className="text-base md:text-xl font-black uppercase text-[#fef08a] leading-snug px-2 drop-shadow-sm"
                     style={{ fontFamily: "'Playfair Display', serif" }}
                   >
-                    👉 "{FULL_LESSON_TITLE}"
+                    {VICTORY_TITLE}
                   </div>
 
-                  {/* The Grand Conclusion Button */}
-                  <button
-                    type="button"
-                    onClick={() => setIsSummaryModalOpen(true)}
-                    className="w-full mt-2 py-4 px-6 rounded-xl font-black text-base md:text-lg uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl bg-gradient-to-r from-[#f59e0b] via-[#c9922a] to-[#d97706] hover:brightness-110 text-white animate-pulse scale-[1.02] active:scale-95 cursor-pointer shadow-amber-900/50"
-                  >
-                    <span>📜</span>
-                    <span>BẤM XEM KẾT NỘI DUNG BÀI HỌC</span>
-                  </button>
+                  {/* Two Main Actions: View Celebration Screen & View Academic Summary */}
+                  <div className="flex flex-col sm:flex-row items-center gap-2 w-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsVictoryModalOpen(true)}
+                      className="w-full sm:flex-1 py-3.5 px-4 rounded-xl font-black text-xs md:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg bg-gradient-to-r from-[#d97706] to-[#b45309] hover:brightness-110 text-white cursor-pointer active:scale-95 transition-all"
+                    >
+                      <span>🎉</span>
+                      <span>XEM MÀN CHÚC MỪNG</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsSummaryModalOpen(true)}
+                      className="w-full sm:flex-1 py-3.5 px-4 rounded-xl font-black text-xs md:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl bg-gradient-to-r from-[#f59e0b] via-[#c9922a] to-[#d97706] hover:brightness-110 text-white animate-pulse cursor-pointer shadow-amber-900/50 active:scale-95 transition-all"
+                    >
+                      <span>📜</span>
+                      <span>KẾT NỘI DUNG BÀI HỌC</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -248,7 +262,22 @@ export default function ChiecNonKiDieuGame() {
         onAnswerSubmit={handleAnswerSubmit}
         allAnswered={allAnswered}
         onOpenSummary={() => setIsSummaryModalOpen(true)}
+        onOpenVictory={() => {
+          setIsQuestionModalOpen(false);
+          setIsVictoryModalOpen(true);
+        }}
         isAlreadyAnswered={Boolean(activeQuestion && answeredQuestions[activeQuestion.id])}
+      />
+
+      {/* Victory Celebration Modal */}
+      <VictoryModal
+        isOpen={isVictoryModalOpen}
+        onClose={() => setIsVictoryModalOpen(false)}
+        onOpenLessonSummary={() => {
+          setIsVictoryModalOpen(false);
+          setIsSummaryModalOpen(true);
+        }}
+        onRestart={handleRestart}
       />
 
       {/* Grand Lesson Summary Modal */}
