@@ -144,14 +144,14 @@ export default function ChiecNonKiDieuGame() {
             Vòng Quay Chiếc Nón Kỳ Diệu
           </h1>
           <p className="text-xs md:text-sm text-[#6b584a] max-w-lg mx-auto mt-1 font-medium">
-            Quay nón dính câu nào câu hỏi sẽ hiện ra. Trả lời hết 5 câu để kết nội dung bài học!
+            Quay nón dính câu nào câu hỏi sẽ hiện ra. Trả lời đúng các câu đố để kết nội dung bài học!
           </p>
 
           {/* Clean Top Status Bar */}
           <div className="flex items-center justify-center gap-3 mt-3">
             <div className="bg-white/80 px-4 py-1.5 rounded-full border border-[#e5dfd5] text-xs font-bold text-[#2c1a0e] shadow-sm flex items-center gap-1.5">
               <span>🧩 Tiến độ:</span>
-              <span className="font-black text-emerald-700">{answeredCount}/5 câu</span>
+              <span className="font-black text-emerald-700">{answeredCount}/5</span>
             </div>
             <button
               type="button"
@@ -213,7 +213,7 @@ export default function ChiecNonKiDieuGame() {
               {allAnswered && (
                 <div className="w-full mt-3 p-5 md:p-6 rounded-2xl bg-gradient-to-r from-[#2c1a0e] via-[#452814] to-[#2c1a0e] border-2 border-[#c9922a] shadow-2xl animate-fade-in text-center flex flex-col items-center gap-3">
                   <div className="text-xs uppercase tracking-widest text-[#fef08a] font-bold">
-                    🎉 ĐÃ HOÀN THÀNH TOÀN BỘ 5 CÂU HỎI
+                    🎉 ĐÃ HOÀN THÀNH TẤT CẢ CÂU ĐỐ
                   </div>
 
                   {/* Assembled Title */}

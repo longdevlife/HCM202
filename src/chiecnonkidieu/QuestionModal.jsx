@@ -558,13 +558,13 @@ export default function QuestionModal({
             </div>
           )}
 
-          {/* All 5 Completed Banner */}
+          {/* All Completed Banner */}
           {isSubmitted && allAnswered && (
             <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg flex items-center justify-between animate-pulse">
               <div className="flex items-center space-x-3">
                 <span className="text-2xl">🎉</span>
                 <div>
-                  <div className="font-bold text-sm">ĐÃ HOÀN THÀNH TOÀN BỘ 5 CÂU HỎI!</div>
+                  <div className="font-bold text-sm">ĐÃ HOÀN THÀNH TẤT CẢ CÂU ĐỐ!</div>
                   <div className="text-xs text-amber-100">
                     Bấm để mở toàn cảnh KẾT NỘI DUNG BÀI HỌC
                   </div>
