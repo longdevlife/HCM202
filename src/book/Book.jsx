@@ -17,7 +17,7 @@ import {
   Vector3,
 } from "three";
 import { degToRad } from "three/src/math/MathUtils.js";
-import { pageAtom } from "./UI";
+import { pageAtom, pages } from "./UI";
 
 const easingFactor = 0.5; // Controls the speed of the easing
 const easingFactorFold = 0.3; // Controls the speed of the easing
@@ -248,7 +248,7 @@ export const Book = ({ book, ...props }) => {
   const [page] = useAtom(pageAtom);
   const [delayedPage, setDelayedPage] = useState(page);
 
-  const bookPages = (book?.ready && Array.isArray(book?.pages)) ? book.pages : [];
+  const bookPages = book?.pages?.length > 0 ? book.pages : pages;
 
   useEffect(() => {
     let timeout;

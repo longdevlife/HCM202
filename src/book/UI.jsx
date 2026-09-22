@@ -6,8 +6,31 @@ import { BOOKS } from "./content/bookContent.js";
 export const pageAtom = atom(0);
 export const viewModeAtom = atom("showcase"); // "showcase" | "reading"
 
-// Backwards-compatible empty pages export (single source of truth is now bookContent.js)
-export const pages = [];
+// Legacy 3D Book page texture pairs preserved from HCM202 repository
+export const legacyPages = [
+  {
+    front: "/textures/hinh/hinh1.png",
+    back: "/textures/hinh/hinh2.png",
+  },
+  {
+    front: "/textures/hinh/hinh3.png",
+    back: "/textures/hinh/hinh4.png",
+  },
+  {
+    front: "/textures/hinh/hinh5.png",
+    back: "/textures/hinh/hinh6.png",
+  },
+  {
+    front: "/textures/hinh/hinh7.png",
+    back: "/textures/hinh/hinh8.png",
+  },
+  {
+    front: "/textures/hinh/hinh9.png",
+    back: "/textures/hinh/hinh10.png",
+  },
+];
+
+export const pages = legacyPages;
 
 /* ── SVG Icons ── */
 const BookIcon = () => (
@@ -61,7 +84,7 @@ export const UI = ({ book = BOOKS[0], onBackToLibrary }) => {
     audio.play().catch(() => {});
   }, [page]);
 
-  const bookPages = (book?.ready && Array.isArray(book?.pages)) ? book.pages : [];
+  const bookPages = book?.pages?.length > 0 ? book.pages : legacyPages;
   const totalPages = bookPages.length > 0 ? bookPages.length + 1 : 1;
   const pageLabels = bookPages.length > 0
     ? [
@@ -76,114 +99,10 @@ export const UI = ({ book = BOOKS[0], onBackToLibrary }) => {
     ? book.cover.title.join(" ")
     : (book?.shortTitle || "Cơ cấu xã hội – giai cấp");
 
-  const isReady = book?.ready !== false;
-
   return (
     <>
       <div className="noise-overlay" />
       <div className="vignette-overlay" />
-
-      {/* Honest Skeleton State for Book II & Book III */}
-      {!isReady && (
-        <div
-          className="fixed inset-0 z-30 flex items-center justify-center p-6"
-          style={{
-            backgroundColor: "rgba(20, 18, 14, 0.88)",
-            backdropFilter: "blur(12px)",
-          }}
-        >
-          <div
-            className="max-w-xl w-full p-8 rounded-2xl border text-center flex flex-col items-center"
-            style={{
-              backgroundColor: "#29251d",
-              borderColor: "rgba(195, 164, 123, 0.3)",
-              boxShadow: "0 20px 50px rgba(0, 0, 0, 0.6)",
-              color: "#eee2ca",
-            }}
-          >
-            <div
-              className="px-3.5 py-1 rounded-full text-xs font-semibold uppercase tracking-widest mb-4"
-              style={{
-                backgroundColor: "rgba(195, 164, 123, 0.15)",
-                color: "#c3a47b",
-                border: "1px solid rgba(195, 164, 123, 0.3)",
-              }}
-            >
-              Bản số hóa đang hoàn thiện
-            </div>
-
-            <h2
-              className="text-2xl sm:text-3xl font-serif font-bold mb-2"
-              style={{ color: "#c3a47b" }}
-            >
-              QUYỂN {roman}: {shortTitle}
-            </h2>
-
-            <p
-              className="text-sm opacity-80 mb-6 italic"
-              style={{ fontFamily: "'Inter', sans-serif" }}
-            >
-              Chương 5 · {book?.cover?.subtitle || "Chủ nghĩa xã hội khoa học"}
-            </p>
-
-            <div
-              className="w-full text-left p-4 rounded-lg mb-6 text-xs sm:text-sm leading-relaxed"
-              style={{
-                backgroundColor: "rgba(0, 0, 0, 0.3)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-              }}
-            >
-              <p className="font-semibold mb-2 text-[#c3a47b]">
-                {book?.skeletonNotice || `Nội dung Sách 3D của Quyển ${roman} đang được hoàn thiện theo đúng đề cương giáo trình.`}
-              </p>
-              {Array.isArray(book?.chapters) && book.chapters.length > 0 && (
-                <ul className="list-disc list-inside space-y-1 opacity-80">
-                  {book.chapters.map((ch) => (
-                    <li key={ch.id || ch.title}>
-                      <span className="font-medium text-white">{ch.id ? `${ch.id}: ` : ""}</span>
-                      {ch.title}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {Array.isArray(book?.bibliography) && book.bibliography.length > 0 && (
-                <div className="mt-4 pt-3 border-t border-white/10 text-left">
-                  <p className="text-xs font-semibold text-[#c3a47b] mb-1 uppercase tracking-wider">
-                    Thư mục nguồn & Tài liệu tham khảo
-                  </p>
-                  <ul className="text-xs space-y-1 opacity-75">
-                    {book.bibliography.map((b, idx) => (
-                      <li key={idx}>
-                        • <strong>{b.title}</strong> — {b.publisher} ({b.year})
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={onBackToLibrary}
-              className="px-6 py-3 rounded-full font-bold text-xs uppercase tracking-widest transition-all"
-              style={{
-                backgroundColor: "#c3a47b",
-                color: "#1d1a15",
-                boxShadow: "0 4px 14px rgba(0, 0, 0, 0.4)",
-                cursor: "pointer",
-              }}
-              onPointerEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.04)";
-              }}
-              onPointerLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-              }}
-            >
-              ← Quay Lại Thư Viện Sách
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Book Engine HUD */}
       <main className="pointer-events-none select-none z-10 fixed inset-0 overflow-hidden">
