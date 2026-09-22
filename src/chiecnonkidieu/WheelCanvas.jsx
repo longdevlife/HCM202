@@ -9,7 +9,14 @@ import React, {
 import { sounds } from "./SoundEffects";
 
 const WheelCanvas = forwardRef(function WheelCanvas(
-  { slices, answeredQuestions = {}, onSpinStart, onSpinEnd },
+  {
+    slices,
+    answeredQuestions = {},
+    onSpinStart,
+    onSpinEnd,
+    onSliceClick,
+    onCenterClick,
+  },
   ref
 ) {
   const canvasRef = useRef(null);
@@ -21,6 +28,7 @@ const WheelCanvas = forwardRef(function WheelCanvas(
   const lastTickIndexRef = useRef(-1);
   const [needleBounce, setNeedleBounce] = useState(0);
   const [internalSpinning, setInternalSpinning] = useState(false);
+  const [hoverTitle, setHoverTitle] = useState("Bấm vào ô câu hỏi để xem hoặc bấm tâm để quay!");
 
   const numSlices = slices.length;
   const sliceAngle = (2 * Math.PI) / numSlices;
@@ -302,11 +310,110 @@ const WheelCanvas = forwardRef(function WheelCanvas(
     };
   }, []);
 
+  // Calculate slice from click coordinates
+  const handleCanvasClick = (e) => {
+    if (isSpinningRef.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const center = canvas.width / 2;
+    const radius = center - 28;
+
+    const clickX = (e.clientX - rect.left) * scaleX - center;
+    const clickY = (e.clientY - rect.top) * scaleY - center;
+    const dist = Math.sqrt(clickX * clickX + clickY * clickY);
+
+    // Click outside wheel
+    if (dist > radius + 16) return;
+
+    // Click center hub -> Trigger Spin!
+    if (dist <= 52) {
+      if (onCenterClick) {
+        onCenterClick();
+      }
+      return;
+    }
+
+    // Click on slice
+    let clickAngle = Math.atan2(clickY, clickX);
+    if (clickAngle < 0) clickAngle += 2 * Math.PI;
+
+    const currentAngle =
+      currentAngleRef.current >= 0
+        ? currentAngleRef.current % (2 * Math.PI)
+        : 2 * Math.PI + (currentAngleRef.current % (2 * Math.PI));
+
+    let relativeAngle = (clickAngle - currentAngle) % (2 * Math.PI);
+    if (relativeAngle < 0) relativeAngle += 2 * Math.PI;
+
+    const clickedSliceIndex = Math.floor(relativeAngle / sliceAngle) % numSlices;
+    const clickedSlice = slices[clickedSliceIndex];
+
+    if (clickedSlice && onSliceClick) {
+      onSliceClick(clickedSlice, clickedSliceIndex);
+    }
+  };
+
+  // Hover feedback
+  const handleCanvasMouseMove = (e) => {
+    if (isSpinningRef.current) {
+      setHoverTitle("Nón đang quay...");
+      return;
+    }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const center = canvas.width / 2;
+    const radius = center - 28;
+
+    const clickX = (e.clientX - rect.left) * scaleX - center;
+    const clickY = (e.clientY - rect.top) * scaleY - center;
+    const dist = Math.sqrt(clickX * clickX + clickY * clickY);
+
+    if (dist <= 52) {
+      setHoverTitle("⭐ Bấm vào tâm để quay nón!");
+      return;
+    }
+
+    if (dist > radius + 16) {
+      setHoverTitle("Chiếc nón kỳ diệu");
+      return;
+    }
+
+    let clickAngle = Math.atan2(clickY, clickX);
+    if (clickAngle < 0) clickAngle += 2 * Math.PI;
+
+    const currentAngle =
+      currentAngleRef.current >= 0
+        ? currentAngleRef.current % (2 * Math.PI)
+        : 2 * Math.PI + (currentAngleRef.current % (2 * Math.PI));
+
+    let relativeAngle = (clickAngle - currentAngle) % (2 * Math.PI);
+    if (relativeAngle < 0) relativeAngle += 2 * Math.PI;
+
+    const sliceIdx = Math.floor(relativeAngle / sliceAngle) % numSlices;
+    const slice = slices[sliceIdx];
+    if (slice) {
+      const isDone = answeredQuestions[slice.questionId];
+      setHoverTitle(
+        `👉 Bấm để xem ${slice.label} (${slice.subLabel})${isDone ? " - Đã giải ✓" : ""}`
+      );
+    }
+  };
+
   return (
     <div className="wheel-canvas-wrapper relative flex flex-col items-center select-none cursor-pointer">
       {/* Top Needle / Indicator with Spring Bounce */}
       <div
-        className="pointer-indicator absolute z-20 -top-3.5 left-1/2 -translate-x-1/2 flex flex-col items-center transition-transform duration-75"
+        className="pointer-indicator absolute z-20 -top-3.5 left-1/2 -translate-x-1/2 flex flex-col items-center transition-transform duration-75 pointer-events-none"
         style={{
           transform: `translateX(-50%) rotate(${needleBounce ? -14 : 0}deg)`,
           transformOrigin: "50% 0%",
@@ -337,7 +444,10 @@ const WheelCanvas = forwardRef(function WheelCanvas(
         ref={canvasRef}
         width={680}
         height={680}
-        className="wheel-canvas w-[92vw] h-[92vw] max-w-[360px] max-h-[360px] sm:max-w-[480px] sm:max-h-[480px] md:max-w-[580px] md:max-h-[580px] lg:max-w-[660px] lg:max-h-[660px] rounded-full drop-shadow-2xl transition-transform duration-200 hover:scale-[1.008]"
+        onClick={handleCanvasClick}
+        onMouseMove={handleCanvasMouseMove}
+        title={hoverTitle}
+        className="wheel-canvas w-[92vw] h-[92vw] max-w-[360px] max-h-[360px] sm:max-w-[480px] sm:max-h-[480px] md:max-w-[580px] md:max-h-[580px] lg:max-w-[660px] lg:max-h-[660px] rounded-full drop-shadow-2xl transition-transform duration-200 hover:scale-[1.008] cursor-pointer"
       />
     </div>
   );

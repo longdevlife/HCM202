@@ -79,6 +79,18 @@ export default function ChiecNonKiDieuGame() {
     }
   };
 
+  // Directly click on a slice on the wheel to view/answer that question
+  const handleSliceClick = (slice) => {
+    if (isSpinning) return;
+    if (slice?.type === "question") {
+      const q = questions.find((item) => item.id === slice.questionId);
+      if (q) {
+        setActiveQuestion(q);
+        setIsQuestionModalOpen(true);
+      }
+    }
+  };
+
   // When user answers in modal
   const handleAnswerSubmit = (qId, isCorrect, chosenOpt) => {
     setAnsweredQuestions((prev) => {
@@ -161,14 +173,16 @@ export default function ChiecNonKiDieuGame() {
         {/* Center Stage: The Wheel is the Pure Centered Focus */}
         <div className="flex flex-col items-center justify-center w-full">
           <div className="wheel-stage-card p-6 md:p-10 bg-gradient-to-b from-[#faf8f5] to-[#f4eee6] rounded-3xl shadow-2xl border-2 border-[#c9922a]/30 relative flex flex-col items-center w-full max-w-[760px] mx-auto">
-            {/* Wheel Canvas (Click on wheel also spins) */}
-            <div onClick={handleSpinClick} title="Bấm vào nón để quay!" className="flex justify-center items-center">
+            {/* Wheel Canvas (Click directly on any slice to view question, click center or button to spin) */}
+            <div className="flex justify-center items-center">
               <WheelCanvas
                 ref={wheelRef}
                 slices={WHEEL_SLICES}
                 answeredQuestions={answeredQuestions}
                 onSpinStart={() => setIsSpinning(true)}
                 onSpinEnd={handleSpinEnd}
+                onSliceClick={handleSliceClick}
+                onCenterClick={handleSpinClick}
               />
             </div>
 
@@ -189,8 +203,10 @@ export default function ChiecNonKiDieuGame() {
                 {isSpinning ? "Đang Quay Nón..." : "🎡 BẤM ĐỂ QUAY NÓN 🎡"}
               </button>
 
-              <div className="text-xs md:text-sm font-medium text-[#786c5e]">
-                {isSpinning ? "Hồi hộp chờ nón dừng lại..." : `Đã quay: ${spinsCount} lượt (Bấm nút hoặc bấm vào nón)`}
+              <div className="text-xs md:text-sm font-medium text-[#786c5e] text-center">
+                {isSpinning
+                  ? "Hồi hộp chờ nón dừng lại..."
+                  : "💡 Bấm trực tiếp vào các ô trên nón để xem câu hỏi, hoặc bấm nút để quay!"}
               </div>
 
               {/* WHEN ALL 5 QUESTIONS ARE ANSWERED: GRAND CONCLUSION BUTTON REVEALS HERE! */}
@@ -232,6 +248,7 @@ export default function ChiecNonKiDieuGame() {
         onAnswerSubmit={handleAnswerSubmit}
         allAnswered={allAnswered}
         onOpenSummary={() => setIsSummaryModalOpen(true)}
+        isAlreadyAnswered={Boolean(activeQuestion && answeredQuestions[activeQuestion.id])}
       />
 
       {/* Grand Lesson Summary Modal */}

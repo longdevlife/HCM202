@@ -8,6 +8,7 @@ export default function QuestionModal({
   onAnswerSubmit,
   allAnswered = false,
   onOpenSummary,
+  isAlreadyAnswered = false,
 }) {
   // State for typed answer (questions 1 & 5)
   const [typedAnswer, setTypedAnswer] = useState("");
@@ -27,8 +28,8 @@ export default function QuestionModal({
     if (question && isOpen) {
       setTypedAnswer("");
       setSelectedOptId(null);
-      setIsSubmitted(false);
-      setIsCorrect(false);
+      setIsSubmitted(Boolean(isAlreadyAnswered));
+      setIsCorrect(Boolean(isAlreadyAnswered));
 
       if (question.questionType === "anagram" && question.scrambledTiles) {
         setAvailableScrambled(
@@ -37,7 +38,7 @@ export default function QuestionModal({
         setPlacedTiles([]);
       }
     }
-  }, [question, isOpen]);
+  }, [question, isOpen, isAlreadyAnswered]);
 
   if (!isOpen || !question) return null;
 
