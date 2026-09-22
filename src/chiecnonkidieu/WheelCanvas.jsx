@@ -35,16 +35,16 @@ const WheelCanvas = forwardRef(function WheelCanvas(
 
       const size = canvas.width;
       const center = size / 2;
-      const radius = center - 24;
+      const radius = center - 28;
 
       ctx.clearRect(0, 0, size, size);
       ctx.save();
 
       // Outer drop shadow
       ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
-      ctx.shadowBlur = 24;
+      ctx.shadowBlur = 28;
       ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 10;
+      ctx.shadowOffsetY = 12;
 
       // Outer metallic gold ring
       const goldGrad = ctx.createLinearGradient(0, 0, size, size);
@@ -55,7 +55,7 @@ const WheelCanvas = forwardRef(function WheelCanvas(
       goldGrad.addColorStop(1, "#834d1b");
 
       ctx.beginPath();
-      ctx.arc(center, center, radius + 14, 0, 2 * Math.PI);
+      ctx.arc(center, center, radius + 16, 0, 2 * Math.PI);
       ctx.fillStyle = goldGrad;
       ctx.fill();
 
@@ -91,8 +91,8 @@ const WheelCanvas = forwardRef(function WheelCanvas(
         ctx.fill();
 
         // Slice dividing line
-        ctx.lineWidth = 2.5;
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
         ctx.stroke();
 
         // Label in slice
@@ -105,20 +105,20 @@ const WheelCanvas = forwardRef(function WheelCanvas(
 
         if (isAnswered) {
           ctx.fillStyle = "#cbd5e1";
-          ctx.font = "bold 13px 'Inter', sans-serif";
-          ctx.fillText("✓ ĐÃ XONG", radius - 26, -6);
+          ctx.font = "bold 16px 'Inter', sans-serif";
+          ctx.fillText("✓ ĐÃ XONG", radius - 30, -8);
 
-          ctx.font = "11px 'Inter', sans-serif";
+          ctx.font = "13px 'Inter', sans-serif";
           ctx.fillStyle = "#94a3b8";
-          ctx.fillText(slice.label, radius - 26, 12);
+          ctx.fillText(slice.label, radius - 30, 14);
         } else {
           ctx.fillStyle = slice.textColor || "#ffffff";
-          ctx.font = "bold 15px 'Playfair Display', Georgia, serif";
-          ctx.fillText(slice.label, radius - 24, -7);
+          ctx.font = "bold 18px 'Playfair Display', Georgia, serif";
+          ctx.fillText(slice.label, radius - 28, -9);
 
-          ctx.font = "bold 11px 'Inter', sans-serif";
-          ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-          ctx.fillText(slice.subLabel, radius - 24, 12);
+          ctx.font = "bold 13px 'Inter', sans-serif";
+          ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+          ctx.fillText(slice.subLabel, radius - 28, 14);
         }
 
         ctx.restore();
@@ -127,14 +127,14 @@ const WheelCanvas = forwardRef(function WheelCanvas(
       // Outer gold perimeter pins / pegs
       for (let i = 0; i < numSlices; i++) {
         const pinAngle = i * sliceAngle;
-        const px = Math.cos(pinAngle) * (radius - 2);
-        const py = Math.sin(pinAngle) * (radius - 2);
+        const px = Math.cos(pinAngle) * (radius - 3);
+        const py = Math.sin(pinAngle) * (radius - 3);
 
         ctx.beginPath();
-        ctx.arc(px, py, 4.5, 0, 2 * Math.PI);
+        ctx.arc(px, py, 5.5, 0, 2 * Math.PI);
         ctx.fillStyle = "#ffffff";
         ctx.fill();
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.strokeStyle = "#c9922a";
         ctx.stroke();
       }
@@ -147,28 +147,28 @@ const WheelCanvas = forwardRef(function WheelCanvas(
 
       // Hub shadow
       ctx.beginPath();
-      ctx.arc(0, 0, 48, 0, 2 * Math.PI);
+      ctx.arc(0, 0, 58, 0, 2 * Math.PI);
       ctx.fillStyle = "rgba(0,0,0,0.35)";
       ctx.fill();
 
       // Hub gold gradient
-      const hubGrad = ctx.createRadialGradient(-6, -6, 4, 0, 0, 45);
+      const hubGrad = ctx.createRadialGradient(-8, -8, 6, 0, 0, 56);
       hubGrad.addColorStop(0, "#fff4cc");
       hubGrad.addColorStop(0.3, "#f9d423");
       hubGrad.addColorStop(0.7, "#b8860b");
       hubGrad.addColorStop(1, "#5c3d0b");
 
       ctx.beginPath();
-      ctx.arc(0, 0, 44, 0, 2 * Math.PI);
+      ctx.arc(0, 0, 52, 0, 2 * Math.PI);
       ctx.fillStyle = hubGrad;
       ctx.fill();
-      ctx.lineWidth = 3.5;
+      ctx.lineWidth = 4;
       ctx.strokeStyle = "#ffffff";
       ctx.stroke();
 
       // Hub Center Core
       ctx.beginPath();
-      ctx.arc(0, 0, 32, 0, 2 * Math.PI);
+      ctx.arc(0, 0, 38, 0, 2 * Math.PI);
       ctx.fillStyle = "#2c1a0e";
       ctx.fill();
 
@@ -176,7 +176,7 @@ const WheelCanvas = forwardRef(function WheelCanvas(
       ctx.fillStyle = "#fef08a";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.font = "20px 'Inter', sans-serif";
+      ctx.font = "26px 'Inter', sans-serif";
       ctx.fillText("⭐", 0, 0);
 
       ctx.restore(); // end center hub
@@ -188,16 +188,16 @@ const WheelCanvas = forwardRef(function WheelCanvas(
 
       for (let i = 0; i < ledCount; i++) {
         const la = i * ledAngleStep;
-        const lx = center + Math.cos(la) * (radius + 8);
-        const ly = center + Math.sin(la) * (radius + 8);
+        const lx = center + Math.cos(la) * (radius + 9);
+        const ly = center + Math.sin(la) * (radius + 9);
 
         const isLightOn = Math.floor(timeMs + i) % 2 === 0;
 
         ctx.beginPath();
-        ctx.arc(lx, ly, 3.2, 0, 2 * Math.PI);
+        ctx.arc(lx, ly, 4, 0, 2 * Math.PI);
         ctx.fillStyle = isLightOn ? "#fef08a" : "#ca8a04";
         ctx.shadowColor = isLightOn ? "#fde047" : "transparent";
-        ctx.shadowBlur = isLightOn ? 8 : 0;
+        ctx.shadowBlur = isLightOn ? 10 : 0;
         ctx.fill();
         ctx.shadowColor = "transparent";
       }
@@ -306,13 +306,13 @@ const WheelCanvas = forwardRef(function WheelCanvas(
     <div className="wheel-canvas-wrapper relative flex flex-col items-center select-none cursor-pointer">
       {/* Top Needle / Indicator with Spring Bounce */}
       <div
-        className="pointer-indicator absolute z-20 top-[-6px] left-1/2 -translate-x-1/2 flex flex-col items-center transition-transform duration-75"
+        className="pointer-indicator absolute z-20 -top-3.5 left-1/2 -translate-x-1/2 flex flex-col items-center transition-transform duration-75"
         style={{
           transform: `translateX(-50%) rotate(${needleBounce ? -14 : 0}deg)`,
           transformOrigin: "50% 0%",
         }}
       >
-        <div className="w-8 h-12 relative filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]">
+        <div className="w-10 h-16 relative filter drop-shadow-[0_6px_10px_rgba(0,0,0,0.65)]">
           <svg viewBox="0 0 32 48" className="w-full h-full">
             <polygon
               points="16,48 4,4 28,4"
@@ -335,9 +335,9 @@ const WheelCanvas = forwardRef(function WheelCanvas(
       {/* Wheel Canvas */}
       <canvas
         ref={canvasRef}
-        width={540}
-        height={540}
-        className="wheel-canvas max-w-[88vw] max-h-[88vw] md:max-w-[460px] md:max-h-[460px] lg:max-w-[500px] lg:max-h-[500px] rounded-full"
+        width={680}
+        height={680}
+        className="wheel-canvas w-[92vw] h-[92vw] max-w-[360px] max-h-[360px] sm:max-w-[480px] sm:max-h-[480px] md:max-w-[580px] md:max-h-[580px] lg:max-w-[660px] lg:max-h-[660px] rounded-full drop-shadow-2xl transition-transform duration-200 hover:scale-[1.008]"
       />
     </div>
   );

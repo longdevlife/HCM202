@@ -136,7 +136,7 @@ export default function ChiecNonKiDieuGame() {
   };
 
   return (
-    <div className="chiecnon-game-container min-h-screen bg-[#ede8e1] text-[#2c1a0e] pt-24 pb-16 px-4 md:px-8 relative overflow-hidden flex flex-col justify-center">
+    <div className="chiecnon-game-container min-h-screen bg-[#ede8e1] text-[#2c1a0e] pt-24 pb-16 px-4 md:px-8 relative overflow-hidden flex flex-col justify-center items-center">
       {/* Background Decorative Glow */}
       <div className="absolute top-12 -left-20 w-96 h-96 rounded-full bg-[#c9922a]/10 filter blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-10 -right-20 w-96 h-96 rounded-full bg-[#b91c1c]/10 filter blur-3xl pointer-events-none"></div>
@@ -149,7 +149,7 @@ export default function ChiecNonKiDieuGame() {
         </div>
       )}
 
-      <div className="max-w-4xl mx-auto w-full">
+      <div className="max-w-5xl mx-auto w-full flex flex-col items-center">
         {/* Simple, Compact Game Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#c9922a]/20 border border-[#c9922a] text-[#855318] text-xs font-bold uppercase tracking-widest mb-2">
@@ -195,9 +195,9 @@ export default function ChiecNonKiDieuGame() {
 
         {/* Center Stage: The Wheel is the Pure Centered Focus */}
         <div className="flex flex-col items-center justify-center w-full">
-          <div className="wheel-stage-card p-4 md:p-8 bg-gradient-to-b from-[#faf8f5] to-[#f4eee6] rounded-3xl shadow-2xl border-2 border-[#c9922a]/30 relative flex flex-col items-center w-full max-w-[560px]">
+          <div className="wheel-stage-card p-6 md:p-10 bg-gradient-to-b from-[#faf8f5] to-[#f4eee6] rounded-3xl shadow-2xl border-2 border-[#c9922a]/30 relative flex flex-col items-center w-full max-w-[760px] mx-auto">
             {/* Wheel Canvas (Click on wheel also spins) */}
-            <div onClick={handleSpinClick} title="Bấm vào nón để quay!">
+            <div onClick={handleSpinClick} title="Bấm vào nón để quay!" className="flex justify-center items-center">
               <WheelCanvas
                 ref={wheelRef}
                 slices={WHEEL_SLICES}
@@ -208,13 +208,13 @@ export default function ChiecNonKiDieuGame() {
             </div>
 
             {/* Actions Area Under the Wheel */}
-            <div className="mt-6 flex flex-col items-center w-full max-w-md gap-3">
+            <div className="mt-8 flex flex-col items-center w-full max-w-lg gap-3">
               {/* Spin Button */}
               <button
                 type="button"
                 disabled={isSpinning}
                 onClick={handleSpinClick}
-                className={`w-full py-4 rounded-full font-black text-base md:text-xl uppercase tracking-wider shadow-2xl transition-all duration-200 cursor-pointer ${
+                className={`w-full py-4 md:py-5 rounded-full font-black text-lg md:text-2xl uppercase tracking-wider shadow-2xl transition-all duration-200 cursor-pointer ${
                   isSpinning
                     ? "bg-gray-400 text-gray-200 cursor-not-allowed scale-95"
                     : "bg-gradient-to-r from-[#d97706] via-[#c9922a] to-[#b45309] hover:from-[#b45309] hover:to-[#92400e] text-white hover:scale-105 active:scale-95 ring-4 ring-[#fde68a]/50"
@@ -224,20 +224,20 @@ export default function ChiecNonKiDieuGame() {
                 {isSpinning ? "Đang Quay Nón..." : "🎡 BẤM ĐỂ QUAY NÓN 🎡"}
               </button>
 
-              <div className="text-[11px] text-[#786c5e]">
+              <div className="text-xs md:text-sm font-medium text-[#786c5e]">
                 {isSpinning ? "Hồi hộp chờ nón dừng lại..." : `Đã quay: ${spinsCount} lượt (Bấm nút hoặc bấm vào nón)`}
               </div>
 
               {/* WHEN ALL 5 QUESTIONS ARE ANSWERED: GRAND CONCLUSION BUTTON REVEALS HERE! */}
               {allAnswered && (
-                <div className="w-full mt-3 p-5 rounded-2xl bg-gradient-to-r from-[#2c1a0e] via-[#452814] to-[#2c1a0e] border-2 border-[#c9922a] shadow-2xl animate-fade-in text-center flex flex-col items-center gap-2.5">
+                <div className="w-full mt-3 p-5 md:p-6 rounded-2xl bg-gradient-to-r from-[#2c1a0e] via-[#452814] to-[#2c1a0e] border-2 border-[#c9922a] shadow-2xl animate-fade-in text-center flex flex-col items-center gap-3">
                   <div className="text-xs uppercase tracking-widest text-[#fef08a] font-bold">
                     🎉 ĐÃ HOÀN THÀNH TOÀN BỘ 5 CÂU HỎI
                   </div>
 
                   {/* Assembled Title */}
                   <div
-                    className="text-sm md:text-base font-bold text-white leading-snug px-2"
+                    className="text-base md:text-lg font-bold text-white leading-snug px-2"
                     style={{ fontFamily: "'Playfair Display', serif" }}
                   >
                     👉 "{FULL_LESSON_TITLE}"
@@ -247,7 +247,7 @@ export default function ChiecNonKiDieuGame() {
                   <button
                     type="button"
                     onClick={() => setIsSummaryModalOpen(true)}
-                    className="w-full mt-2 py-3.5 px-6 rounded-xl font-black text-sm md:text-base uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl bg-gradient-to-r from-[#f59e0b] via-[#c9922a] to-[#d97706] hover:brightness-110 text-white animate-pulse scale-[1.02] active:scale-95 cursor-pointer shadow-amber-900/50"
+                    className="w-full mt-2 py-4 px-6 rounded-xl font-black text-base md:text-lg uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl bg-gradient-to-r from-[#f59e0b] via-[#c9922a] to-[#d97706] hover:brightness-110 text-white animate-pulse scale-[1.02] active:scale-95 cursor-pointer shadow-amber-900/50"
                   >
                     <span>📜</span>
                     <span>BẤM XEM KẾT NỘI DUNG BÀI HỌC</span>
