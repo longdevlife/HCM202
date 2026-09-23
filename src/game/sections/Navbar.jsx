@@ -37,7 +37,7 @@ export default function Navbar({ activeTab, onTabChange }) {
           fontFeatureSettings: '"lnum" 1, "tnum" 1',
         }}
       >
-        Group 1
+        Group 3
       </div>
       <nav className={`navbar-theory pointer-events-auto ${isDarkBg ? 'nav-mode-book' : ''}`}>
         <a

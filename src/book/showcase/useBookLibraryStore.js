@@ -1,6 +1,4 @@
-import zustand from "zustand";
-
-const create = typeof zustand === "function" ? zustand : zustand.create;
+import { create } from "zustand";
 
 const clampBookIndex = (index) => Math.max(0, Math.min(2, Number(index) || 0));
 

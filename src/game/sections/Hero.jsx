@@ -56,7 +56,7 @@ export default function Hero() {
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8B261D]/10 border border-[#8B261D]/20 text-[11px] uppercase tracking-[0.2em] font-bold text-[#8B261D]"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
-              CHUYÊN ĐỀ VNR-T17 • GROUP 1
+              CHUYÊN ĐỀ VNR-T17 • GROUP 3
             </span>
             <span className="text-[#7A6040] text-xs font-semibold tracking-wider">
               1979 – 1981

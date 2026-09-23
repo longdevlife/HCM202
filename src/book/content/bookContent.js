@@ -40,7 +40,7 @@ export const BOOKS = [
   {
     id: 0,
     roman: "I",
-    ready: false,
+    ready: true,
     cover: {
       eyebrow: "QUYỂN I",
       title: ["CƠ CẤU XÃ HỘI", "– GIAI CẤP"],
@@ -57,7 +57,7 @@ export const BOOKS = [
       description:
         "Cơ cấu xã hội – giai cấp là hệ thống các giai cấp, tầng lớp xã hội tồn tại khách quan và mối quan hệ giữa chúng về sở hữu, quản lý và phân phối trong một chế độ xã hội nhất định.",
     },
-    skeletonNotice: "Nội dung Sách 3D của Quyển I đang được chuẩn hóa trang tư liệu số theo đúng giáo trình Chương 5. Bản xem trước đề cương và thư mục nguồn đã sẵn sàng.",
+    skeletonNotice: "Nội dung Sách 3D của Quyển I đã được số hóa hoàn tất với đầy đủ các trang tư liệu chuyên khảo.",
     chapters: [
       { id: "1.1", title: "Khái niệm cơ cấu xã hội" },
       { id: "1.2", title: "Khái niệm cơ cấu xã hội – giai cấp" },
@@ -67,7 +67,18 @@ export const BOOKS = [
       { id: "1.6", title: "Ví dụ: Doanh nhân và kinh tế tư nhân" },
       { id: "1.7", title: "Ví dụ: Vai trò của đội ngũ trí thức" },
     ],
-    pages: [],
+    pages: [
+      {
+        front: "/textures/books/book1/bia_1.png",
+        back: "/textures/books/book1/1.png",
+        label: "Bìa",
+      },
+      {
+        front: "/textures/books/book1/1.1.png",
+        back: "/textures/books/book1/end_1.png",
+        label: "Trang 1–1.1",
+      },
+    ],
     sources: SOURCES,
     bibliography: [
       {
@@ -93,7 +104,7 @@ export const BOOKS = [
   {
     id: 1,
     roman: "II",
-    ready: false,
+    ready: true,
     cover: {
       eyebrow: "QUYỂN II",
       title: ["BIẾN ĐỔI", "CÓ TÍNH QUY LUẬT"],
@@ -110,13 +121,29 @@ export const BOOKS = [
       description:
         "Sự biến đổi của cơ cấu xã hội – giai cấp bị quy định bởi cơ cấu kinh tế nhiều thành phần, dẫn tới chuyển dịch cơ cấu lao động và từng bước giảm chênh lệch, bất bình đẳng xã hội.",
     },
-    skeletonNotice: "Nội dung Sách 3D của Quyển II đang được hoàn thiện theo đúng giáo trình Chương 5.",
+    skeletonNotice: "Nội dung Sách 3D của Quyển II đã được số hóa hoàn tất với đầy đủ các trang tư liệu chuyên khảo.",
     chapters: [
       { id: "2.1", title: "Biến đổi gắn liền và bị quy định bởi cơ cấu kinh tế" },
       { id: "2.2", title: "Biến đổi phức tạp, đa dạng, xuất hiện tầng lớp xã hội mới" },
       { id: "2.3", title: "Quan hệ vừa đấu tranh, vừa liên minh; từng bước giảm bất bình đẳng" },
     ],
-    pages: [],
+    pages: [
+      {
+        front: "/textures/books/book2/bia_2.png",
+        back: "/textures/books/book2/2.1.png",
+        label: "Bìa",
+      },
+      {
+        front: "/textures/books/book2/2.2.png",
+        back: "/textures/books/book2/2.3.png",
+        label: "Trang 2.1–2.2",
+      },
+      {
+        front: "/textures/books/book2/2_blank.png",
+        back: "/textures/books/book2/end_2.png",
+        label: "Trang 2.3 & Lót",
+      },
+    ],
     sources: [SOURCES[0], SOURCES[3]],
     bibliography: [
       {
@@ -136,7 +163,7 @@ export const BOOKS = [
   {
     id: 2,
     roman: "III",
-    ready: false,
+    ready: true,
     cover: {
       eyebrow: "QUYỂN III",
       title: ["VIỆT NAM", "TRONG THỜI KỲ QUÁ ĐỘ"],
@@ -153,7 +180,7 @@ export const BOOKS = [
       description:
         "Các giai cấp, tầng lớp có vị trí và vai trò khác nhau nhưng tồn tại trong mối quan hệ hợp tác và liên minh chặt chẽ dưới sự lãnh đạo của Đảng, cùng hướng tới mục tiêu dân giàu, nước mạnh, dân chủ, công bằng, văn minh.",
     },
-    skeletonNotice: "Nội dung Sách 3D của Quyển III đang được hoàn thiện theo đúng giáo trình Chương 5.",
+    skeletonNotice: "Nội dung Sách 3D của Quyển III đã được số hóa hoàn tất với đầy đủ các trang tư liệu chuyên khảo.",
     chapters: [
       { id: "3.1", title: "Giai cấp công nhân" },
       { id: "3.2", title: "Giai cấp nông dân" },
@@ -161,7 +188,18 @@ export const BOOKS = [
       { id: "3.4", title: "Đội ngũ doanh nhân" },
       { id: "3.5", title: "Tổng kết" },
     ],
-    pages: [],
+    pages: [
+      {
+        front: "/textures/books/book3/bia_3.png",
+        back: "/textures/books/book3/3.png",
+        label: "Bìa",
+      },
+      {
+        front: "/textures/books/book3/end.png",
+        back: "/textures/books/book3/end_3.png",
+        label: "Trang 3 & Kết",
+      },
+    ],
     sources: SOURCES,
     bibliography: [
       {
