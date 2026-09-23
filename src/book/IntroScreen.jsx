@@ -19,13 +19,13 @@ export const IntroScreen = ({ onEnter }) => {
     >
       <div className="noise-overlay" />
 
-      {/* Top Left Group 1 Label */}
+      {/* Top Left Group 3 Label */}
       <div className="absolute top-8 left-8 z-20 opacity-0 animate-[fadeIn_1s_ease_0.3s_forwards]">
         <span 
           className="text-xs md:text-sm tracking-[0.2em] uppercase"
           style={{ fontFamily: "'Inter', sans-serif", color: '#8B7355', fontWeight: 600 }}
         >
-          Group 1
+          Group 3
         </span>
       </div>
 
