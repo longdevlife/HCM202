@@ -1,4 +1,6 @@
-import create from "zustand";
+import * as zustandModule from "zustand";
+
+const create = zustandModule.create || zustandModule.default;
 
 const clampBookIndex = (index) => Math.max(0, Math.min(2, Number(index) || 0));
 
