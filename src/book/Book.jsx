@@ -244,9 +244,11 @@ const Page = ({ number, front, back, page, opened, bookClosed, ...props }) => {
   );
 };
 
-export const Book = ({ ...props }) => {
+export const Book = ({ book, ...props }) => {
   const [page] = useAtom(pageAtom);
   const [delayedPage, setDelayedPage] = useState(page);
+
+  const bookPages = book?.pages?.length > 0 ? book.pages : pages;
 
   useEffect(() => {
     let timeout;
@@ -276,15 +278,19 @@ export const Book = ({ ...props }) => {
     };
   }, [page]);
 
+  if (bookPages.length === 0) {
+    return null;
+  }
+
   return (
     <group {...props} rotation-y={-Math.PI / 2}>
-      {[...pages].map((pageData, index) => (
+      {bookPages.map((pageData, index) => (
         <Page
           key={index}
           page={delayedPage}
           number={index}
           opened={delayedPage > index}
-          bookClosed={delayedPage === 0 || delayedPage === pages.length}
+          bookClosed={delayedPage === 0 || delayedPage === bookPages.length}
           {...pageData}
         />
       ))}

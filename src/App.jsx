@@ -4,19 +4,18 @@ import Navbar from "./game/sections/Navbar";
 const TheoryPage = lazy(() => import("./game/TheoryPage").then((module) => ({ default: module.TheoryPage || module.default })));
 const BookPage = lazy(() => import("./book/BookPage").then((module) => ({ default: module.BookPage || module.default })));
 const MinigamePage = lazy(() => import("./minigame/MinigamePage").then((module) => ({ default: module.MinigamePage || module.default })));
+const ChiecNonKiDieuGame = lazy(() => import("./chiecnonkidieu/ChiecNonKiDieuGame").then((module) => ({ default: module.ChiecNonKiDieuGame || module.default })));
 
 const TABS = [
-  { id: "overview", label: "Tổng quan" },
-  { id: "book", label: "Tạp chí" },
-  { id: "minigame", label: "Mini Game" },
+  { id: "book", label: "Sách 3D" },
+  { id: "chiecnon", label: "Chiếc Nón Kỳ Diệu" },
 ];
 
 function getActiveTab() {
   const hash = window.location.hash.replace("#", "");
   const path = window.location.pathname.replace("/", "");
-  if (hash === "intro" || path === "intro") return "overview";
   const from = TABS.find((t) => t.id === hash || t.id === path);
-  return from ? from.id : "overview";
+  return from ? from.id : "book";
 }
 
 function App() {
@@ -35,7 +34,7 @@ function App() {
   }, []);
 
   const handleTabChange = (id) => {
-    const targetId = id === "intro" ? "overview" : id;
+    const targetId = id === "intro" || id === "overview" ? "book" : id;
     setActiveTab(targetId);
     window.location.hash = targetId;
   };
@@ -64,9 +63,10 @@ function App() {
             </div>
           }
         >
-          {(activeTab === "overview" || activeTab === "intro") && <TheoryPage />}
+          {activeTab === "overview" && <TheoryPage />}
           {activeTab === "book" && <BookPage skipIntro={hasVisitedBook} onIntroFinish={() => setHasVisitedBook(true)} />}
           {activeTab === "minigame" && <MinigamePage />}
+          {activeTab === "chiecnon" && <ChiecNonKiDieuGame />}
         </Suspense>
       </div>
     </div>

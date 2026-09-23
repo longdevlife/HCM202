@@ -34,3 +34,5 @@ skills/
 
 # Test & QA artifacts
 artifacts/
+.playwright-cli/
+
