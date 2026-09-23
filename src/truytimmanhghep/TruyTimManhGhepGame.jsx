@@ -61,10 +61,10 @@ export default function TruyTimManhGhepGame() {
 
         if (newCount >= 9) {
           sounds.playFanfare();
-          showToast("🎉 CHÚC MỪNG! ĐÃ HOÀN THÀNH CẢ 9 Ô SỐ! BẤM NÚT ĐỂ HIỆN TỪ KHÓA BÍ ẨN!");
+          showToast("🎉 CHÚC MỪNG! ĐÃ HOÀN THÀNH BỨC TRANH! BẤM NÚT ĐỂ HIỆN TỪ KHÓA BÍ ẨN!");
         } else {
           showToast(
-            `✨ Ô số ${pieceIndex + 1} mở thành công! Hãy trao 1 mảnh ghép thực tế cho người chơi!`
+            `✨ Mảnh #${pieceIndex + 1} mở thành công! Hãy trao 1 mảnh ghép thực tế cho người chơi!`
           );
         }
         return next;

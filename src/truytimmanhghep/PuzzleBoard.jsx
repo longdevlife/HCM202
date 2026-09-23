@@ -178,7 +178,7 @@ export default function PuzzleBoard({
               }}
             >
               {isUnlocked ? (
-                /* UNLOCKED: PIECE OF THE THEMATIC ARTWORK (NOT THE REAL SPOILER PHOTO) */
+                /* UNLOCKED: PURE ARTWORK PIECE (NO TEXT CLUTTER OR BADGES) */
                 <g>
                   {/* Clipped Thematic Artwork */}
                   <g clipPath={`url(#piece-clip-${idx})`}>
@@ -195,65 +195,14 @@ export default function PuzzleBoard({
                   {/* Interlocking Puzzle Seam Outline */}
                   <path
                     d={path}
-                    fill={isHovered ? "rgba(254, 240, 138, 0.15)" : "rgba(16, 185, 129, 0.05)"}
+                    fill={isHovered ? "rgba(254, 240, 138, 0.12)" : "transparent"}
                     stroke={isHovered ? "#fef08a" : "#10b981"}
-                    strokeWidth={isHovered ? "3.5" : "2.5"}
+                    strokeWidth={isHovered ? "3.5" : "2"}
                     filter={isHovered ? "url(#pieceGlow)" : "none"}
                   />
-
-                  {/* Completed Badge on Piece */}
-                  <g transform={`translate(${cx}, ${cy + 42})`}>
-                    <rect
-                      x="-38"
-                      y="-10"
-                      width="76"
-                      height="20"
-                      rx="10"
-                      fill="rgba(6, 78, 59, 0.9)"
-                      stroke="#34d399"
-                      strokeWidth="1.5"
-                    />
-                    <text
-                      x="0"
-                      y="4"
-                      textAnchor="middle"
-                      fill="#a7f3d0"
-                      fontSize="10"
-                      fontWeight="900"
-                      letterSpacing="0.5"
-                    >
-                      ✓ Ô SỐ {item.pieceNumber}
-                    </text>
-                  </g>
-
-                  {/* Subtle hover prompt to re-read question */}
-                  {isHovered && (
-                    <g transform={`translate(${cx}, ${cy - 5})`}>
-                      <rect
-                        x="-46"
-                        y="-12"
-                        width="92"
-                        height="24"
-                        rx="12"
-                        fill="rgba(0, 0, 0, 0.85)"
-                        stroke="#fde047"
-                        strokeWidth="1.5"
-                      />
-                      <text
-                        x="0"
-                        y="4"
-                        textAnchor="middle"
-                        fill="#fef08a"
-                        fontSize="10"
-                        fontWeight="bold"
-                      >
-                        Xem lại câu hỏi 👁️
-                      </text>
-                    </g>
-                  )}
                 </g>
               ) : (
-                /* LOCKED: MYSTERY JIGSAW PIECE WITH TABS & HOLES */
+                /* LOCKED: MYSTERY JIGSAW PIECE WITH JUST THE PIECE NUMBER */
                 <g>
                   {/* Textured Jigsaw Piece Body */}
                   <path
@@ -264,77 +213,27 @@ export default function PuzzleBoard({
                     filter={isHovered ? "url(#pieceGlow)" : "none"}
                   />
 
-                  {/* Center Golden Medal */}
+                  {/* Center Golden Number Medal */}
                   <circle
                     cx={cx}
-                    cy={cy - 16}
-                    r={isHovered ? "22" : "20"}
+                    cy={cy}
+                    r={isHovered ? "28" : "24"}
                     fill="url(#goldMedalGrad)"
                     stroke="#fef08a"
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     style={{ transition: "r 0.2s ease" }}
                   />
                   <text
                     x={cx}
-                    y={cy - 10}
+                    y={cy + (isHovered ? 9 : 8)}
                     textAnchor="middle"
-                    fontSize={isHovered ? "18" : "16"}
-                    fill="#181512"
-                    fontWeight="bold"
-                  >
-                    💡
-                  </text>
-
-                  {/* Piece Number & Title */}
-                  <text
-                    x={cx}
-                    y={cy + 18}
-                    textAnchor="middle"
-                    fill="#fef08a"
-                    fontSize="14"
+                    fill="#2a1508"
+                    fontSize={isHovered ? "26" : "22"}
                     fontWeight="900"
                     fontFamily="'Playfair Display', serif"
                   >
-                    Ô SỐ {item.pieceNumber}
+                    {item.pieceNumber}
                   </text>
-
-                  {/* Question Topic Tag */}
-                  <text
-                    x={cx}
-                    y={cy + 35}
-                    textAnchor="middle"
-                    fill="#dbc39c"
-                    fontSize="10.5"
-                    fontWeight="600"
-                    opacity="0.9"
-                  >
-                    {item.question.tag}
-                  </text>
-
-                  {/* Interactive Button Pill */}
-                  <g transform={`translate(${cx}, ${cy + 52})`}>
-                    <rect
-                      x="-46"
-                      y="-8"
-                      width="92"
-                      height="17"
-                      rx="8.5"
-                      fill={isHovered ? "rgba(217, 119, 6, 0.9)" : "rgba(0, 0, 0, 0.55)"}
-                      stroke={isHovered ? "#fef08a" : "rgba(201, 146, 42, 0.6)"}
-                      strokeWidth="1"
-                    />
-                    <text
-                      x="0"
-                      y="4"
-                      textAnchor="middle"
-                      fill={isHovered ? "#ffffff" : "#fde68a"}
-                      fontSize="8.5"
-                      fontWeight="800"
-                      letterSpacing="0.5"
-                    >
-                      BẤM ĐỂ MỞ 🔍
-                    </text>
-                  </g>
                 </g>
               )}
             </g>
