@@ -22,7 +22,7 @@ export default function LessonSummaryModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 md:p-6 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
       <div
         className="relative w-full max-w-4xl bg-[#faf8f5] text-[#2c1a0e] rounded-3xl shadow-2xl border-2 border-[#c9922a] overflow-hidden flex flex-col my-auto max-h-[94vh]"
         style={{ fontFamily: "'Inter', sans-serif" }}

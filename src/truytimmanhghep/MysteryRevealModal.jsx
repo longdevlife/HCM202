@@ -10,9 +10,9 @@ export default function MysteryRevealModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-5 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 md:p-6 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
       <div
-        className="relative w-full max-w-3xl bg-[#faf8f5] text-[#2c1a0e] rounded-3xl shadow-2xl border-2 border-[#f59e0b] overflow-hidden flex flex-col my-auto max-h-[95vh]"
+        className="relative w-full max-w-4xl bg-[#faf8f5] text-[#2c1a0e] rounded-3xl shadow-2xl border-2 border-[#f59e0b] overflow-hidden flex flex-col my-auto max-h-[95vh]"
         style={{ fontFamily: "'Inter', sans-serif" }}
       >
         {/* Top Header Strip */}
