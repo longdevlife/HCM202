@@ -98,7 +98,7 @@ export default function TruyTimManhGhepGame() {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto w-full flex flex-col items-center relative z-10 space-y-6">
+      <div className="max-w-7xl mx-auto w-full flex flex-col items-center relative z-10 space-y-6">
         {/* Game Title & Header Strip */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#3a382b]/80 border border-[#c3a47b]/50 text-[#dbc39c] text-xs font-bold uppercase tracking-widest shadow-sm">
@@ -154,7 +154,7 @@ export default function TruyTimManhGhepGame() {
         </div>
 
         {/* Mystery Keyword Action Area Below Board */}
-        <div className="w-full max-w-4xl flex flex-col items-center gap-3 pt-2">
+        <div className="w-full max-w-5xl flex flex-col items-center gap-3 pt-2">
           {/* THE BUTTON REQUESTED BY USER */}
           <button
             type="button"

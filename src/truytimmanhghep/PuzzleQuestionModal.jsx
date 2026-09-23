@@ -54,21 +54,21 @@ export default function PuzzleQuestionModal({
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 md:p-6 bg-black/85 backdrop-blur-sm animate-fade-in overflow-y-auto">
       <div
-        className="relative w-full max-w-2xl bg-[#faf8f5] text-[#2c1a0e] rounded-3xl shadow-2xl border-2 border-[#c9922a]/50 overflow-hidden flex flex-col my-auto max-h-[94vh]"
+        className="relative w-full max-w-4xl bg-[#faf8f5] text-[#2c1a0e] rounded-3xl shadow-2xl border-2 border-[#c9922a]/50 overflow-hidden flex flex-col my-auto max-h-[94vh]"
         style={{ fontFamily: "'Inter', sans-serif" }}
       >
         {/* Top Header Strip */}
-        <div className="bg-gradient-to-r from-[#2c1a0e] via-[#4a2e18] to-[#2c1a0e] text-white px-6 py-3.5 flex items-center justify-between border-b border-[#c9922a]/50">
+        <div className="bg-gradient-to-r from-[#2c1a0e] via-[#4a2e18] to-[#2c1a0e] text-white px-6 md:px-8 py-4 flex items-center justify-between border-b border-[#c9922a]/50">
           <div className="flex items-center space-x-3">
-            <span className="w-8 h-8 rounded-full bg-[#c9922a] text-[#2c1a0e] font-black flex items-center justify-center text-sm shadow-md">
+            <span className="w-10 h-10 rounded-full bg-[#c9922a] text-[#2c1a0e] font-black flex items-center justify-center text-lg shadow-md">
               💡
             </span>
             <div>
-              <div className="text-[11px] tracking-widest uppercase text-[#fef08a] font-bold">
+              <div className="text-xs tracking-widest uppercase text-[#fef08a] font-bold">
                 CÂU HỎI · {question.level?.toUpperCase()}
               </div>
               <div
-                className="text-base md:text-lg font-bold text-white"
+                className="text-lg md:text-xl font-bold text-white"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
                 Chủ đề: {question.tag}
@@ -79,21 +79,21 @@ export default function PuzzleQuestionModal({
             type="button"
             onClick={handleModalClose}
             aria-label="Đóng"
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-base cursor-pointer"
+            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-lg cursor-pointer"
           >
             ✕
           </button>
         </div>
 
         {/* Scrollable Body */}
-        <div className="p-5 md:p-6 overflow-y-auto space-y-4 flex-1">
+        <div className="p-6 md:p-8 overflow-y-auto space-y-5 flex-1">
           {/* Question Text Card */}
-          <div className="p-4 bg-white rounded-2xl shadow-sm border border-[#e5dfd5]">
-            <div className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 mb-2">
+          <div className="p-5 md:p-6 bg-white rounded-2xl shadow-sm border border-[#e5dfd5]">
+            <div className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 mb-3">
               {question.level}
             </div>
             <h3
-              className="text-base md:text-lg font-bold text-[#2c1a0e] leading-relaxed whitespace-pre-line"
+              className="text-lg md:text-2xl font-bold text-[#2c1a0e] leading-relaxed whitespace-pre-line"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
               {question.question}
@@ -101,12 +101,12 @@ export default function PuzzleQuestionModal({
           </div>
 
           {/* 4 Options Grid */}
-          <div className="space-y-2.5 p-4 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
-            <div className="grid grid-cols-1 gap-2.5">
+          <div className="space-y-3 p-5 md:p-6 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
+            <div className="grid grid-cols-1 gap-3">
               {question.options.map((opt) => {
                 const isChosen = selectedOptId === opt.id;
                 let cardClass =
-                  "relative flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all duration-200 cursor-pointer ";
+                  "relative flex items-center gap-3.5 p-4 md:p-4.5 rounded-xl border text-left transition-all duration-200 cursor-pointer ";
 
                 if (!isSubmitted) {
                   if (isChosen) {
@@ -137,7 +137,7 @@ export default function PuzzleQuestionModal({
                     className={cardClass}
                   >
                     <span
-                      className={`w-7 h-7 flex-shrink-0 rounded-lg font-bold text-sm flex items-center justify-center transition-colors ${
+                      className={`w-8 h-8 md:w-9 md:h-9 flex-shrink-0 rounded-lg font-bold text-sm md:text-base flex items-center justify-center transition-colors ${
                         isSubmitted && opt.isCorrect
                           ? "bg-[#10b981] text-white"
                           : isSubmitted && isChosen && !opt.isCorrect
@@ -149,16 +149,16 @@ export default function PuzzleQuestionModal({
                     >
                       {opt.id}
                     </span>
-                    <span className="flex-1 text-sm md:text-base font-medium">
+                    <span className="flex-1 text-base md:text-lg font-medium leading-snug">
                       {opt.text}
                     </span>
                     {isSubmitted && opt.isCorrect && (
-                      <span className="text-emerald-600 font-bold text-xs ml-1 flex-shrink-0">
+                      <span className="text-emerald-600 font-bold text-sm ml-1 flex-shrink-0">
                         ✓ Đúng
                       </span>
                     )}
                     {isSubmitted && isChosen && !opt.isCorrect && (
-                      <span className="text-rose-600 font-bold text-xs ml-1 flex-shrink-0">
+                      <span className="text-rose-600 font-bold text-sm ml-1 flex-shrink-0">
                         ✗ Sai
                       </span>
                     )}
@@ -169,14 +169,14 @@ export default function PuzzleQuestionModal({
 
             {/* Confirm button */}
             {!isSubmitted && (
-              <div className="flex items-center justify-end pt-2">
+              <div className="flex items-center justify-end pt-3">
                 <button
                   type="button"
                   disabled={!selectedOptId}
                   onClick={handleConfirm}
-                  className={`px-6 py-2.5 rounded-xl font-bold text-xs md:text-sm uppercase tracking-wider shadow transition-all ${
+                  className={`px-8 py-3 rounded-xl font-bold text-sm md:text-base uppercase tracking-wider shadow transition-all ${
                     selectedOptId
-                      ? "bg-[#c9922a] hover:bg-[#b8860b] text-white hover:scale-105 active:scale-95 cursor-pointer"
+                      ? "bg-[#c9922a] hover:bg-[#b8860b] text-white hover:scale-105 active:scale-95 cursor-pointer shadow-md"
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
                   }`}
                 >
@@ -189,43 +189,43 @@ export default function PuzzleQuestionModal({
           {/* Feedback & Host Instruction Banner */}
           {isSubmitted && (
             <div
-              className={`p-4 rounded-2xl border space-y-2 animate-fade-in ${
+              className={`p-5 md:p-6 rounded-2xl border space-y-3 animate-fade-in ${
                 isCorrect
                   ? "bg-emerald-50 border-emerald-300 text-emerald-950"
                   : "bg-rose-50 border-rose-300 text-rose-950"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="font-black text-sm md:text-base flex items-center gap-1.5">
+                <div className="font-black text-base md:text-lg flex items-center gap-2">
                   <span>{isCorrect ? "🎯 CHÍNH XÁC!" : "💡 ĐÁP ÁN ĐÚNG:"}</span>
                 </div>
-                <div className="px-3.5 py-1 bg-white rounded-full border border-current text-xs font-black uppercase tracking-wider shadow-sm">
+                <div className="px-4 py-1.5 bg-white rounded-full border border-current text-xs md:text-sm font-black uppercase tracking-wider shadow-sm">
                   Đáp án: {question.correctId}
                 </div>
               </div>
 
               {/* Host Real-Life Instruction */}
               {isCorrect && (
-                <div className="p-3 bg-emerald-600 text-white rounded-xl shadow flex items-center gap-2.5 font-bold text-xs md:text-sm">
-                  <span className="text-lg">🎁</span>
+                <div className="p-4 bg-emerald-600 text-white rounded-xl shadow flex items-center gap-3 font-bold text-sm md:text-base">
+                  <span className="text-xl">🎁</span>
                   <span>
                     Chính xác! Hãy trao 1 mảnh ghép ở bên ngoài cho người chơi!
                   </span>
                 </div>
               )}
 
-              <p className="text-xs md:text-sm leading-relaxed">{question.explanation}</p>
+              <p className="text-sm md:text-base leading-relaxed">{question.explanation}</p>
             </div>
           )}
         </div>
 
         {/* Footer Actions */}
-        <div className="bg-[#f2ece4] px-6 py-3 border-t border-[#e5dfd5] flex items-center justify-end">
+        <div className="bg-[#f2ece4] px-6 md:px-8 py-4 border-t border-[#e5dfd5] flex items-center justify-end">
           {isSubmitted ? (
             <button
               type="button"
               onClick={handleModalClose}
-              className="px-6 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-[#d97706] to-[#b45309] text-white shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              className="px-8 py-3 rounded-full font-bold text-sm md:text-base bg-gradient-to-r from-[#d97706] to-[#b45309] text-white shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
             >
               Tiếp Tục ➜
             </button>
@@ -233,7 +233,7 @@ export default function PuzzleQuestionModal({
             <button
               type="button"
               onClick={handleModalClose}
-              className="px-5 py-2 rounded-full text-xs font-bold text-gray-600 hover:bg-black/5 cursor-pointer"
+              className="px-6 py-2.5 rounded-full text-sm font-bold text-gray-600 hover:bg-black/5 cursor-pointer"
             >
               Đóng
             </button>

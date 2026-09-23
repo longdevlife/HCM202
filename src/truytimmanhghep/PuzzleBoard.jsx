@@ -76,7 +76,7 @@ export default function PuzzleBoard({
   }, []);
 
   return (
-    <div className="relative w-full max-w-5xl mx-auto p-4 sm:p-6 md:p-8 rounded-3xl bg-gradient-to-b from-[#2e1d12] via-[#24150c] to-[#1a0e07] border-4 border-[#c9922a]/70 shadow-2xl">
+    <div className="relative w-full max-w-6xl mx-auto p-4 sm:p-6 md:p-8 rounded-3xl bg-gradient-to-b from-[#2e1d12] via-[#24150c] to-[#1a0e07] border-4 border-[#c9922a]/70 shadow-2xl">
       {/* Decorative Golden Corner Screws */}
       <div className="absolute top-2.5 left-2.5 w-3 h-3 rounded-full bg-[#f59e0b] shadow-inner opacity-80 pointer-events-none z-20"></div>
       <div className="absolute top-2.5 right-2.5 w-3 h-3 rounded-full bg-[#f59e0b] shadow-inner opacity-80 pointer-events-none z-20"></div>
