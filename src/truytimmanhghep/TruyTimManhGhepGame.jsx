@@ -61,7 +61,7 @@ export default function TruyTimManhGhepGame() {
 
         if (newCount >= 9) {
           sounds.playFanfare();
-          showToast("🎉 CHÚC MỪNG! ĐÃ MỞ ĐỦ 9 MẢNH GHÉP! BẤM NÚT ĐỂ HIỆN TỪ KHÓA BÍ ẨN!");
+          showToast("🎉 CHÚC MỪNG! ĐÃ HOÀN THÀNH CẢ 9 Ô SỐ! BẤM NÚT ĐỂ HIỆN TỪ KHÓA BÍ ẨN!");
         } else {
           showToast(
             `✨ Ô số ${pieceIndex + 1} mở thành công! Hãy trao 1 mảnh ghép thực tế cho người chơi!`
@@ -121,9 +121,9 @@ export default function TruyTimManhGhepGame() {
           {/* Status Bar */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5 pt-2">
             <div className="bg-[#3a382b]/90 px-4 py-1.5 rounded-full border border-[#c3a47b]/30 text-xs font-bold text-[#eee2ca] shadow-sm flex items-center gap-1.5">
-              <span>🧩 Tiến độ:</span>
+              <span>🎯 Tiến độ:</span>
               <span className="font-black text-emerald-400">
-                {unlockedCount}/9 mảnh ghép
+                {unlockedCount}/9 ô đã mở
               </span>
             </div>
             <button
@@ -169,7 +169,7 @@ export default function TruyTimManhGhepGame() {
             <span>
               {allUnlocked
                 ? "🎉 BẤM VÀO ĐÂY ĐỂ HIỆN TỪ KHÓA BỨC TRANH BÍ ẨN 🏆"
-                : `XEM TỪ KHÓA BỨC TRANH BÍ ẨN (${unlockedCount}/9 MẢNH)`}
+                : `XEM TỪ KHÓA BỨC TRANH BÍ ẨN (${unlockedCount}/9 Ô ĐÃ MỞ)`}
             </span>
           </button>
 
