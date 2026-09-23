@@ -140,7 +140,20 @@ const Page = ({ number, front, back, page, opened, bookClosed, ...props }) => {
     mesh.add(skeleton.bones[0]);
     mesh.bind(skeleton);
     return mesh;
-  }, []);
+  }, [picture, picture2]);
+
+  useEffect(() => {
+    if (skinnedMeshRef.current) {
+      if (skinnedMeshRef.current.material[4]) {
+        skinnedMeshRef.current.material[4].map = picture;
+        skinnedMeshRef.current.material[4].needsUpdate = true;
+      }
+      if (skinnedMeshRef.current.material[5]) {
+        skinnedMeshRef.current.material[5].map = picture2;
+        skinnedMeshRef.current.material[5].needsUpdate = true;
+      }
+    }
+  }, [picture, picture2]);
 
   // useHelper(skinnedMeshRef, SkeletonHelper, "red");
 
@@ -286,7 +299,7 @@ export const Book = ({ book, ...props }) => {
     <group {...props} rotation-y={-Math.PI / 2}>
       {bookPages.map((pageData, index) => (
         <Page
-          key={index}
+          key={`${book?.id ?? 0}-${index}`}
           page={delayedPage}
           number={index}
           opened={delayedPage > index}
