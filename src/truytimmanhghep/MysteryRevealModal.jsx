@@ -46,11 +46,11 @@ export default function MysteryRevealModal({
         {/* Scrollable Body */}
         <div className="p-5 md:p-6 overflow-y-auto space-y-5 flex-1">
           {/* Complete Mystery Image */}
-          <div className="relative rounded-2xl overflow-hidden border-4 border-[#c9922a] shadow-xl bg-black">
+          <div className="relative rounded-2xl overflow-hidden border-4 border-[#c9922a] shadow-xl bg-black flex items-center justify-center">
             <img
               src={MYSTERY_IMAGE_SRC}
               alt={MYSTERY_KEYWORD}
-              className="w-full aspect-[16/10] md:aspect-[16/9] object-cover"
+              className="w-full max-h-[60vh] object-contain"
             />
             <div className="absolute top-3 left-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white font-black text-xs md:text-sm px-3.5 py-1.5 rounded-full shadow-lg border border-amber-300/40 flex items-center gap-1.5">
               <span>📸</span>

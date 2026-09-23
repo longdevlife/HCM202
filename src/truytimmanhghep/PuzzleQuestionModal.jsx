@@ -61,11 +61,11 @@ export default function PuzzleQuestionModal({
         <div className="bg-gradient-to-r from-[#2c1a0e] via-[#4a2e18] to-[#2c1a0e] text-white px-6 py-3.5 flex items-center justify-between border-b border-[#c9922a]/50">
           <div className="flex items-center space-x-3">
             <span className="w-8 h-8 rounded-full bg-[#c9922a] text-[#2c1a0e] font-black flex items-center justify-center text-sm shadow-md">
-              🧩
+              💡
             </span>
             <div>
               <div className="text-[11px] tracking-widest uppercase text-[#fef08a] font-bold">
-                MẢNH GHÉP SỐ {pieceNumber} · CÂU HỎI {question.level?.toUpperCase()}
+                CÂU HỎI · {question.level?.toUpperCase()}
               </div>
               <div
                 className="text-base md:text-lg font-bold text-white"
@@ -209,7 +209,7 @@ export default function PuzzleQuestionModal({
                 <div className="p-3 bg-emerald-600 text-white rounded-xl shadow flex items-center gap-2.5 font-bold text-xs md:text-sm">
                   <span className="text-lg">🎁</span>
                   <span>
-                    Mảnh ghép số {pieceNumber} đã mở! Hãy trao 1 mảnh ghép thực tế ở bên ngoài cho người chơi!
+                    Chính xác! Hãy trao 1 mảnh ghép ở bên ngoài cho người chơi!
                   </span>
                 </div>
               )}
@@ -227,7 +227,7 @@ export default function PuzzleQuestionModal({
               onClick={handleModalClose}
               className="px-6 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-[#d97706] to-[#b45309] text-white shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
             >
-              Tiếp Tục Bảng Mảnh Ghép 🧩
+              Tiếp Tục ➜
             </button>
           ) : (
             <button

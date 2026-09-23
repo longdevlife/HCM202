@@ -37,7 +37,7 @@ export default function PuzzleBoard({
                   {/* Top Bar on Tile */}
                   <div className="w-full flex items-center justify-between">
                     <span className="text-[10px] sm:text-xs font-black tracking-widest text-[#fef08a] uppercase">
-                      MẢNH #{item.pieceNumber}
+                      Ô SỐ {item.pieceNumber}
                     </span>
                     <span className="w-5 h-5 rounded-full bg-[#c9922a]/30 border border-[#c9922a] text-[10px] flex items-center justify-center font-bold text-[#fef08a]">
                       ?
@@ -47,13 +47,13 @@ export default function PuzzleBoard({
                   {/* Center Mystery Icon & Number */}
                   <div className="flex flex-col items-center justify-center my-auto">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-[#c9922a] to-[#784d14] flex items-center justify-center text-xl sm:text-2xl md:text-3xl shadow-lg border border-[#fde68a]/50">
-                      🧩
+                      💡
                     </div>
                     <span
                       className="mt-1 sm:mt-1.5 text-xs sm:text-sm md:text-base font-black text-[#fef08a]"
                       style={{ fontFamily: "'Playfair Display', serif" }}
                     >
-                      Mảnh {item.pieceNumber}
+                      Ô Số {item.pieceNumber}
                     </span>
                     <span className="text-[9px] sm:text-[11px] text-[#c5b79e] font-medium line-clamp-1 max-w-[120px] text-center mt-0.5">
                       {item.question.tag}
@@ -63,7 +63,7 @@ export default function PuzzleBoard({
                   {/* Bottom Prompt */}
                   <div className="w-full text-center">
                     <span className="inline-block px-2 py-0.5 rounded-full bg-black/40 text-[9px] sm:text-[10px] text-amber-200/90 font-bold tracking-wider uppercase border border-amber-500/30">
-                      Bấm để mở 🔍
+                      Bấm để mở câu hỏi 🔍
                     </span>
                   </div>
                 </div>
@@ -84,13 +84,13 @@ export default function PuzzleBoard({
                   {/* Top Badge: Unlocked */}
                   <div className="absolute top-2 left-2 flex items-center gap-1 bg-emerald-600/95 text-white px-2 py-0.5 rounded-full text-[9px] sm:text-[11px] font-black shadow-md border border-emerald-300/40">
                     <span>✓</span>
-                    <span>Mảnh {item.pieceNumber}</span>
+                    <span>Ô số {item.pieceNumber}</span>
                   </div>
 
                   {/* Bottom Host delivery reminder */}
                   <div className="absolute bottom-1.5 inset-x-1.5 text-center bg-black/70 backdrop-blur-xs rounded-md py-0.5 px-1 border border-white/10">
                     <span className="text-[8px] sm:text-[10px] font-bold text-emerald-300">
-                      ✓ Đã mở & trao mảnh ghép
+                      ✓ Đã mở thành công
                     </span>
                   </div>
                 </div>

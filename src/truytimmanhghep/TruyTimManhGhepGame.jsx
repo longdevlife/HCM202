@@ -64,7 +64,7 @@ export default function TruyTimManhGhepGame() {
           showToast("🎉 CHÚC MỪNG! ĐÃ MỞ ĐỦ 9 MẢNH GHÉP! BẤM NÚT ĐỂ HIỆN TỪ KHÓA BÍ ẨN!");
         } else {
           showToast(
-            `✨ Mảnh #${pieceIndex + 1} mở thành công! Hãy trao 1 mảnh ghép thực tế cho người chơi!`
+            `✨ Ô số ${pieceIndex + 1} mở thành công! Hãy trao 1 mảnh ghép thực tế cho người chơi!`
           );
         }
         return next;
@@ -174,7 +174,7 @@ export default function TruyTimManhGhepGame() {
           </button>
 
           <div className="text-[11px] md:text-xs text-[#a89b87] text-center italic">
-            💡 Gợi ý: Bấm trực tiếp vào từng ô mảnh ghép để trả lời câu hỏi và mở khóa bức tranh!
+            💡 Gợi ý: Bấm trực tiếp vào từng ô số để trả lời câu hỏi và mở khóa bức tranh!
           </div>
         </div>
       </div>
