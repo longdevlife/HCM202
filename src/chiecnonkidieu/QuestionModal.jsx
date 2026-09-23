@@ -27,16 +27,29 @@ export default function QuestionModal({
 
   useEffect(() => {
     if (question && isOpen) {
-      setTypedAnswer("");
       setSelectedOptId(null);
       setIsSubmitted(Boolean(isAlreadyAnswered));
       setIsCorrect(Boolean(isAlreadyAnswered));
 
-      if (question.questionType === "anagram" && question.scrambledTiles) {
-        setAvailableScrambled(
-          question.scrambledTiles.map((char, idx) => ({ id: `${char}-${idx}`, char }))
-        );
-        setPlacedTiles([]);
+      if (question.questionType === "anagram") {
+        if (isAlreadyAnswered) {
+          const target11 = ["T", "H", "Ờ", "I", "K", "Ì", "Q", "U", "Á", "Đ", "Ộ"];
+          setPlacedTiles(target11.map((char, idx) => ({ id: `ans-${char}-${idx}`, char })));
+          setAvailableScrambled([]);
+        } else if (question.scrambledTiles) {
+          setAvailableScrambled(
+            question.scrambledTiles.map((char, idx) => ({ id: `${char}-${idx}`, char }))
+          );
+          setPlacedTiles([]);
+        }
+      }
+
+      if (question.questionType === "image_riddle") {
+        if (isAlreadyAnswered) {
+          setTypedAnswer(question.secretWord || "");
+        } else {
+          setTypedAnswer("");
+        }
       }
     }
   }, [question, isOpen, isAlreadyAnswered]);
@@ -96,6 +109,9 @@ export default function QuestionModal({
     setIsSubmitted(true);
 
     if (isMatch) {
+      const target11 = ["T", "H", "Ờ", "I", "K", "Ì", "Q", "U", "Á", "Đ", "Ộ"];
+      setPlacedTiles(target11.map((char, idx) => ({ id: `correct-${char}-${idx}`, char })));
+      setAvailableScrambled([]);
       sounds.playCorrect();
       onAnswerSubmit && onAnswerSubmit(question.id, true);
     } else {
@@ -144,6 +160,7 @@ export default function QuestionModal({
     setIsSubmitted(true);
 
     if (isMatch) {
+      setTypedAnswer(question.secretWord || typedAnswer);
       sounds.playCorrect();
       onAnswerSubmit && onAnswerSubmit(question.id, true);
     } else {
@@ -158,6 +175,15 @@ export default function QuestionModal({
     setIsCorrect(true);
     setIsSubmitted(true);
     sounds.playCorrect();
+
+    if (question.questionType === "anagram") {
+      const target11 = ["T", "H", "Ờ", "I", "K", "Ì", "Q", "U", "Á", "Đ", "Ộ"];
+      setPlacedTiles(target11.map((char, idx) => ({ id: `reveal-${char}-${idx}`, char })));
+      setAvailableScrambled([]);
+    } else if (question.questionType === "image_riddle") {
+      setTypedAnswer(question.secretWord || "");
+    }
+
     onAnswerSubmit && onAnswerSubmit(question.id, true);
   };
 
@@ -388,9 +414,13 @@ export default function QuestionModal({
                         <div
                           key={slotIdx}
                           onClick={() => handleRemoveTile(slotIdx)}
-                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all cursor-pointer select-none ${
+                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all select-none ${
+                            isSubmitted ? "cursor-default" : "cursor-pointer"
+                          } ${
                             tile
-                              ? "bg-white border-[#c9922a] text-[#2c1a0e] shadow-sm scale-105"
+                              ? isSubmitted && isCorrect
+                                ? "bg-[#ecfdf5] border-emerald-500 text-emerald-800 shadow-sm scale-105"
+                                : "bg-white border-[#c9922a] text-[#2c1a0e] shadow-sm scale-105"
                               : "bg-black/5 border-gray-400 text-transparent"
                           }`}
                         >
@@ -408,9 +438,13 @@ export default function QuestionModal({
                         <div
                           key={slotIdx}
                           onClick={() => handleRemoveTile(slotIdx)}
-                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all cursor-pointer select-none ${
+                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all select-none ${
+                            isSubmitted ? "cursor-default" : "cursor-pointer"
+                          } ${
                             tile
-                              ? "bg-white border-[#c9922a] text-[#2c1a0e] shadow-sm scale-105"
+                              ? isSubmitted && isCorrect
+                                ? "bg-[#ecfdf5] border-emerald-500 text-emerald-800 shadow-sm scale-105"
+                                : "bg-white border-[#c9922a] text-[#2c1a0e] shadow-sm scale-105"
                               : "bg-black/5 border-gray-400 text-transparent"
                           }`}
                         >
@@ -428,9 +462,13 @@ export default function QuestionModal({
                         <div
                           key={slotIdx}
                           onClick={() => handleRemoveTile(slotIdx)}
-                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all cursor-pointer select-none ${
+                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all select-none ${
+                            isSubmitted ? "cursor-default" : "cursor-pointer"
+                          } ${
                             tile
-                              ? "bg-white border-[#c9922a] text-[#2c1a0e] shadow-sm scale-105"
+                              ? isSubmitted && isCorrect
+                                ? "bg-[#ecfdf5] border-emerald-500 text-emerald-800 shadow-sm scale-105"
+                                : "bg-white border-[#c9922a] text-[#2c1a0e] shadow-sm scale-105"
                               : "bg-black/5 border-gray-400 text-transparent"
                           }`}
                         >
@@ -448,9 +486,13 @@ export default function QuestionModal({
                         <div
                           key={slotIdx}
                           onClick={() => handleRemoveTile(slotIdx)}
-                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all cursor-pointer select-none ${
+                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all select-none ${
+                            isSubmitted ? "cursor-default" : "cursor-pointer"
+                          } ${
                             tile
-                              ? "bg-white border-[#c9922a] text-[#2c1a0e] shadow-sm scale-105"
+                              ? isSubmitted && isCorrect
+                                ? "bg-[#ecfdf5] border-emerald-500 text-emerald-800 shadow-sm scale-105"
+                                : "bg-white border-[#c9922a] text-[#2c1a0e] shadow-sm scale-105"
                               : "bg-black/5 border-gray-400 text-transparent"
                           }`}
                         >
@@ -504,60 +546,105 @@ export default function QuestionModal({
           )}
 
           {/* CÂU 1 & CÂU 5: Ô TRẢ LỜI ĐIỀN TỪ (IMAGE RIDDLE) */}
-          {question.questionType === "image_riddle" && (
-            <div className="space-y-3 p-4 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
-              {/* Dấu gạch chân biểu thị độ dài từ */}
-              {question.wordPattern && (
-                <div className="flex items-center justify-center gap-3 py-1">
-                  {question.wordPattern.map((pat, pIdx) => (
-                    <span
-                      key={pIdx}
-                      className="font-mono text-base md:text-lg font-bold text-[#c9922a] tracking-widest bg-amber-50/80 px-2.5 py-1 rounded-md border border-amber-200"
-                    >
-                      {pat}
-                    </span>
-                  ))}
-                </div>
-              )}
+          {question.questionType === "image_riddle" && (() => {
+            const riddleWords = (question.secretWord || "").trim().split(/\s+/);
+            const typedLetters = (typedAnswer || "").replace(/\s+/g, "").split("");
+            let letterCounter = 0;
 
-              {/* Form Input */}
-              {!isSubmitted ? (
-                <form onSubmit={handleCheckTyped} className="space-y-3">
-                  <div className="flex gap-2">
+            return (
+              <div className="space-y-3.5 p-4 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
+                {/* Hàng ô chữ điền đáp án */}
+                <div className="p-3.5 sm:p-4 bg-gradient-to-b from-[#faf8f5] to-[#f4eee6] rounded-2xl border border-[#c9922a]/30 shadow-inner">
+                  <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-5">
+                    {riddleWords.map((word, wIdx) => {
+                      const chars = word.split("");
+                      return (
+                        <div key={wIdx} className="flex gap-1 sm:gap-1.5">
+                          {chars.map((targetChar, cIdx) => {
+                            const slotIdx = letterCounter++;
+                            let displayedChar = "";
+                            let isFilled = false;
+
+                            if (isSubmitted) {
+                              displayedChar = targetChar.toUpperCase();
+                              isFilled = true;
+                            } else if (slotIdx < typedLetters.length) {
+                              displayedChar = typedLetters[slotIdx].toUpperCase();
+                              isFilled = true;
+                            }
+
+                            return (
+                              <div
+                                key={cIdx}
+                                className={`w-8 h-10 sm:w-9 sm:h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-sm sm:text-base md:text-lg transition-all select-none ${
+                                  isFilled
+                                    ? isSubmitted && isCorrect
+                                      ? "bg-[#ecfdf5] border-emerald-500 text-emerald-800 shadow-sm scale-105"
+                                      : "bg-white border-[#c9922a] text-[#2c1a0e] shadow-sm scale-105"
+                                    : "bg-black/5 border-gray-400 text-transparent"
+                                }`}
+                              >
+                                {displayedChar || "_"}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Form Input */}
+                {!isSubmitted ? (
+                  <form onSubmit={handleCheckTyped} className="space-y-3">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        autoFocus
+                        value={typedAnswer}
+                        onChange={(e) => setTypedAnswer(e.target.value)}
+                        placeholder="Nhập từ ghép..."
+                        className="flex-1 px-4 py-2.5 border-2 border-[#e5dfd5] focus:border-[#c9922a] rounded-xl text-sm md:text-base font-bold text-[#2c1a0e] outline-none shadow-inner"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!typedAnswer.trim()}
+                        className={`px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm uppercase tracking-wider shadow transition-all ${
+                          typedAnswer.trim()
+                            ? "bg-[#c9922a] hover:bg-[#b8860b] text-white active:scale-95 cursor-pointer"
+                            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        }`}
+                      >
+                        Kiểm Tra
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-end pt-1">
+                      <button
+                        type="button"
+                        onClick={handleRevealAnswer}
+                        className="text-xs font-bold text-[#c9922a] hover:underline cursor-pointer"
+                      >
+                        Xem đáp án →
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="flex gap-2 pt-1">
                     <input
                       type="text"
-                      autoFocus
-                      value={typedAnswer}
-                      onChange={(e) => setTypedAnswer(e.target.value)}
-                      placeholder="Nhập từ ghép..."
-                      className="flex-1 px-4 py-2.5 border-2 border-[#e5dfd5] focus:border-[#c9922a] rounded-xl text-sm md:text-base font-bold text-[#2c1a0e] outline-none shadow-inner"
+                      disabled
+                      value={typedAnswer || question.secretWord}
+                      className="flex-1 px-4 py-2.5 border-2 border-emerald-400 bg-emerald-50/60 rounded-xl text-sm md:text-base font-bold text-emerald-900 outline-none shadow-inner cursor-not-allowed"
                     />
-                    <button
-                      type="submit"
-                      disabled={!typedAnswer.trim()}
-                      className={`px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm uppercase tracking-wider shadow transition-all ${
-                        typedAnswer.trim()
-                          ? "bg-[#c9922a] hover:bg-[#b8860b] text-white active:scale-95 cursor-pointer"
-                          : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                      }`}
-                    >
-                      Kiểm Tra
-                    </button>
+                    <div className="px-4 py-2.5 rounded-xl font-bold text-xs md:text-sm uppercase tracking-wider bg-emerald-600 text-white flex items-center justify-center shadow select-none">
+                      ✓ Đáp Án
+                    </div>
                   </div>
-
-                  <div className="flex items-center justify-end pt-1">
-                    <button
-                      type="button"
-                      onClick={handleRevealAnswer}
-                      className="text-xs font-bold text-[#c9922a] hover:underline"
-                    >
-                      Xem đáp án →
-                    </button>
-                  </div>
-                </form>
-              ) : null}
-            </div>
-          )}
+                )}
+              </div>
+            );
+          })()}
 
           {/* Success / Result Box */}
           {isSubmitted && (

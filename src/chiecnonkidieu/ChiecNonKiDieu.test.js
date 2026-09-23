@@ -79,3 +79,24 @@ test("LESSON_SUMMARY contains comprehensive Chapter 5 takeaways and quote", () =
   assert.ok(LESSON_SUMMARY.quote.text.length > 0, "Summary has quote");
   assert.ok(LESSON_SUMMARY.quote.source.length > 0, "Summary has quote source");
 });
+
+test("Image riddle and anagram question slot breakdown matches exact answer lengths", () => {
+  const q1 = DEFAULT_QUESTIONS.find((q) => q.id === "q1");
+  const q4 = DEFAULT_QUESTIONS.find((q) => q.id === "q4");
+  const q5 = DEFAULT_QUESTIONS.find((q) => q.id === "q5");
+
+  assert.ok(q1 && q4 && q5, "Q1, Q4, Q5 all exist");
+
+  // Q1: "Cơ cấu" -> 2 words, 2 and 3 letters
+  const q1Words = q1.secretWord.split(" ");
+  assert.deepStrictEqual(q1Words.map((w) => w.length), [2, 3]);
+
+  // Q4: "Thời kì quá độ" -> 11 letters without spaces
+  const q4Letters = q4.secretWord.replace(/\s+/g, "").split("");
+  assert.strictEqual(q4Letters.length, 11);
+
+  // Q5: "Chủ nghĩa xã hội" -> 4 words, 3, 5, 2, 3 letters
+  const q5Words = q5.secretWord.split(" ");
+  assert.deepStrictEqual(q5Words.map((w) => w.length), [3, 5, 2, 3]);
+});
+
