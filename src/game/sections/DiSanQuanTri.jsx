@@ -91,7 +91,7 @@ export default function DiSanQuanTri() {
 
         {/* Footer info strip */}
         <div className="p-6 bg-white/60 rounded-2xl border border-[#3D3529]/10 flex flex-col sm:flex-row items-center justify-between text-xs text-[#7A6040] gap-3">
-          <span>CHUYÊN ĐỀ VNR-T17 • GROUP 1</span>
+          <span>CHUYÊN ĐỀ VNR-T17 • GROUP 3</span>
           <span className="font-semibold text-[#8B261D]">1979–1981: SẢN XUẤT BUNG RA</span>
         </div>
       </div>
