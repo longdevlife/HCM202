@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 
 const W = 200; // 600 / 3
-const H = 150; // 450 / 3
+const H = 125; // 375 / 3 (1.6 aspect ratio matching image)
 
 // Edge definitions for 3x3 jigsaw: [Top, Right, Bottom, Left]
 // +1 = tab (bulges outward), -1 = hole (bulges inward), 0 = flat outer border
@@ -85,7 +85,7 @@ export default function PuzzleBoard({
 
       {/* SVG INTERLOCKING JIGSAW PUZZLE BOARD */}
       <svg
-        viewBox="0 0 600 450"
+        viewBox="0 0 600 375"
         className="w-full h-auto select-none rounded-2xl overflow-visible filter drop-shadow-xl"
         style={{ touchAction: "manipulation" }}
       >
@@ -134,7 +134,7 @@ export default function PuzzleBoard({
           x="0"
           y="0"
           width="600"
-          height="450"
+          height="375"
           rx="16"
           fill="url(#boardFrameGrad)"
           stroke="#92400e"
@@ -183,11 +183,11 @@ export default function PuzzleBoard({
                   {/* Clipped Thematic Artwork */}
                   <g clipPath={`url(#piece-clip-${idx})`}>
                     <image
-                      href="/images/truytimmanhghep/thematic_puzzle_art.svg"
+                      href="/images/truytimmanhghep/puzzle_artwork.jpg"
                       x="0"
                       y="0"
                       width="600"
-                      height="450"
+                      height="375"
                       preserveAspectRatio="none"
                     />
                   </g>
