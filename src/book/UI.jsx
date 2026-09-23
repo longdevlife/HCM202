@@ -171,7 +171,7 @@ export const UI = ({ book = BOOKS[0], onBackToLibrary }) => {
           <div className="flex flex-col pb-1.5">
             <div className="w-16 h-[2px] bg-[#E5D5B5] opacity-30 mb-2" />
             <span className="text-[11px] tracking-[0.3em] text-[#E5D5B5] opacity-70 uppercase">
-              {page === 0 ? "Bìa" : page === totalPages - 1 ? "Bìa Sau" : `Trang ${page}`}
+              {pageLabels[page] || (page === 0 ? "Bìa" : page === totalPages - 1 ? "Bìa Sau" : `Trang ${page}`)}
             </span>
           </div>
         </div>

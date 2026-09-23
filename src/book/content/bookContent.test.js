@@ -9,15 +9,30 @@ test('BOOKS has exactly 3 volumes with correct Roman numerals', () => {
   assert.equal(BOOKS[2].roman, 'III');
 });
 
-test('Volume readiness strictly reflects honest asset availability: all volumes unready until assets verified', () => {
-  assert.equal(isBookReady(0), false, 'Book I must be unready until Chapter 5 textures are designed');
-  assert.equal(isBookReady(1), false, 'Book II is in honest skeleton state');
-  assert.equal(isBookReady(2), false, 'Book III is in honest skeleton state');
+import fs from 'node:fs';
+import path from 'node:path';
 
-  // When unready, pages array must be empty to prevent rendering stale legacy assets
-  assert.equal(BOOKS[0].pages.length, 0);
-  assert.equal(BOOKS[1].pages.length, 0);
-  assert.equal(BOOKS[2].pages.length, 0);
+test('Volume readiness strictly reflects verified asset availability: all 3 volumes ready with designed textures', () => {
+  assert.equal(isBookReady(0), true, 'Book I is ready with verified textures');
+  assert.equal(isBookReady(1), true, 'Book II is ready with verified textures');
+  assert.equal(isBookReady(2), true, 'Book III is ready with verified textures');
+
+  // Verify page counts
+  assert.equal(BOOKS[0].pages.length, 2, 'Book I has 2 sheets (4 surfaces)');
+  assert.equal(BOOKS[1].pages.length, 3, 'Book II has 3 sheets (6 surfaces)');
+  assert.equal(BOOKS[2].pages.length, 2, 'Book III has 2 sheets (4 surfaces)');
+
+  // Verify every page texture file actually exists on disk in public/
+  BOOKS.forEach((book) => {
+    book.pages.forEach((page, pageIdx) => {
+      assert.ok(page.front, `Book ${book.roman} page ${pageIdx} must have front`);
+      assert.ok(page.back, `Book ${book.roman} page ${pageIdx} must have back`);
+      const frontPath = path.join(process.cwd(), 'public', page.front);
+      const backPath = path.join(process.cwd(), 'public', page.back);
+      assert.ok(fs.existsSync(frontPath), `Texture not found: ${frontPath}`);
+      assert.ok(fs.existsSync(backPath), `Texture not found: ${backPath}`);
+    });
+  });
 });
 
 test('Volumes maintain isolated page configs so II and III never inherit I', () => {
