@@ -9,22 +9,31 @@ export const MYSTERY_EXPLANATION = {
   keyword: MYSTERY_KEYWORD,
   imageSrc: MYSTERY_IMAGE_SRC,
   summary:
-    "Bức tranh bí ẩn ghi lại sự kiện trọng đại: 'Hội nghị toàn quốc tổng kết Chương trình mục tiêu quốc gia xây dựng nông thôn mới và giảm nghèo bền vững giai đoạn 2021 - 2025'.",
+    "Bức tranh bí ẩn ghi lại sự kiện trọng đại: 'Hội nghị toàn quốc tổng kết Chương trình mục tiêu quốc gia xây dựng nông thôn mới và giảm nghèo bền vững giai đoạn 2021 - 2025'. Sự kiện này là minh chứng thực tiễn sinh động cho các quy luật biến đổi cơ cấu xã hội – giai cấp trong thời kỳ quá độ lên chủ nghĩa xã hội ở Việt Nam.",
   significance: [
     {
-      title: "Minh chứng thực tiễn sinh động cho Câu 9 & Xu hướng 3",
+      num: "01",
+      icon: "🌾",
+      badge: "Xu hướng quy luật",
+      title: "Từng bước giảm chênh lệch & bất bình đẳng xã hội",
       content:
-        "Nhà nước thực hiện các chương trình giảm nghèo và xây dựng nông thôn mới chính là phương thức hiện thực hóa quy luật: từng bước giảm chênh lệch, bất bình đẳng xã hội giữa các vùng miền và giai cấp.",
+        "Nhà nước thực hiện các chương trình giảm nghèo bền vững và xây dựng nông thôn mới chính là phương thức hiện thực hóa quy luật: từng bước giảm chênh lệch phát triển giữa các vùng miền, tạo điều kiện để các giai cấp, tầng lớp xích lại gần nhau.",
     },
     {
-      title: "Củng cố khối liên minh Công - Nông - Trí thức",
+      num: "02",
+      icon: "🤝",
+      badge: "Liên minh giai cấp",
+      title: "Củng cố vững chắc liên minh Công – Nông – Trí thức",
       content:
-        "Xây dựng nông thôn mới nâng cao đời sống vật chất và tinh thần của giai cấp nông dân, gắn kết nông dân với giai cấp công nhân và đội ngũ trí thức trong thời kỳ quá độ lên CNXH.",
+        "Xây dựng nông thôn mới nâng cao toàn diện đời sống vật chất và tinh thần của giai cấp nông dân; gắn kết nông dân với giai cấp công nhân và đội ngũ trí thức dưới sự lãnh đạo của Đảng trong thời kỳ quá độ lên chủ nghĩa xã hội.",
     },
     {
-      title: "Chuyển dịch cơ cấu lao động và nâng cao chất lượng cuộc sống",
+      num: "03",
+      icon: "📈",
+      badge: "Chuyển dịch cơ cấu",
+      title: "Thúc đẩy chuyển dịch cơ cấu lao động & kinh tế",
       content:
-        "Chương trình giảm nghèo bền vững tạo cơ hội bình đẳng tiếp cận giáo dục, y tế, việc làm, từ đó thúc đẩy chuyển dịch lao động nông nghiệp sang công nghiệp - dịch vụ theo hướng hiện đại.",
+        "Giảm nghèo bền vững tạo cơ hội bình đẳng tiếp cận giáo dục, y tế và đào tạo nghề, từ đó thúc đẩy chuyển dịch lao động nông nghiệp sang công nghiệp – dịch vụ theo hướng hiện đại hóa, nâng cao chất lượng nguồn nhân lực quốc gia.",
     },
   ],
 };

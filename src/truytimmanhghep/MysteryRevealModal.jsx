@@ -72,26 +72,70 @@ export default function MysteryRevealModal({
           </div>
 
           {/* Academic Significance & Connection with Chapter 5 */}
-          <div className="space-y-3 p-5 rounded-2xl bg-white border border-[#e5dfd5] shadow-sm">
-            <div className="flex items-center gap-2 text-[#92400e] font-black text-sm uppercase tracking-wider">
-              <span>📖</span>
-              <span>Ý NGHĨA LÝ LUẬN & THỰC TIỄN (CHƯƠNG 5 MLN131)</span>
-            </div>
-            <p className="text-xs md:text-sm text-[#4b382a] leading-relaxed">
-              {MYSTERY_EXPLANATION.summary}
-            </p>
+          <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-b from-[#fffcf7] to-[#f9f5ed] border-2 border-[#e5dfd5] shadow-lg space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#e5dfd5]">
+              <div className="flex items-center gap-3">
+                <span className="w-10 h-10 rounded-2xl bg-amber-100 border border-amber-300 text-amber-800 flex items-center justify-center text-xl shadow-xs">
+                  📖
+                </span>
+                <div>
+                  <h3
+                    className="text-lg md:text-xl font-black text-[#2c1a0e] tracking-tight uppercase"
+                    style={{ fontFamily: "'Playfair Display', serif" }}
+                  >
+                    Ý Nghĩa Lý Luận &amp; Thực Tiễn
+                  </h3>
+                  <div className="text-xs font-bold text-[#b45309] uppercase tracking-wider">
+                    Chương 5 MLN131 · Cơ Cấu Xã Hội &amp; Liên Minh Giai Cấp
+                  </div>
+                </div>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-bold self-start sm:self-auto shadow-xs">
+                <span>✓</span>
+                <span>Minh chứng thực tiễn Việt Nam</span>
+              </div>
+            </div>
+
+            {/* Context Summary Lead */}
+            <div className="p-4 md:p-5 rounded-2xl bg-[#fffdfa] border-l-4 border-[#c9922a] border-t border-r border-b border-[#e5dfd5] shadow-xs">
+              <p className="text-sm md:text-base text-[#4a3e35] leading-relaxed font-medium text-justify">
+                {MYSTERY_EXPLANATION.summary}
+              </p>
+            </div>
+
+            {/* 3 Structured Significance Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {MYSTERY_EXPLANATION.significance.map((item, idx) => (
                 <div
                   key={idx}
-                  className="p-3.5 rounded-xl bg-[#faf8f5] border border-[#d6cfc5] shadow-xs flex flex-col justify-between"
+                  className="p-5 rounded-2xl bg-white border border-[#e5dfd5] hover:border-[#c9922a] hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-3.5 group"
                 >
-                  <div className="font-bold text-xs md:text-sm text-[#78350f] mb-1.5">
-                    {item.title}
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 group-hover:bg-[#c9922a]/15 text-lg flex items-center justify-center transition-colors shadow-xs">
+                        {item.icon}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300">
+                        {item.badge}
+                      </span>
+                    </div>
+
+                    <h4
+                      className="text-base font-bold text-[#2c1a0e] leading-snug group-hover:text-[#92400e] transition-colors"
+                      style={{ fontFamily: "'Playfair Display', serif" }}
+                    >
+                      {item.title}
+                    </h4>
+
+                    <p className="text-xs md:text-sm text-[#57483b] leading-relaxed text-justify">
+                      {item.content}
+                    </p>
                   </div>
-                  <div className="text-xs text-[#57483b] leading-relaxed">
-                    {item.content}
+
+                  <div className="pt-2.5 border-t border-gray-100 flex items-center justify-between text-[11px] font-bold text-[#a16207]">
+                    <span>Trọng tâm bài học</span>
+                    <span className="font-mono text-sm opacity-60">#{item.num}</span>
                   </div>
                 </div>
               ))}
