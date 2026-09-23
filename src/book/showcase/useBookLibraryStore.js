@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import create from "zustand";
 
 const clampBookIndex = (index) => Math.max(0, Math.min(2, Number(index) || 0));
 

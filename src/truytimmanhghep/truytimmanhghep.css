@@ -1,0 +1,75 @@
+/* STYLING FOR TRUY TÌM MẢNH GHÉP */
+
+/* 3D Flip Card Effect */
+.puzzle-card-perspective {
+  perspective: 1000px;
+}
+
+.puzzle-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.puzzle-card-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.puzzle-card-front,
+.puzzle-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+/* Front: The Golden Mystery Lock Tile */
+.puzzle-card-front {
+  background: radial-gradient(circle at 50% 30%, #3e2815 0%, #201309 85%, #130a04 100%);
+  border: 2px solid rgba(201, 146, 42, 0.6);
+  box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.2), 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+/* Back: The Revealed Slice of the Mystery Picture */
+.puzzle-card-back {
+  transform: rotateY(180deg);
+  border: 2px solid #10b981;
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.4), 0 8px 24px rgba(0, 0, 0, 0.7);
+}
+
+/* Shimmer animation on hover */
+@keyframes puzzle-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.puzzle-tile-glow:hover {
+  border-color: #f59e0b;
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.5), inset 0 0 15px rgba(245, 158, 11, 0.3);
+}
+
+/* Pulse animation for ready button */
+@keyframes puzzle-grand-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.6), 0 0 40px rgba(217, 119, 6, 0.3);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 35px rgba(245, 158, 11, 0.9), 0 0 60px rgba(217, 119, 6, 0.5);
+  }
+}
+
+.animate-grand-pulse {
+  animation: puzzle-grand-pulse 2.2s infinite ease-in-out;
+}

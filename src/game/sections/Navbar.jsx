@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 const NAV_LINKS = [
   { href: '#book', label: 'Sách 3D', id: 'book' },
   { href: '#chiecnon', label: 'Chiếc Nón Kỳ Diệu', id: 'chiecnon' },
+  { href: '#truytimmanhghep', label: 'Truy Tìm Mảnh Ghép', id: 'truytimmanhghep' },
 ];
 
 export default function Navbar({ activeTab, onTabChange }) {
@@ -23,7 +24,7 @@ export default function Navbar({ activeTab, onTabChange }) {
     }
   };
 
-  const isDarkBg = activeTab === 'book' || activeTab === 'chiecnon';
+  const isDarkBg = activeTab === 'book' || activeTab === 'chiecnon' || activeTab === 'truytimmanhghep';
 
   return (
     <div className="navbar-theory-wrapper w-full flex justify-center z-[100] fixed top-6 pointer-events-none px-4">

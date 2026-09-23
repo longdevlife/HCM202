@@ -5,10 +5,12 @@ const TheoryPage = lazy(() => import("./game/TheoryPage").then((module) => ({ de
 const BookPage = lazy(() => import("./book/BookPage").then((module) => ({ default: module.BookPage || module.default })));
 const MinigamePage = lazy(() => import("./minigame/MinigamePage").then((module) => ({ default: module.MinigamePage || module.default })));
 const ChiecNonKiDieuGame = lazy(() => import("./chiecnonkidieu/ChiecNonKiDieuGame").then((module) => ({ default: module.ChiecNonKiDieuGame || module.default })));
+const TruyTimManhGhepGame = lazy(() => import("./truytimmanhghep/TruyTimManhGhepGame").then((module) => ({ default: module.TruyTimManhGhepGame || module.default })));
 
 const TABS = [
   { id: "book", label: "Sách 3D" },
   { id: "chiecnon", label: "Chiếc Nón Kỳ Diệu" },
+  { id: "truytimmanhghep", label: "Truy Tìm Mảnh Ghép" },
 ];
 
 function getActiveTab() {
@@ -67,6 +69,7 @@ function App() {
           {activeTab === "book" && <BookPage skipIntro={hasVisitedBook} onIntroFinish={() => setHasVisitedBook(true)} />}
           {activeTab === "minigame" && <MinigamePage />}
           {activeTab === "chiecnon" && <ChiecNonKiDieuGame />}
+          {activeTab === "truytimmanhghep" && <TruyTimManhGhepGame />}
         </Suspense>
       </div>
     </div>
