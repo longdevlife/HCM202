@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="100%" height="100%">
+  <defs>
+    <!-- Sky Sunrise Gradient -->
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b45309" />
+      <stop offset="35%" stop-color="#d97706" />
+      <stop offset="65%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#fef3c7" />
+    </linearGradient>
+
+    <!-- Sun Radial Glow -->
+    <radialGradient id="sunGlow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="25%" stop-color="#fef08a" stop-opacity="0.9" />
+      <stop offset="55%" stop-color="#f59e0b" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#d97706" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Mountains Gradient -->
+    <linearGradient id="mountainGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#78350f" />
+      <stop offset="100%" stop-color="#451a03" />
+    </linearGradient>
+
+    <!-- Rice Fields Gradient -->
+    <linearGradient id="riceGrad1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eab308" />
+      <stop offset="50%" stop-color="#ca8a04" />
+      <stop offset="100%" stop-color="#a16207" />
+    </linearGradient>
+    <linearGradient id="riceGrad2" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#16a34a" />
+      <stop offset="60%" stop-color="#15803d" />
+      <stop offset="100%" stop-color="#854d0e" />
+    </linearGradient>
+
+    <!-- Emblem Gold Gradient -->
+    <linearGradient id="goldEmblem" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="30%" stop-color="#f59e0b" />
+      <stop offset="70%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#92400e" />
+    </linearGradient>
+
+    <!-- Red Banner / Medal Gradient -->
+    <radialGradient id="redMedal" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="70%" stop-color="#dc2626" />
+      <stop offset="100%" stop-color="#991b1b" />
+    </radialGradient>
+  </defs>
+
+  <!-- BACKGROUND: SUNNY DAWN SKY -->
+  <rect width="600" height="450" fill="url(#skyGrad)" />
+
+  <!-- Sun & Majestic Rays -->
+  <circle cx="300" cy="180" r="140" fill="url(#sunGlow)" />
+  <g opacity="0.35" stroke="#fef08a" stroke-width="2">
+    <line x1="300" y1="180" x2="50" y2="0" />
+    <line x1="300" y1="180" x2="150" y2="0" />
+    <line x1="300" y1="180" x2="300" y2="0" />
+    <line x1="300" y1="180" x2="450" y2="0" />
+    <line x1="300" y1="180" x2="550" y2="0" />
+    <line x1="300" y1="180" x2="600" y2="80" />
+    <line x1="300" y1="180" x2="600" y2="160" />
+    <line x1="300" y1="180" x2="0" y2="80" />
+    <line x1="300" y1="180" x2="0" y2="160" />
+  </g>
+
+  <!-- DISTANT SILHOUETTES: MOUNTAINS & MODERN INDUSTRIAL HORIZON -->
+  <!-- Left: Rolling mountains of Vietnam -->
+  <path d="M 0 210 Q 70 170 140 200 T 280 205 L 280 260 L 0 260 Z" fill="#92400e" opacity="0.6" />
+  <path d="M 0 225 Q 90 195 180 220 T 320 225 L 320 270 L 0 270 Z" fill="#78350f" opacity="0.75" />
+
+  <!-- Right: Modern Industrial Skyline, High-Tech Towers & Windmills (Công nghiệp - Hiện đại hóa) -->
+  <g fill="#0f172a" opacity="0.45">
+    <rect x="420" y="165" width="22" height="65" rx="2" />
+    <rect x="446" y="150" width="26" height="80" rx="2" />
+    <rect x="476" y="175" width="18" height="55" rx="2" />
+    <rect x="498" y="140" width="30" height="90" rx="3" />
+    <rect x="532" y="160" width="24" height="70" rx="2" />
+    <rect x="560" y="170" width="28" height="60" rx="2" />
+    <!-- Antennas & Communication Towers -->
+    <line x1="459" y1="150" x2="459" y2="135" stroke="#0f172a" stroke-width="2" />
+    <line x1="513" y1="140" x2="513" y2="120" stroke="#0f172a" stroke-width="2.5" />
+    <!-- Windmills (Clean Technology) -->
+    <line x1="375" y1="185" x2="375" y2="225" stroke="#f8fafc" stroke-width="2" opacity="0.8" />
+    <circle cx="375" cy="185" r="3" fill="#f8fafc" />
+    <line x1="395" y1="195" x2="395" y2="230" stroke="#f8fafc" stroke-width="1.5" opacity="0.8" />
+  </g>
+
+  <!-- MIDGROUND: MODERN RURAL VILLAGE & GREEN BRIDGES -->
+  <!-- Curving River / Canal of prosperity -->
+  <path d="M 230 250 Q 250 280 220 330 T 160 450 L 260 450 Q 320 350 290 290 T 260 250 Z" fill="#38bdf8" opacity="0.85" />
+  <path d="M 235 255 Q 253 283 225 330 T 170 450" stroke="#bae6fd" stroke-width="3" fill="none" opacity="0.6" />
+
+  <!-- Golden Rice Terraces & Fields (Nông thôn mới) -->
+  <path d="M 0 250 Q 90 240 180 260 L 230 250 L 200 350 L 0 350 Z" fill="url(#riceGrad1)" />
+  <path d="M 280 250 Q 380 245 600 270 L 600 350 L 270 350 Z" fill="url(#riceGrad2)" />
+  <path d="M 0 340 Q 120 330 210 370 L 170 450 L 0 450 Z" fill="url(#riceGrad2)" />
+  <path d="M 250 350 Q 360 330 600 345 L 600 450 L 240 450 Z" fill="url(#riceGrad1)" />
+
+  <!-- Modern rural homes with terracotta tile roofs -->
+  <g transform="translate(100, 260)">
+    <polygon points="0,15 15,2 30,15" fill="#dc2626" />
+    <rect x="3" y="15" width="24" height="15" fill="#fef3c7" stroke="#b45309" stroke-width="1" />
+    <polygon points="32,18 45,6 58,18" fill="#b91c1c" />
+    <rect x="35" y="18" width="20" height="12" fill="#fffbeb" />
+  </g>
+
+  <!-- FOREGROUND / CENTER: GRAND EMBLEM OF VIETNAM & SOCIALIST ALLIANCE -->
+  <g transform="translate(300, 215)">
+    <!-- Outer Golden Radiance Ring -->
+    <circle cx="0" cy="0" r="95" fill="none" stroke="url(#goldEmblem)" stroke-width="4" stroke-dasharray="6,4" />
+    <circle cx="0" cy="0" r="88" fill="#1e1b18" fill-opacity="0.75" stroke="#f59e0b" stroke-width="2" />
+
+    <!-- Industrial Gear (Giai cấp Công nhân) -->
+    <g fill="url(#goldEmblem)">
+      <path d="M -12 -72 L 12 -72 L 10 -60 L -10 -60 Z" />
+      <path d="M -12 72 L 12 72 L 10 60 L -10 60 Z" />
+      <path d="M -72 -12 L -72 12 L -60 10 L -60 -10 Z" />
+      <path d="M 72 -12 L 72 12 L 60 10 L 60 -10 Z" />
+      <path d="M -52 -52 L -35 -35 L -42 -28 L -59 -45 Z" />
+      <path d="M 52 52 L 35 35 L 42 28 L 59 45 Z" />
+      <path d="M 52 -52 L 35 -35 L 28 -42 L 45 -59 Z" />
+      <path d="M -52 52 L -35 35 L -28 42 L -45 59 Z" />
+    </g>
+
+    <!-- Two Golden Rice Ears Encircling (Giai cấp Nông dân) -->
+    <path d="M -60 20 C -70 -20 -40 -60 0 -68 C 40 -60 70 -20 60 20 C 50 55 15 68 0 68 C -15 68 -50 55 -60 20 Z" 
+          fill="none" stroke="url(#goldEmblem)" stroke-width="5" stroke-linecap="round" />
+    
+    <!-- Central Red Medallion (Tổ quốc) -->
+    <circle cx="0" cy="0" r="52" fill="url(#redMedal)" stroke="#fde047" stroke-width="3" />
+
+    <!-- Shining Golden Star (Ngôi sao vàng Việt Nam) -->
+    <polygon points="0,-40 12,-12 40,-10 18,10 24,38 0,22 -24,38 -18,10 -40,-10 -12,-12"
+             fill="#fef08a" stroke="#ca8a04" stroke-width="1.5" />
+
+    <!-- Stylized Joined Hands & Open Book (Khối đại đoàn kết & Trí thức - Giảm nghèo bền vững) -->
+    <g transform="translate(0, 36)">
+      <!-- Hands supporting base -->
+      <path d="M -30 0 Q -15 15 0 8 Q 15 15 30 0 Q 15 22 0 16 Q -15 22 -30 0 Z" fill="#fef08a" />
+    </g>
+  </g>
+
+  <!-- BOTTOM RIBBON: THEMATIC TITLE -->
+  <g transform="translate(300, 410)">
+    <rect x="-240" y="-18" width="480" height="36" rx="18" fill="#181512" fill-opacity="0.9" stroke="url(#goldEmblem)" stroke-width="2" />
+    <text x="0" y="5" font-family="'Playfair Display', 'Inter', serif" font-size="14" font-weight="900" fill="#fef08a" text-anchor="middle" letter-spacing="2">
+      ✦ NÔNG THÔN MỚI &amp; PHÁT TRIỂN BỀN VỮNG ✦
+    </text>
+  </g>
+</svg>

@@ -121,9 +121,9 @@ export default function TruyTimManhGhepGame() {
           {/* Status Bar */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5 pt-2">
             <div className="bg-[#3a382b]/90 px-4 py-1.5 rounded-full border border-[#c3a47b]/30 text-xs font-bold text-[#eee2ca] shadow-sm flex items-center gap-1.5">
-              <span>🎯 Tiến độ:</span>
+              <span>🧩 Tiến độ:</span>
               <span className="font-black text-emerald-400">
-                {unlockedCount}/9 ô đã mở
+                {unlockedCount}/9 mảnh đã ghép
               </span>
             </div>
             <button
@@ -168,13 +168,13 @@ export default function TruyTimManhGhepGame() {
             <span className="text-xl md:text-2xl">🔍</span>
             <span>
               {allUnlocked
-                ? "🎉 BẤM VÀO ĐÂY ĐỂ HIỆN TỪ KHÓA BỨC TRANH BÍ ẨN 🏆"
-                : `XEM TỪ KHÓA BỨC TRANH BÍ ẨN (${unlockedCount}/9 Ô ĐÃ MỞ)`}
+                ? "🎉 BẤM VÀO ĐÂY ĐỂ HIỆN BỨC TRANH THỰC TẾ & TỪ KHÓA BÍ ẨN 🏆"
+                : `XEM TỪ KHÓA BỨC TRANH BÍ ẨN (${unlockedCount}/9 MẢNH ĐÃ GHÉP)`}
             </span>
           </button>
 
           <div className="text-[11px] md:text-xs text-[#a89b87] text-center italic">
-            💡 Gợi ý: Bấm trực tiếp vào từng ô số để trả lời câu hỏi và mở khóa bức tranh!
+            💡 Gợi ý: Bấm trực tiếp vào từng mảnh ghép để trả lời câu hỏi và ghép thành bức tranh hoàn chỉnh!
           </div>
         </div>
       </div>
