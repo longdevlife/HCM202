@@ -67,7 +67,10 @@ export const BOOKS = [
       { id: "1.6", title: "Ví dụ: Doanh nhân và kinh tế tư nhân" },
       { id: "1.7", title: "Ví dụ: Vai trò của đội ngũ trí thức" },
     ],
-    pages: [],
+    pages: [
+      { front: "/magazines/bia_1.png", back: "/magazines/1.png" },
+      { front: "/magazines/1.1.png", back: "/magazines/end_1.png" },
+    ],
     sources: SOURCES,
     bibliography: [
       {
@@ -116,7 +119,11 @@ export const BOOKS = [
       { id: "2.2", title: "Biến đổi phức tạp, đa dạng, xuất hiện tầng lớp xã hội mới" },
       { id: "2.3", title: "Quan hệ vừa đấu tranh, vừa liên minh; từng bước giảm bất bình đẳng" },
     ],
-    pages: [],
+    pages: [
+      { front: "/magazines/bia_2.png", back: "/magazines/2.1.png" },
+      { front: "/magazines/2.2.png", back: "/magazines/2.3.png" },
+      { front: "/magazines/end_2.png", back: "/magazines/end_2.png" },
+    ],
     sources: [SOURCES[0], SOURCES[3]],
     bibliography: [
       {
@@ -161,7 +168,10 @@ export const BOOKS = [
       { id: "3.4", title: "Đội ngũ doanh nhân" },
       { id: "3.5", title: "Tổng kết" },
     ],
-    pages: [],
+    pages: [
+      { front: "/magazines/bia_3.png", back: "/magazines/3.png" },
+      { front: "/magazines/end.png", back: "/magazines/end_3.png" },
+    ],
     sources: SOURCES,
     bibliography: [
       {
