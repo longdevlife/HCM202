@@ -90,8 +90,8 @@ export default function PuzzleQuestionModal({
             <div>
               <div className="text-[11px] sm:text-xs tracking-widest uppercase text-[#fef08a] font-bold">
                 {isSubmitted
-                  ? `KẾT QUẢ CÂU HỎI SỐ ${question.qNum}`
-                  : `CÂU HỎI SỐ ${question.qNum} · ${question.level}`}
+                  ? `MẢNH GHÉP SỐ ${question.qNum} · KẾT QUẢ`
+                  : `MẢNH GHÉP SỐ ${question.qNum} · CÂU HỎI SỐ ${question.qNum}`}
               </div>
               <div
                 className="text-base sm:text-lg md:text-xl font-bold text-white leading-tight"
@@ -132,9 +132,7 @@ export default function PuzzleQuestionModal({
                   >
                     {question.level}
                   </span>
-                  <span className="text-xs text-gray-500 font-semibold">
-                    Mảnh ghép tương ứng: Số {question.qNum}
-                  </span>
+                 
                 </div>
 
                 <h3
@@ -297,7 +295,7 @@ export default function PuzzleQuestionModal({
               onClick={handleProceedAndClose}
               className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-r from-[#d97706] to-[#b45309] hover:from-[#f59e0b] hover:to-[#d97706] text-white shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-2"
             >
-              <span>Đóng &amp; Trao Mảnh Ghép</span>
+              <span>Đóng &amp; Trao Mảnh Ghép Số {question.qNum}</span>
               <span>➜</span>
             </button>
           )}

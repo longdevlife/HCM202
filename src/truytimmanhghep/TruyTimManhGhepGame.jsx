@@ -1,23 +1,27 @@
 import React, { useState, useCallback, useMemo } from "react";
 import PuzzleQuestionModal from "./PuzzleQuestionModal";
+import PuzzleQuestionCard from "./PuzzleQuestionCard";
+import PuzzleAssemblyStage from "./PuzzleAssemblyStage";
 import MysteryRevealModal from "./MysteryRevealModal";
-import { ALL_PUZZLE_QUESTIONS, MYSTERY_TITLE } from "./puzzleData";
+import { ALL_PUZZLE_QUESTIONS } from "./puzzleData";
 import { sounds } from "../chiecnonkidieu/SoundEffects";
 import "./truytimmanhghep.css";
 import "../chiecnonkidieu/chiecnonkidieu.css";
 
 export default function TruyTimManhGhepGame() {
   // Record of completed question numbers: { [qNum]: { isCorrect: boolean } }
-  // When a question is completed and closed, it CANNOT be opened again:
-  // "r khi tôi tắt modal thì ko hiện lên đc nữa vì tôi sẽ phát mảnh ở ngoài"
+  // When a question is completed and closed, it CANNOT be opened again
   const [completedQuestions, setCompletedQuestions] = useState({});
 
   // Active question modal state
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
 
-  // Mystery full artwork modal state (for host to project at the end to check physical puzzle)
+  // Mystery full artwork modal state (for host quick comparison if needed)
   const [isRevealModalOpen, setIsRevealModalOpen] = useState(false);
+
+  // Chế độ xem: "questions" (Danh sách 9 câu hỏi) hoặc "assembly" (Màn hình ghép tranh Hình 1 & 2)
+  const [activeView, setActiveView] = useState("questions");
 
   // Audio and toast notification states
   const [toastMessage, setToastMessage] = useState(null);
@@ -60,7 +64,7 @@ export default function TruyTimManhGhepGame() {
   const handleSelectQuestion = (q) => {
     if (!q) return;
     if (completedQuestions[q.qNum]) {
-      showToast(`Câu số ${q.qNum} đã hoàn thành và mảnh ghép đã được phát ở ngoài!`);
+      showToast(`Câu số ${q.qNum} đã hoàn thành và mảnh ghép số ${q.qNum} đã được phát ở ngoài!`);
       return;
     }
     setActiveQuestion(q);
@@ -68,7 +72,6 @@ export default function TruyTimManhGhepGame() {
   };
 
   // When modal is closed after viewing the piece:
-  // "r khi tôi tắt modal thì ko hiện lên đc nữa vì tôi sẽ phát mảnh ở ngoài"
   const handleFinishQuestion = (qNum, isCorrect) => {
     setIsQuestionModalOpen(false);
     setActiveQuestion(null);
@@ -84,10 +87,11 @@ export default function TruyTimManhGhepGame() {
         setTimeout(() => {
           sounds.playFanfare();
           showToast(
-            "🎉 CHÚC MỪNG! ĐÃ HOÀN THÀNH 9 CÂU HỎI & PHÁT ĐỦ 9 MẢNH GHÉP Ở NGOÀI!",
+            "🎉 CHÚC MỪNG! ĐÃ HOÀN THÀNH 9 CÂU HỎI & PHÁT ĐỦ 9 MẢNH GHÉP! CHUYỂN SANG MÀN HÌNH GHÉP TRANH...",
             5000
           );
-        }, 400);
+          setActiveView("assembly");
+        }, 500);
       } else {
         showToast(
           `🎁 Đã phát Mảnh ghép số #${qNum}! Còn lại ${9 - newCount} câu hỏi.`
@@ -104,6 +108,7 @@ export default function TruyTimManhGhepGame() {
     setIsQuestionModalOpen(false);
     setIsRevealModalOpen(false);
     setActiveQuestion(null);
+    setActiveView("questions");
     showToast("🔄 Đã làm mới trò chơi! Toàn bộ 9 câu hỏi đã sẵn sàng.");
   };
 
@@ -132,12 +137,12 @@ export default function TruyTimManhGhepGame() {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto w-full flex flex-col items-center relative z-10 space-y-6">
+      <div className="max-w-7xl mx-auto w-full flex flex-col items-center relative z-10 space-y-6">
         {/* Game Title & Header */}
         <div className="text-center space-y-2 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#3a382b]/80 border border-[#c3a47b]/50 text-[#dbc39c] text-[11px] sm:text-xs font-bold uppercase tracking-widest shadow-sm">
             <span>🧩</span>
-            <span>TRUY TÌM MẢNH GHÉP</span>
+            <span>TRUY TÌM MẢNH GHÉP </span>
           </div>
 
           <h1
@@ -146,8 +151,6 @@ export default function TruyTimManhGhepGame() {
           >
             Truy Tìm Mảnh Ghép
           </h1>
-
-        
 
           {/* Status Bar */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 pt-2">
@@ -182,113 +185,114 @@ export default function TruyTimManhGhepGame() {
               <span>Chơi lại từ đầu</span>
             </button>
           </div>
+
+          {/* TAB SWITCHER: 9 Câu Hỏi vs Màn Hình Ghép Tranh (Hình 1 & 2) */}
+          <div className="flex items-center justify-center gap-2 pt-3">
+            <button
+              type="button"
+              onClick={() => setActiveView("questions")}
+              className={`px-5 py-2 rounded-full font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-2 shadow-md ${
+                activeView === "questions"
+                  ? "bg-gradient-to-r from-[#d97706] to-[#b45309] text-white ring-2 ring-[#fde68a]"
+                  : "bg-[#2c1a0e]/80 hover:bg-[#3d2414] text-[#dbc39c] border border-[#c9922a]/40"
+              }`}
+            >
+              <span>🧩</span>
+              <span>Danh Sách 9 Mảnh Ghép ({completedCount}/9)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveView("assembly")}
+              className={`px-5 py-2 rounded-full font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-2 shadow-md ${
+                activeView === "assembly"
+                  ? "bg-gradient-to-r from-[#d97706] to-[#b45309] text-white ring-2 ring-[#fde68a]"
+                  : "bg-[#2c1a0e]/80 hover:bg-[#3d2414] text-[#dbc39c] border border-[#c9922a]/40"
+              }`}
+            >
+              <span>🖼️</span>
+              <span>Màn Hình Ghép Tranh &amp; Đáp Án (Hình 1 &amp; 2)</span>
+            </button>
+          </div>
         </div>
 
-        {/* ================= BẢNG CÂU HỎI TRUNG TÂM ================= */}
-        {/* Người dùng yêu cầu: Bỏ phần bức tranh bí ẩn đi, chỉ để các câu hỏi; trả lời xong thì câu hỏi mất luôn */}
-        <div className="w-full max-w-5xl bg-gradient-to-b from-[#2e1d12] via-[#22130a] to-[#160b05] p-5 sm:p-7 md:p-8 rounded-3xl border-4 border-[#c9922a]/80 shadow-[0_20px_50px_rgba(0,0,0,0.85)] space-y-6">
-          <div className="flex items-center justify-between pb-3 border-b border-[#c9922a]/30">
-            <div className="flex items-center gap-2.5">
-              <span className="text-xl sm:text-2xl">📋</span>
-              <div>
-                <h2
-                  className="text-base sm:text-lg md:text-xl font-bold uppercase tracking-wider text-[#fef08a]"
+        {/* ================= GIAI ĐOẠN 1: BẢNG 9 CÂU HỎI TRANH TÀI ================= */}
+        {activeView === "questions" ? (
+          <div className="w-full max-w-5xl bg-gradient-to-b from-[#2e1d12] via-[#22130a] to-[#160b05] p-5 sm:p-7 md:p-8 rounded-3xl border-4 border-[#c9922a]/80 shadow-[0_20px_50px_rgba(0,0,0,0.85)] space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-[#c9922a]/30">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl sm:text-2xl"></span>
+                <div>
+                  <h2
+                    className="text-base sm:text-lg md:text-xl font-bold uppercase tracking-wider text-[#fef08a]"
+                    style={{ fontFamily: "'Playfair Display', serif" }}
+                  >
+                    THU THẬP 9 MẢNH GHÉP
+                  </h2>
+                
+                </div>
+              </div>
+
+              <div className="px-3.5 py-1 rounded-full bg-[#3a2214] border border-[#c9922a]/50 text-xs font-bold text-[#fef08a]">
+                {completedCount}/9 Hoàn thành
+              </div>
+            </div>
+
+            {/* Lưới các câu hỏi hình mảnh ghép Puzzle 3D sắc nét */}
+            {remainingQuestions.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                {remainingQuestions.map((q, idx) => (
+                  <PuzzleQuestionCard
+                    key={q.id}
+                    question={q}
+                    index={idx}
+                    onSelect={handleSelectQuestion}
+                  />
+                ))}
+              </div>
+            ) : (
+              /* Khi toàn bộ 9 câu hỏi đã hoàn thành */
+              <div className="p-8 sm:p-10 rounded-2xl bg-gradient-to-b from-[#1c3826] to-[#0f2418] border-2 border-emerald-500/60 text-center space-y-4 shadow-xl">
+                <span className="text-5xl sm:text-6xl animate-bounce inline-block">
+                  🏆
+                </span>
+                <h3
+                  className="text-xl sm:text-3xl font-black text-emerald-300 uppercase tracking-wide"
                   style={{ fontFamily: "'Playfair Display', serif" }}
                 >
-                  Danh Sách Câu Hỏi Tranh Tài
-                </h2>
-            
+                  ĐÃ HOÀN THÀNH TOÀN BỘ 9 CÂU HỎI!
+                </h3>
+                <p className="text-sm text-emerald-200/90 max-w-xl mx-auto">
+                  Toàn bộ 9 mảnh ghép đã được phát ra ngoài. Hãy bấm nút bên dưới để chuyển sang màn hình ghép mảnh và khám phá quy luật biến đổi xã hội.
+                </p>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveView("assembly")}
+                    className="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#d97706] to-[#b45309] hover:from-[#f59e0b] hover:to-[#d97706] text-white font-black text-sm uppercase tracking-wider shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2.5 mx-auto cursor-pointer ring-4 ring-[#fde68a]"
+                  >
+                    <span>🧩 MỞ MÀN HÌNH GHÉP TRANH &amp; XEM ĐÁP ÁN (HÌNH 1 &amp; 2)</span>
+                    <span>➜</span>
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="px-3.5 py-1 rounded-full bg-[#3a2214] border border-[#c9922a]/50 text-xs font-bold text-[#fef08a]">
-              {completedCount}/9 Hoàn thành
+            {/* Quick Action Button below Question List */}
+            <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-[#c9922a]/20">
+          
+
+          
             </div>
           </div>
-
-          {/* Grid of Available Question Cards (Lưới các câu hỏi chưa mở) */}
-          {remainingQuestions.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {remainingQuestions.map((q) => (
-                <button
-                  key={q.id}
-                  type="button"
-                  onClick={() => handleSelectQuestion(q)}
-                  className="relative p-5 rounded-2xl bg-gradient-to-br from-[#382010] via-[#28150a] to-[#1a0e06] border-2 border-[#c9922a]/60 hover:border-[#fef08a] shadow-lg hover:shadow-[0_10px_25px_rgba(245,158,11,0.25)] transition-all duration-300 hover:scale-[1.03] text-left cursor-pointer group flex flex-col justify-between min-h-[160px]"
-                >
-                  {/* Card Header */}
-                  <div className="flex items-center justify-between w-full">
-                    <span className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#92400e] via-[#b45309] to-[#fde68a] text-[#1c0d05] font-black text-xl flex items-center justify-center shadow border border-[#fef08a] group-hover:scale-110 transition-transform">
-                      {q.qNum}
-                    </span>
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${getLevelBadgeClass(
-                        q.level
-                      )}`}
-                    >
-                      {q.level.split("/")[0]}
-                    </span>
-                  </div>
-
-                  {/* Card Topic & Question Teaser */}
-                  <div className="my-3 space-y-1">
-                    <div className="text-xs uppercase tracking-wider text-[#d4af37] font-semibold">
-                      Chủ đề: {q.tag}
-                    </div>
-                  
-                  </div>
-
-                  {/* Card Footer Button */}
-                  <div className="w-full pt-2 border-t border-[#c9922a]/20 flex items-center justify-between text-xs font-bold text-[#d4af37] group-hover:text-[#fde68a]">
-                    <span>Bấm để mở câu hỏi</span>
-                    <span className="text-base group-hover:translate-x-1 transition-transform">
-                      ➜
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          ) : (
-            /* Khi toàn bộ 9 câu hỏi đã hoàn thành */
-            <div className="p-8 sm:p-10 rounded-2xl bg-gradient-to-b from-[#1c3826] to-[#0f2418] border-2 border-emerald-500/60 text-center space-y-4 shadow-xl">
-              <span className="text-5xl sm:text-6xl animate-bounce inline-block">
-                🏆
-              </span>
-              <h3
-                className="text-xl sm:text-3xl font-black text-emerald-300 uppercase tracking-wide"
-                style={{ fontFamily: "'Playfair Display', serif" }}
-              >
-                ĐÃ HOÀN THÀNH TOÀN BỘ 9 CÂU HỎI!
-              </h3>
-             
-              <div className="pt-2">
-          
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Action Button: Host Reference Preview */}
-        <div className="w-full max-w-5xl flex flex-col items-center gap-3 pt-2">
-          <button
-            type="button"
-            onClick={() => setIsRevealModalOpen(true)}
-            className={`w-full py-4 px-6 rounded-2xl font-black text-sm md:text-base uppercase tracking-wider flex items-center justify-center gap-3 transition-all cursor-pointer ${
-              allCompleted
-                ? "bg-gradient-to-r from-[#d97706] via-[#f59e0b] to-[#b45309] text-white shadow-2xl animate-grand-pulse ring-4 ring-[#fde68a]"
-                : "bg-gradient-to-r from-[#3e2716] to-[#25150a] hover:from-[#52331c] hover:to-[#382010] text-[#fef08a] border-2 border-[#c9922a] shadow-lg hover:scale-[1.01]"
-            }`}
-          >
-            <span className="text-xl md:text-2xl">🖼️</span>
-            <span>
-              {allCompleted
-                ? " XEM BỨC TRANH HOÀN CHỈNH  "
-                : `XEM BỨC TRANH GỐC ĐỐI CHIẾU (${completedCount}/9 MẢNH ĐÃ PHÁT)`}
-            </span>
-          </button>
-
-
-        </div>
+        ) : (
+          /* ================= GIAI ĐOẠN 2: MÀN HÌNH GHÉP TRANH & ĐÁP ÁN (HÌNH 1 & HÌNH 2) ================= */
+          <PuzzleAssemblyStage
+            onRestart={handleRestart}
+            onBackToQuestions={() => setActiveView("questions")}
+            completedCount={completedCount}
+          />
+        )}
       </div>
 
       {/* Question Modal: Upon answer, hides question & shows piece image */}
@@ -299,7 +303,7 @@ export default function TruyTimManhGhepGame() {
         onFinishQuestion={handleFinishQuestion}
       />
 
-      {/* Mystery Full Artwork Reveal Modal */}
+      {/* Mystery Full Artwork Reveal Modal (Optional reference preview) */}
       <MysteryRevealModal
         isOpen={isRevealModalOpen}
         onClose={() => setIsRevealModalOpen(false)}
