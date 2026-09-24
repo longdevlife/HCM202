@@ -1,14 +1,18 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import PuzzleQuestionModal from "./PuzzleQuestionModal";
 import PuzzleQuestionCard from "./PuzzleQuestionCard";
 import PuzzleAssemblyStage from "./PuzzleAssemblyStage";
 import MysteryRevealModal from "./MysteryRevealModal";
+import GameRulesModal from "./GameRulesModal";
 import { ALL_PUZZLE_QUESTIONS } from "./puzzleData";
 import { sounds } from "../chiecnonkidieu/SoundEffects";
 import "./truytimmanhghep.css";
 import "../chiecnonkidieu/chiecnonkidieu.css";
 
 export default function TruyTimManhGhepGame() {
+  // Modal Thể Lệ Trò Chơi (Tự động mở khi vào tab hoặc bấm vào tab)
+  const [isRulesModalOpen, setIsRulesModalOpen] = useState(true);
+
   // Record of completed question numbers: { [qNum]: { isCorrect: boolean } }
   // When a question is completed and closed, it CANNOT be opened again
   const [completedQuestions, setCompletedQuestions] = useState({});
@@ -44,6 +48,17 @@ export default function TruyTimManhGhepGame() {
   const remainingQuestions = useMemo(() => {
     return ALL_PUZZLE_QUESTIONS.filter((q) => !completedQuestions[q.qNum]);
   }, [completedQuestions]);
+
+  // Lắng nghe sự kiện click từ tab "Truy Tìm Mảnh Ghép" trên thanh Navbar
+  useEffect(() => {
+    const handleOpenRules = () => {
+      setIsRulesModalOpen(true);
+    };
+    window.addEventListener("open-truytimmanhghep-rules", handleOpenRules);
+    return () => {
+      window.removeEventListener("open-truytimmanhghep-rules", handleOpenRules);
+    };
+  }, []);
 
   // Show temporary toast notification
   const showToast = useCallback((msg, durationMs = 3500) => {
@@ -170,6 +185,15 @@ export default function TruyTimManhGhepGame() {
 
             <button
               type="button"
+              onClick={() => setIsRulesModalOpen(true)}
+              className="bg-gradient-to-r from-[#d97706] to-[#b45309] hover:from-[#f59e0b] hover:to-[#d97706] px-4 py-1.5 rounded-full border border-[#fde68a] text-xs font-black text-white shadow-md transition-all cursor-pointer flex items-center gap-1.5 hover:scale-105 active:scale-95"
+            >
+              <span>📜</span>
+              <span>Thể lệ trò chơi</span>
+            </button>
+
+            <button
+              type="button"
               onClick={handleToggleMute}
               className="bg-[#3a382b]/90 hover:bg-[#4a4738] px-3.5 py-1.5 rounded-full border border-[#c3a47b]/30 text-xs font-bold text-[#eee2ca] shadow-sm transition-all cursor-pointer"
             >
@@ -290,10 +314,17 @@ export default function TruyTimManhGhepGame() {
           <PuzzleAssemblyStage
             onRestart={handleRestart}
             onBackToQuestions={() => setActiveView("questions")}
+            onOpenRules={() => setIsRulesModalOpen(true)}
             completedCount={completedCount}
           />
         )}
       </div>
+
+      {/* Game Rules & Instructions Modal */}
+      <GameRulesModal
+        isOpen={isRulesModalOpen}
+        onClose={() => setIsRulesModalOpen(false)}
+      />
 
       {/* Question Modal: Upon answer, hides question & shows piece image */}
       <PuzzleQuestionModal

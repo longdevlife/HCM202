@@ -109,3 +109,42 @@ test("MYSTERY_TITLE matches lesson theme", () => {
   );
   assert.strictEqual(FULL_IMAGE_SRC, "/images/truytimmanhghep/cocauxahoigiaicap.jpg");
 });
+
+test("GameRulesModal component file exists and contains all required game rules and scoring details", () => {
+  const modalPath = path.resolve(process.cwd(), "src", "truytimmanhghep", "GameRulesModal.jsx");
+  assert.ok(fs.existsSync(modalPath), "GameRulesModal.jsx must exist");
+
+  const content = fs.readFileSync(modalPath, "utf-8");
+
+  // Vòng 1 rules
+  assert.ok(content.includes("VÒNG 1"), "Must include VÒNG 1");
+  assert.ok(content.includes("TRUY TÌM MẢNH GHÉP"), "Must include TRUY TÌM MẢNH GHÉP");
+  assert.ok(content.includes("10 điểm / câu") || content.includes("+10 điểm"), "Must specify 10 points per correct question");
+  assert.ok(content.includes("ĐƯA CẢ SỐ") && content.includes("ĐÁP ÁN"), "Must specify answer format: ĐƯA CẢ SỐ + ĐÁP ÁN");
+
+  // Vòng 2 rules
+  assert.ok(content.includes("VÒNG 2"), "Must include VÒNG 2");
+  assert.ok(content.includes("SẮP XẾP MẢNH GHÉP"), "Must include SẮP XẾP MẢNH GHÉP");
+  assert.ok(content.includes("+50 điểm") || content.includes("50 điểm"), "Must specify 50 points for solving image question");
+  assert.ok(content.includes("+20 điểm") && content.includes("Nhanh nhất"), "Must specify +20 points for 1st fastest team");
+  assert.ok(content.includes("+15 điểm") && content.includes("Nhanh thứ hai"), "Must specify +15 points for 2nd fastest team");
+  assert.ok(content.includes("+10 điểm") && content.includes("Nhanh thứ ba"), "Must specify +10 points for 3rd fastest team");
+  assert.ok(content.includes("Các nhóm còn lại không được cộng điểm tốc độ"), "Must specify remaining teams get no speed bonus");
+
+  // Scoring formula & victory condition
+  assert.ok(content.includes("Điểm cuối cùng mỗi nhóm = Tổng điểm cả hai vòng chơi"), "Must state total score formula");
+  assert.ok(content.includes("Điểm trả lời đúng") && content.includes("Điểm đoán hình") && content.includes("Điểm tốc độ"), "Formula breakdown present");
+  assert.ok(content.includes("giành chiến thắng"), "Victory condition present");
+});
+
+test("TruyTimManhGhepGame.jsx mounts GameRulesModal and provides rules button and tab listener", () => {
+  const gamePath = path.resolve(process.cwd(), "src", "truytimmanhghep", "TruyTimManhGhepGame.jsx");
+  const content = fs.readFileSync(gamePath, "utf-8");
+
+  assert.ok(content.includes("GameRulesModal"), "TruyTimManhGhepGame imports GameRulesModal");
+  assert.ok(content.includes("isRulesModalOpen"), "State isRulesModalOpen is declared");
+  assert.ok(content.includes("open-truytimmanhghep-rules"), "CustomEvent listener for open-truytimmanhghep-rules exists");
+  assert.ok(content.includes("Thể lệ trò chơi"), "Button to open rules modal is present");
+  assert.ok(content.includes("<GameRulesModal"), "GameRulesModal is rendered in JSX");
+});
+

@@ -27,6 +27,7 @@ import { sounds } from "../chiecnonkidieu/SoundEffects";
 export default function PuzzleAssemblyStage({
   onRestart,
   onBackToQuestions,
+  onOpenRules,
   completedCount = 9,
 }) {
   // Trạng thái hiển thị đáp án (false = Trạng thái ô trống, true = Trạng thái ghép tranh & đáp án)
@@ -107,6 +108,18 @@ export default function PuzzleAssemblyStage({
             <span>{isRevealed ? "🔄" : "👁️"}</span>
             <span>{isRevealed ? "ẨN ĐÁP ÁN (VỀ Ô TRỐNG)" : "XEM ĐÁP ÁN & GHÉP TRANH"}</span>
           </button>
+
+          {/* Nút Xem thể lệ trò chơi */}
+          {onOpenRules && (
+            <button
+              type="button"
+              onClick={onOpenRules}
+              className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#d97706]/30 hover:bg-[#d97706]/50 text-[#fde68a] border border-[#f59e0b]/60 shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <span>📜</span>
+              <span className="hidden sm:inline">Thể lệ</span>
+            </button>
+          )}
 
           {/* Nút Trình chiếu toàn màn hình */}
           <button
