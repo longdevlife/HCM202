@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+  <img id="img" src="file:///C:/Users/admin/OneDrive/Hình ảnh/Ảnh chụp màn hình/Screenshot 2026-09-24 151614.png" />
+  <div id="output"></div>
+  <script>
+    async function runOCR() {
+      try {
+        const worker = await Tesseract.createWorker('eng');
+        const ret = await worker.recognize(document.getElementById('img'));
+        document.getElementById('output').textContent = ret.data.text;
+        await worker.terminate();
+      } catch (e) {
+        document.getElementById('output').textContent = 'Error: ' + e.message;
+      }
+    }
+    runOCR();
+  </script>
+</body>
+</html>

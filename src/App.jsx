@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import Navbar from "./game/sections/Navbar";
 
+const OverviewLandingPage = lazy(() => import("./overview/OverviewLandingPage"));
 const TheoryPage = lazy(() => import("./game/TheoryPage").then((module) => ({ default: module.TheoryPage || module.default })));
 const BookPage = lazy(() => import("./book/BookPage").then((module) => ({ default: module.BookPage || module.default })));
 const MinigamePage = lazy(() => import("./minigame/MinigamePage").then((module) => ({ default: module.MinigamePage || module.default })));
@@ -8,6 +9,7 @@ const ChiecNonKiDieuGame = lazy(() => import("./chiecnonkidieu/ChiecNonKiDieuGam
 const TruyTimManhGhepGame = lazy(() => import("./truytimmanhghep/TruyTimManhGhepGame").then((module) => ({ default: module.TruyTimManhGhepGame || module.default })));
 
 const TABS = [
+  { id: "overview", label: "Tổng Quan" },
   { id: "book", label: "Sách 3D" },
   { id: "chiecnon", label: "Chiếc Nón Kỳ Diệu" },
   { id: "truytimmanhghep", label: "Truy Tìm Mảnh Ghép" },
@@ -17,7 +19,7 @@ function getActiveTab() {
   const hash = window.location.hash.replace("#", "");
   const path = window.location.pathname.replace("/", "");
   const from = TABS.find((t) => t.id === hash || t.id === path);
-  return from ? from.id : "book";
+  return from ? from.id : "overview";
 }
 
 function App() {
@@ -36,7 +38,7 @@ function App() {
   }, []);
 
   const handleTabChange = (id) => {
-    const targetId = id === "intro" || id === "overview" ? "book" : id;
+    const targetId = id === "intro" ? "overview" : id;
     setActiveTab(targetId);
     window.location.hash = targetId;
   };
@@ -65,7 +67,7 @@ function App() {
             </div>
           }
         >
-          {activeTab === "overview" && <TheoryPage />}
+          {activeTab === "overview" && <OverviewLandingPage />}
           {activeTab === "book" && <BookPage skipIntro={hasVisitedBook} onIntroFinish={() => setHasVisitedBook(true)} />}
           {activeTab === "minigame" && <MinigamePage />}
           {activeTab === "chiecnon" && <ChiecNonKiDieuGame />}
