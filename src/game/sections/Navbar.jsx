@@ -1,23 +1,24 @@
 import { useState, useEffect } from 'react';
 
 const NAV_LINKS = [
+  { href: '#overview', label: 'Tổng Quan', id: 'overview' },
   { href: '#book', label: 'Sách 3D', id: 'book' },
   { href: '#chiecnon', label: 'Chiếc Nón Kỳ Diệu', id: 'chiecnon' },
   { href: '#truytimmanhghep', label: 'Truy Tìm Mảnh Ghép', id: 'truytimmanhghep' },
 ];
 
 export default function Navbar({ activeTab, onTabChange }) {
-  const [active, setActive] = useState('#book');
+  const [active, setActive] = useState('#overview');
 
   useEffect(() => {
-    const current = activeTab === 'intro' ? 'book' : activeTab;
+    const current = activeTab === 'intro' ? 'overview' : activeTab;
     setActive(`#${current}`);
   }, [activeTab]);
 
   const handleNavClick = (e, href) => {
     e.preventDefault();
     const id = href.replace('#', '');
-    const targetId = id === 'intro' ? 'book' : id;
+    const targetId = id === 'intro' ? 'overview' : id;
 
     if (activeTab !== targetId && onTabChange) {
       onTabChange(targetId);
@@ -28,7 +29,7 @@ export default function Navbar({ activeTab, onTabChange }) {
     }
   };
 
-  const isDarkBg = activeTab === 'book' || activeTab === 'chiecnon' || activeTab === 'truytimmanhghep';
+  const isDarkBg = activeTab === 'overview' || activeTab === 'book' || activeTab === 'chiecnon' || activeTab === 'truytimmanhghep';
 
   return (
     <div className="navbar-theory-wrapper w-full flex justify-center z-[100] fixed top-6 pointer-events-none px-4">
@@ -46,13 +47,13 @@ export default function Navbar({ activeTab, onTabChange }) {
       </div>
       <nav className={`navbar-theory pointer-events-auto ${isDarkBg ? 'nav-mode-book' : ''}`}>
         <a
-          href="#book"
+          href="#overview"
           className="navbar-brand"
           style={{
             fontVariantNumeric: 'lining-nums',
             fontFeatureSettings: '"lnum" 1, "tnum" 1',
           }}
-          onClick={(e) => handleNavClick(e, '#book')}
+          onClick={(e) => handleNavClick(e, '#overview')}
         >
           <span className="brand-icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
