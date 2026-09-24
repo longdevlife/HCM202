@@ -3,11 +3,424 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  useMemo,
   forwardRef,
   useImperativeHandle,
+  Suspense,
 } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import * as THREE from "three";
 import { sounds } from "./SoundEffects";
 
+// Custom hook to preload the 5 snack images
+function useSnackImages(slices) {
+  const [images, setImages] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    const promises = slices.map((s) => {
+      const src = s.image;
+      if (!src) return Promise.resolve(null);
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = src;
+      });
+    });
+
+    Promise.all(promises).then((results) => {
+      if (active) setImages(results);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [slices]);
+
+  return images;
+}
+
+// Generate high-resolution 2D texture mapped onto the 3D Conical Hat
+function generateHatTexture(slices, answeredQuestions, snackImages) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 2048;
+  canvas.height = 1024;
+  const ctx = canvas.getContext("2d");
+
+  const numSlices = slices.length;
+  const colW = canvas.width / numSlices;
+  const H = canvas.height;
+  const W = canvas.width;
+
+  for (let i = 0; i < numSlices; i++) {
+    const slice = slices[i];
+    const x = i * colW;
+    const cx = x + colW / 2;
+    const isAnswered =
+      slice.type === "question" && answeredQuestions[slice.questionId];
+
+    // Background gradient: rich lacquer tone along the cone slope
+    const grad = ctx.createLinearGradient(x, 0, x, H);
+    if (isAnswered) {
+      grad.addColorStop(0, "#0f172a");
+      grad.addColorStop(0.2, "#334155");
+      grad.addColorStop(0.8, "#1e293b");
+      grad.addColorStop(1, "#090d16");
+    } else {
+      grad.addColorStop(0, "#1c1308");
+      grad.addColorStop(0.18, slice.color);
+      grad.addColorStop(0.78, slice.color);
+      grad.addColorStop(1, "#150f07");
+    }
+    ctx.fillStyle = grad;
+    ctx.fillRect(x, 0, colW, H);
+
+    // Fine longitudinal palm leaf fibers (gân lá nón truyền thống)
+    for (let gx = x + 3; gx < x + colW; gx += 5) {
+      ctx.fillStyle =
+        gx % 10 === 0
+          ? "rgba(255, 255, 255, 0.05)"
+          : "rgba(0, 0, 0, 0.06)";
+      ctx.fillRect(gx, 0, 1.5, H);
+    }
+
+    // Gold embossed dividing seam between sectors
+    const divGrad = ctx.createLinearGradient(x - 4, 0, x + 4, 0);
+    divGrad.addColorStop(0, "#78350f");
+    divGrad.addColorStop(0.4, "#fde047");
+    divGrad.addColorStop(0.7, "#f59e0b");
+    divGrad.addColorStop(1, "#451a03");
+    ctx.fillStyle = divGrad;
+    ctx.fillRect(x - 3, 0, 6, H);
+
+    // Top Badge (Tên phần thưởng / Trạng thái)
+    const pillY = 320;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    const rewardName = slice.label || `Phần thưởng ${i + 1}`;
+    ctx.font = "bold 23px 'Inter', sans-serif";
+    const textW = ctx.measureText(rewardName).width;
+    const pillW = Math.max(190, textW + 36);
+
+    ctx.fillStyle = isAnswered
+      ? "rgba(16, 185, 129, 0.28)"
+      : "rgba(0, 0, 0, 0.55)";
+    ctx.beginPath();
+    ctx.roundRect(cx - pillW / 2, pillY - 24, pillW, 48, 24);
+    ctx.fill();
+    ctx.strokeStyle = isAnswered ? "#34d399" : "#fef08a";
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    ctx.fillStyle = isAnswered ? "#a7f3d0" : "#fef08a";
+    ctx.fillText(isAnswered ? "✓ ĐÃ NHẬN" : rewardName, cx, pillY);
+
+    // Render the Snack Picture on the sector!
+    const img = snackImages?.[i];
+    const imgW = 270;
+    const imgH = 370;
+    const imgY = 430;
+
+    if (img) {
+      // Golden aura glow behind snack
+      const glowGrad = ctx.createRadialGradient(
+        cx,
+        imgY + imgH / 2,
+        40,
+        cx,
+        imgY + imgH / 2,
+        190
+      );
+      glowGrad.addColorStop(0, "rgba(254, 240, 138, 0.45)");
+      glowGrad.addColorStop(0.7, "rgba(254, 240, 138, 0.12)");
+      glowGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = glowGrad;
+      ctx.beginPath();
+      ctx.arc(cx, imgY + imgH / 2, 190, 0, Math.PI * 2);
+      ctx.fill();
+
+      // White rounded card frame for contrast & crisp details
+      ctx.save();
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowColor = "rgba(0, 0, 0, 0.65)";
+      ctx.shadowBlur = 20;
+      ctx.shadowOffsetY = 10;
+      ctx.beginPath();
+      ctx.roundRect(cx - imgW / 2 - 8, imgY - 8, imgW + 16, imgH + 16, 20);
+      ctx.fill();
+      ctx.restore();
+
+      // Draw the snack image
+      ctx.drawImage(img, cx - imgW / 2, imgY, imgW, imgH);
+
+      // Gold frame border
+      ctx.strokeStyle = isAnswered ? "#34d399" : "#f59e0b";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.roundRect(cx - imgW / 2 - 8, imgY - 8, imgW + 16, imgH + 16, 20);
+      ctx.stroke();
+
+      // Answered overlay
+      if (isAnswered) {
+        ctx.fillStyle = "rgba(15, 23, 42, 0.6)";
+        ctx.beginPath();
+        ctx.roundRect(cx - imgW / 2 - 8, imgY - 8, imgW + 16, imgH + 16, 20);
+        ctx.fill();
+
+        ctx.font = "bold 32px 'Inter', sans-serif";
+        ctx.fillStyle = "#34d399";
+        ctx.fillText("✓ ĐÃ MỞ", cx, imgY + imgH / 2);
+      }
+    }
+  }
+
+  // 16 Vành nón lá truyền thống (16 concentric bamboo rings)
+  for (let r = 1; r <= 16; r++) {
+    const y = (H * r) / 17;
+    // Bamboo rib groove shadow
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.22)";
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.moveTo(0, y + 2);
+    ctx.lineTo(W, y + 2);
+    ctx.stroke();
+
+    // Bamboo highlight
+    ctx.strokeStyle = "rgba(254, 240, 138, 0.42)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(W, y);
+    ctx.stroke();
+  }
+
+  // Bottom gold rim band
+  const rimGrad = ctx.createLinearGradient(0, H - 36, 0, H);
+  rimGrad.addColorStop(0, "#f59e0b");
+  rimGrad.addColorStop(0.5, "#fef08a");
+  rimGrad.addColorStop(1, "#78350f");
+  ctx.fillStyle = rimGrad;
+  ctx.fillRect(0, H - 32, W, 32);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+// The 3D Scene Model containing the Conical Hat, Apex Cap, Rim Pegs & Pointer
+function ChiecNon3DModel({
+  slices,
+  answeredQuestions,
+  rotationY,
+  needleBounce,
+  onConeClick,
+  onApexClick,
+}) {
+  const snackImages = useSnackImages(slices);
+
+  const texture = useMemo(
+    () => generateHatTexture(slices, answeredQuestions, snackImages),
+    [slices, answeredQuestions, snackImages]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (texture) texture.dispose();
+    };
+  }, [texture]);
+
+  const radius = 3.3;
+  const coneHeight = 1.8;
+  const numPegs = 20;
+
+  // Peg angles
+  const pegPositions = useMemo(() => {
+    const arr = [];
+    for (let p = 0; p < numPegs; p++) {
+      const a = (p / numPegs) * Math.PI * 2;
+      arr.push([
+        Math.cos(a) * (radius + 0.03),
+        0,
+        Math.sin(a) * (radius + 0.03),
+      ]);
+    }
+    return arr;
+  }, [numPegs, radius]);
+
+  return (
+    <group position={[0, -0.2, 0]}>
+      {/* ── Stationary Wooden Pedestal Turntable (Bệ gỗ sơn mài bọc đồng) ── */}
+      <group position={[0, 0, 0]}>
+        {/* Upper Plinth */}
+        <mesh position={[0, -0.16, 0]} receiveShadow>
+          <cylinderGeometry args={[1.9, 2.3, 0.32, 48]} />
+          <meshStandardMaterial
+            color="#22170e"
+            roughness={0.55}
+            metalness={0.25}
+          />
+        </mesh>
+
+        {/* Lower Base Step */}
+        <mesh position={[0, -0.38, 0]} receiveShadow>
+          <cylinderGeometry args={[2.5, 2.7, 0.22, 48]} />
+          <meshStandardMaterial
+            color="#181109"
+            roughness={0.65}
+            metalness={0.15}
+          />
+        </mesh>
+
+        {/* Gold Trim Ring on Pedestal */}
+        <mesh position={[0, -0.32, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[2.32, 0.04, 16, 64]} />
+          <meshStandardMaterial
+            color="#f59e0b"
+            metalness={0.9}
+            roughness={0.15}
+          />
+        </mesh>
+      </group>
+
+      {/* ── Rotating 3D Conical Hat Assembly (Chiếc Nón 3D) ── */}
+      <group rotation={[0, rotationY, 0]}>
+        {/* 1. Main Conical Hat Surface (Lá nón) */}
+        <mesh
+          position={[0, coneHeight / 2, 0]}
+          onClick={onConeClick}
+          castShadow
+          receiveShadow
+        >
+          <coneGeometry args={[radius, coneHeight, 128, 32, true]} />
+          <meshStandardMaterial
+            map={texture}
+            roughness={0.42}
+            metalness={0.12}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+
+        {/* 2. Inner Underside Lining (Lòng nón màu mộc sẫm) */}
+        <mesh position={[0, coneHeight / 2 - 0.02, 0]}>
+          <coneGeometry args={[radius - 0.04, coneHeight - 0.04, 64, 16, true]} />
+          <meshStandardMaterial
+            color="#241a10"
+            roughness={0.7}
+            metalness={0.08}
+            side={THREE.BackSide}
+          />
+        </mesh>
+
+        {/* 3. Golden Rim Ring (Vành chân nón) */}
+        <mesh position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[radius + 0.02, 0.045, 16, 120]} />
+          <meshStandardMaterial
+            color="#f59e0b"
+            metalness={0.92}
+            roughness={0.15}
+          />
+        </mesh>
+
+        {/* 4. Perimeter Gold Pegs (20 Chốt định vị quanh vành) */}
+        {pegPositions.map((pos, idx) => (
+          <mesh key={idx} position={pos}>
+            <sphereGeometry args={[0.065, 16, 16]} />
+            <meshStandardMaterial
+              color="#fffbeb"
+              metalness={0.95}
+              roughness={0.1}
+            />
+          </mesh>
+        ))}
+
+        {/* 5. Golden Apex Cap (Chóp nón dát vàng - Bấm để quay) */}
+        <mesh
+          position={[0, coneHeight + 0.1, 0]}
+          onClick={onApexClick}
+          castShadow
+        >
+          <coneGeometry args={[0.38, 0.42, 32]} />
+          <meshStandardMaterial
+            color="#ffd700"
+            metalness={0.92}
+            roughness={0.15}
+          />
+        </mesh>
+
+        {/* Glowing Apex Star (Ngôi sao phát sáng trên đỉnh nón) */}
+        <mesh
+          position={[0, coneHeight + 0.32, 0]}
+          onClick={onApexClick}
+        >
+          <sphereGeometry args={[0.13, 16, 16]} />
+          <meshStandardMaterial
+            color="#fef08a"
+            emissive="#f59e0b"
+            emissiveIntensity={0.6}
+            metalness={0.8}
+            roughness={0.2}
+          />
+        </mesh>
+      </group>
+
+      {/* ── 3D Needle Indicator (Kim chỉ nón kỳ diệu ở 12 giờ) ── */}
+      <group
+        position={[0, 0.8, -radius]}
+        rotation={[
+          needleBounce ? 0.12 : 0,
+          0,
+          needleBounce ? -0.1 : 0,
+        ]}
+      >
+        {/* Gold Support Bracket */}
+        <mesh
+          position={[0, 0.4, -0.4]}
+          rotation={[Math.PI / 4, 0, 0]}
+        >
+          <cylinderGeometry args={[0.08, 0.12, 1.2, 16]} />
+          <meshStandardMaterial
+            color="#d97706"
+            metalness={0.9}
+            roughness={0.2}
+          />
+        </mesh>
+
+        {/* Golden Pivot Sphere */}
+        <mesh position={[0, 0.45, -0.2]}>
+          <sphereGeometry args={[0.14, 16, 16]} />
+          <meshStandardMaterial
+            color="#f59e0b"
+            metalness={0.9}
+            roughness={0.2}
+          />
+        </mesh>
+
+        {/* Ruby Needle Arrow Pointing Down Into Rim */}
+        <mesh
+          position={[0, 0.05, 0.1]}
+          rotation={[Math.PI * 0.78, 0, 0]}
+        >
+          <coneGeometry args={[0.26, 0.85, 16]} />
+          <meshStandardMaterial
+            color="#ef4444"
+            emissive="#b91c1c"
+            emissiveIntensity={0.45}
+            metalness={0.3}
+            roughness={0.2}
+          />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+// Main Interactive WheelCanvas Component with Three.js R3F
 const WheelCanvas = forwardRef(function WheelCanvas(
   {
     slices,
@@ -19,206 +432,20 @@ const WheelCanvas = forwardRef(function WheelCanvas(
   },
   ref
 ) {
-  const canvasRef = useRef(null);
-  const animFrameRef = useRef(null);
-
-  // Rotation state in radians
   const currentAngleRef = useRef(0);
   const isSpinningRef = useRef(false);
   const lastTickIndexRef = useRef(-1);
+  const animFrameRef = useRef(null);
+  const controlsRef = useRef(null);
+
+  const [rotationAngle, setRotationAngle] = useState(0);
   const [needleBounce, setNeedleBounce] = useState(0);
   const [internalSpinning, setInternalSpinning] = useState(false);
-  const [hoverTitle, setHoverTitle] = useState("Bấm vào các ô câu hỏi để trả lời!");
+  const [activeHoverSlice, setActiveHoverSlice] = useState(null);
 
   const numSlices = slices.length;
   const sliceAngle = (2 * Math.PI) / numSlices;
-
-  // Draw the wheel on canvas
-  const drawWheel = useCallback(
-    (angle) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      const size = canvas.width;
-      const center = size / 2;
-      const radius = center - 28;
-
-      ctx.clearRect(0, 0, size, size);
-      ctx.save();
-
-      // Outer drop shadow
-      ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
-      ctx.shadowBlur = 28;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 12;
-
-      // Outer metallic gold ring
-      const goldGrad = ctx.createLinearGradient(0, 0, size, size);
-      goldGrad.addColorStop(0, "#f9d423");
-      goldGrad.addColorStop(0.25, "#e65c00");
-      goldGrad.addColorStop(0.5, "#ffea85");
-      goldGrad.addColorStop(0.75, "#c9922a");
-      goldGrad.addColorStop(1, "#834d1b");
-
-      ctx.beginPath();
-      ctx.arc(center, center, radius + 16, 0, 2 * Math.PI);
-      ctx.fillStyle = goldGrad;
-      ctx.fill();
-
-      // Reset shadow
-      ctx.shadowColor = "transparent";
-
-      // Dark inner rim
-      ctx.beginPath();
-      ctx.arc(center, center, radius + 2, 0, 2 * Math.PI);
-      ctx.fillStyle = "#1e1b18";
-      ctx.fill();
-
-      // Draw slices with rotation
-      ctx.save();
-      ctx.translate(center, center);
-      ctx.rotate(angle);
-
-      for (let i = 0; i < numSlices; i++) {
-        const slice = slices[i];
-        const startA = i * sliceAngle;
-        const endA = startA + sliceAngle;
-
-        const isAnswered =
-          slice.type === "question" && answeredQuestions[slice.questionId];
-
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.arc(0, 0, radius, startA, endA);
-        ctx.closePath();
-
-        // Color & Dim if answered
-        ctx.fillStyle = isAnswered ? "#475569" : slice.color;
-        ctx.fill();
-
-        // Slice dividing line
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
-        ctx.stroke();
-
-        // Label in slice
-        ctx.save();
-        const midA = startA + sliceAngle / 2;
-        ctx.rotate(midA);
-
-        ctx.textAlign = "right";
-        ctx.textBaseline = "middle";
-
-        if (isAnswered) {
-          ctx.fillStyle = "#cbd5e1";
-          ctx.font = "bold 18px 'Inter', sans-serif";
-          ctx.fillText("✓ ĐÃ XONG", radius - 30, -10);
-
-          ctx.font = "14px 'Inter', sans-serif";
-          ctx.fillStyle = "#94a3b8";
-          ctx.fillText(slice.label, radius - 30, 14);
-        } else {
-          ctx.fillStyle = slice.textColor || "#ffffff";
-          ctx.font = "bold 21px 'Playfair Display', Georgia, serif";
-          ctx.fillText(slice.label, radius - 28, -10);
-
-          ctx.font = "bold 14px 'Inter', sans-serif";
-          ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-          ctx.fillText(slice.subLabel, radius - 28, 14);
-        }
-
-        ctx.restore();
-      }
-
-      // Outer gold perimeter pins / pegs
-      for (let i = 0; i < numSlices; i++) {
-        const pinAngle = i * sliceAngle;
-        const px = Math.cos(pinAngle) * (radius - 3);
-        const py = Math.sin(pinAngle) * (radius - 3);
-
-        ctx.beginPath();
-        ctx.arc(px, py, 5.5, 0, 2 * Math.PI);
-        ctx.fillStyle = "#ffffff";
-        ctx.fill();
-        ctx.lineWidth = 2.5;
-        ctx.strokeStyle = "#c9922a";
-        ctx.stroke();
-      }
-
-      ctx.restore(); // end wheel rotation
-
-      // 3D Center Hub
-      ctx.save();
-      ctx.translate(center, center);
-
-      // Hub shadow
-      ctx.beginPath();
-      ctx.arc(0, 0, 58, 0, 2 * Math.PI);
-      ctx.fillStyle = "rgba(0,0,0,0.35)";
-      ctx.fill();
-
-      // Hub gold gradient
-      const hubGrad = ctx.createRadialGradient(-8, -8, 6, 0, 0, 56);
-      hubGrad.addColorStop(0, "#fff4cc");
-      hubGrad.addColorStop(0.3, "#f9d423");
-      hubGrad.addColorStop(0.7, "#b8860b");
-      hubGrad.addColorStop(1, "#5c3d0b");
-
-      ctx.beginPath();
-      ctx.arc(0, 0, 52, 0, 2 * Math.PI);
-      ctx.fillStyle = hubGrad;
-      ctx.fill();
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = "#ffffff";
-      ctx.stroke();
-
-      // Hub Center Core
-      ctx.beginPath();
-      ctx.arc(0, 0, 38, 0, 2 * Math.PI);
-      ctx.fillStyle = "#2c1a0e";
-      ctx.fill();
-
-      // Center Star Icon
-      ctx.fillStyle = "#fef08a";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.font = "26px 'Inter', sans-serif";
-      ctx.fillText("⭐", 0, 0);
-
-      ctx.restore(); // end center hub
-
-      // Flashing decorative LED lights on outer rim
-      const ledCount = 30; // 30 evenly spaced festive LED lights
-      const ledAngleStep = (2 * Math.PI) / ledCount;
-      const timeMs = Date.now() / 250;
-
-      for (let i = 0; i < ledCount; i++) {
-        const la = i * ledAngleStep;
-        const lx = center + Math.cos(la) * (radius + 9);
-        const ly = center + Math.sin(la) * (radius + 9);
-
-        const isLightOn = Math.floor(timeMs + i) % 2 === 0;
-
-        ctx.beginPath();
-        ctx.arc(lx, ly, 4, 0, 2 * Math.PI);
-        ctx.fillStyle = isLightOn ? "#fef08a" : "#ca8a04";
-        ctx.shadowColor = isLightOn ? "#fde047" : "transparent";
-        ctx.shadowBlur = isLightOn ? 10 : 0;
-        ctx.fill();
-        ctx.shadowColor = "transparent";
-      }
-
-      ctx.restore();
-    },
-    [slices, numSlices, sliceAngle, answeredQuestions]
-  );
-
-  // Initial render
-  useEffect(() => {
-    drawWheel(currentAngleRef.current);
-  }, [drawWheel]);
+  const totalPegs = 20;
 
   // Imperative spin method called by parent
   const spin = useCallback(
@@ -229,16 +456,16 @@ const WheelCanvas = forwardRef(function WheelCanvas(
       onSpinStart && onSpinStart();
 
       const startTime = performance.now();
-      const initialAngle = currentAngleRef.current % (2 * Math.PI);
+      const initialAngle = currentAngleRef.current;
 
-      // Top needle pointer is at -90 deg (or 3*PI/2)
-      const topPointerAngle = (3 * Math.PI) / 2;
+      // Pointer is at 12 o'clock (-Z axis, angle = PI).
+      // Center of target slice is (targetIndex + 0.5) * sliceAngle.
+      // Desired angle: R_y + targetSliceCenter = Math.PI (mod 2*PI).
       const targetSliceCenter = (targetIndex + 0.5) * sliceAngle;
-
-      let desiredMod = (topPointerAngle - targetSliceCenter) % (2 * Math.PI);
+      let desiredMod = (Math.PI - targetSliceCenter) % (2 * Math.PI);
       if (desiredMod < 0) desiredMod += 2 * Math.PI;
 
-      // 6 to 8 full spins for suspense
+      // 6 to 8 full spins for excitement
       const fullRounds = (6 + Math.floor(Math.random() * 3)) * (2 * Math.PI);
 
       const curMod =
@@ -253,7 +480,6 @@ const WheelCanvas = forwardRef(function WheelCanvas(
 
       // Quartic easing out
       const easeOutQuart = (x) => 1 - Math.pow(1 - x, 4);
-
       lastTickIndexRef.current = -1;
 
       const animate = (now) => {
@@ -263,15 +489,11 @@ const WheelCanvas = forwardRef(function WheelCanvas(
 
         const currentA = initialAngle + totalAngleChange * easedProgress;
         currentAngleRef.current = currentA;
+        setRotationAngle(currentA);
 
-        // Needle bounce & tick sound
-        const normalizedAngle = (3 * Math.PI) / 2 - (currentA % (2 * Math.PI));
-        const positiveAngle =
-          normalizedAngle >= 0
-            ? normalizedAngle % (2 * Math.PI)
-            : 2 * Math.PI + (normalizedAngle % (2 * Math.PI));
-        const currentPeg = Math.floor(positiveAngle / sliceAngle);
-
+        // Peg ticking & needle bounce
+        const pegStep = (2 * Math.PI) / totalPegs;
+        const currentPeg = Math.floor((currentA % (2 * Math.PI)) / pegStep);
         if (currentPeg !== lastTickIndexRef.current) {
           lastTickIndexRef.current = currentPeg;
           sounds.playTick();
@@ -279,12 +501,10 @@ const WheelCanvas = forwardRef(function WheelCanvas(
           setTimeout(() => setNeedleBounce(0), 75);
         }
 
-        drawWheel(currentA);
-
         if (progress < 1) {
           animFrameRef.current = requestAnimationFrame(animate);
         } else {
-          // Finish spinning
+          // Finished spinning
           isSpinningRef.current = false;
           setInternalSpinning(false);
           sounds.playLand();
@@ -295,7 +515,7 @@ const WheelCanvas = forwardRef(function WheelCanvas(
 
       animFrameRef.current = requestAnimationFrame(animate);
     },
-    [onSpinStart, onSpinEnd, sliceAngle, slices, drawWheel]
+    [onSpinStart, onSpinEnd, sliceAngle, slices, totalPegs]
   );
 
   // Expose spin via ref
@@ -310,145 +530,123 @@ const WheelCanvas = forwardRef(function WheelCanvas(
     };
   }, []);
 
-  // Calculate slice from click coordinates
-  const handleCanvasClick = (e) => {
+  // Raycasting on 3D Cone click
+  const handleConeClick = (e) => {
+    e.stopPropagation();
     if (isSpinningRef.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-
-    const center = canvas.width / 2;
-    const radius = center - 28;
-
-    const clickX = (e.clientX - rect.left) * scaleX - center;
-    const clickY = (e.clientY - rect.top) * scaleY - center;
-    const dist = Math.sqrt(clickX * clickX + clickY * clickY);
-
-    // Click outside wheel
-    if (dist > radius + 16) return;
-
-    // Click center hub -> Trigger Spin!
-    if (dist <= 52) {
-      if (onCenterClick) {
-        onCenterClick();
-      }
+    // If click was near top apex (chóp nón), trigger spin!
+    if (e.point && e.point.y > 1.3) {
+      if (onCenterClick) onCenterClick();
       return;
     }
 
-    // Click on slice
-    let clickAngle = Math.atan2(clickY, clickX);
-    if (clickAngle < 0) clickAngle += 2 * Math.PI;
-
-    const currentAngle =
-      currentAngleRef.current >= 0
-        ? currentAngleRef.current % (2 * Math.PI)
-        : 2 * Math.PI + (currentAngleRef.current % (2 * Math.PI));
-
-    let relativeAngle = (clickAngle - currentAngle) % (2 * Math.PI);
-    if (relativeAngle < 0) relativeAngle += 2 * Math.PI;
-
-    const clickedSliceIndex = Math.floor(relativeAngle / sliceAngle) % numSlices;
-    const clickedSlice = slices[clickedSliceIndex];
-
-    if (clickedSlice && onSliceClick) {
-      onSliceClick(clickedSlice, clickedSliceIndex);
+    if (e.uv) {
+      const sliceIdx = Math.floor(e.uv.x * numSlices) % numSlices;
+      const clickedSlice = slices[sliceIdx];
+      if (clickedSlice && onSliceClick) {
+        onSliceClick(clickedSlice, sliceIdx);
+      }
     }
   };
 
-  // Hover feedback
-  const handleCanvasMouseMove = (e) => {
-    if (isSpinningRef.current) {
-      setHoverTitle("Nón đang quay...");
-      return;
-    }
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  // Apex Cap Click triggers spin
+  const handleApexClick = (e) => {
+    e.stopPropagation();
+    if (isSpinningRef.current) return;
+    if (onCenterClick) onCenterClick();
+  };
 
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-
-    const center = canvas.width / 2;
-    const radius = center - 28;
-
-    const clickX = (e.clientX - rect.left) * scaleX - center;
-    const clickY = (e.clientY - rect.top) * scaleY - center;
-    const dist = Math.sqrt(clickX * clickX + clickY * clickY);
-
-    if (dist <= 52) {
-      setHoverTitle("Chiếc Nón Kỳ Diệu");
-      return;
-    }
-
-    if (dist > radius + 16) {
-      setHoverTitle("Chiếc nón kỳ diệu");
-      return;
-    }
-
-    let clickAngle = Math.atan2(clickY, clickX);
-    if (clickAngle < 0) clickAngle += 2 * Math.PI;
-
-    const currentAngle =
-      currentAngleRef.current >= 0
-        ? currentAngleRef.current % (2 * Math.PI)
-        : 2 * Math.PI + (currentAngleRef.current % (2 * Math.PI));
-
-    let relativeAngle = (clickAngle - currentAngle) % (2 * Math.PI);
-    if (relativeAngle < 0) relativeAngle += 2 * Math.PI;
-
-    const sliceIdx = Math.floor(relativeAngle / sliceAngle) % numSlices;
-    const slice = slices[sliceIdx];
-    if (slice) {
-      const isDone = answeredQuestions[slice.questionId];
-      setHoverTitle(
-        `👉 Bấm để xem ${slice.label} (${slice.subLabel})${isDone ? " - Đã giải ✓" : ""}`
-      );
+  // Reset 3D view angle
+  const handleResetCamera = () => {
+    if (controlsRef.current) {
+      controlsRef.current.reset();
     }
   };
 
   return (
-    <div className="wheel-canvas-wrapper relative flex flex-col items-center select-none cursor-pointer">
-      {/* Top Needle / Indicator with Spring Bounce */}
-      <div
-        className="pointer-indicator absolute z-20 -top-3.5 left-1/2 -translate-x-1/2 flex flex-col items-center transition-transform duration-75 pointer-events-none"
-        style={{
-          transform: `translateX(-50%) rotate(${needleBounce ? -14 : 0}deg)`,
-          transformOrigin: "50% 0%",
-        }}
-      >
-        <div className="w-10 h-16 relative filter drop-shadow-[0_6px_10px_rgba(0,0,0,0.65)]">
-          <svg viewBox="0 0 32 48" className="w-full h-full">
-            <polygon
-              points="16,48 4,4 28,4"
-              fill="url(#needleGrad)"
-              stroke="#ffffff"
-              strokeWidth="2"
-            />
-            <circle cx="16" cy="12" r="6" fill="#b91c1c" stroke="#ffffff" strokeWidth="1.5" />
-            <defs>
-              <linearGradient id="needleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#ef4444" />
-                <stop offset="50%" stopColor="#dc2626" />
-                <stop offset="100%" stopColor="#991b1b" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-      </div>
+    <div className="wheel-canvas-wrapper relative flex flex-col items-center select-none w-full">
+      {/* 3D Scene Viewport Container */}
+      <div className="w-full max-w-[680px] h-[400px] sm:h-[460px] md:h-[500px] relative rounded-3xl overflow-hidden shadow-2xl border border-[#c3a47b]/30 bg-gradient-to-b from-[#2a241c] via-[#1e1a14] to-[#12100d]">
+        <Canvas
+          shadows
+          camera={{ position: [0, 4.8, 6.2], fov: 38 }}
+          gl={{ antialias: true, powerPreference: "high-performance" }}
+          style={{ width: "100%", height: "100%", cursor: "grab" }}
+        >
+          {/* Lighting Rig */}
+          <ambientLight intensity={0.95} color="#fff3e6" />
+          <directionalLight
+            position={[4, 8, 5]}
+            intensity={0.95}
+            color="#ffffff"
+            castShadow
+            shadow-mapSize-width={1024}
+            shadow-mapSize-height={1024}
+          />
+          <directionalLight
+            position={[-5, 3, -3]}
+            intensity={0.4}
+            color="#f59e0b"
+          />
+          <spotLight
+            position={[0, 8, 1]}
+            intensity={0.8}
+            angle={Math.PI / 3}
+            penumbra={0.6}
+            color="#fff5e6"
+          />
 
-      {/* Wheel Canvas */}
-      <canvas
-        ref={canvasRef}
-        width={680}
-        height={680}
-        onClick={handleCanvasClick}
-        onMouseMove={handleCanvasMouseMove}
-        title={hoverTitle}
-        className="wheel-canvas w-[92vw] h-[92vw] max-w-[360px] max-h-[360px] sm:max-w-[480px] sm:max-h-[480px] md:max-w-[580px] md:max-h-[580px] lg:max-w-[660px] lg:max-h-[660px] rounded-full drop-shadow-2xl transition-transform duration-200 hover:scale-[1.008] cursor-pointer"
-      />
+          <Suspense fallback={null}>
+            <ChiecNon3DModel
+              slices={slices}
+              answeredQuestions={answeredQuestions}
+              rotationY={rotationAngle}
+              needleBounce={needleBounce}
+              onConeClick={handleConeClick}
+              onApexClick={handleApexClick}
+            />
+          </Suspense>
+
+          {/* User Orbit Controls: Freely drag to view from 3D angles */}
+          <OrbitControls
+            ref={controlsRef}
+            enableZoom={false}
+            enablePan={false}
+            minPolarAngle={Math.PI / 6}
+            maxPolarAngle={Math.PI / 2.2}
+            minAzimuthAngle={-Math.PI / 3}
+            maxAzimuthAngle={Math.PI / 3}
+            enableDamping
+            dampingFactor={0.06}
+          />
+        </Canvas>
+
+        {/* Overlay 3D Interactive Badge / Help */}
+        <div className="absolute top-3 left-3 bg-[#1e1b15]/85 border border-[#c3a47b]/40 backdrop-blur-md px-3.5 py-1.5 rounded-full text-[11px] font-semibold text-[#fef08a] flex items-center gap-1.5 shadow-md pointer-events-none">
+          <span>✨</span>
+          <span>Nón 3D – Kéo chuột xoay tự do</span>
+        </div>
+
+        {/* Quick Reset Camera Button */}
+        <button
+          type="button"
+          onClick={handleResetCamera}
+          title="Đặt lại góc nhìn 3D chuẩn"
+          className="absolute top-3 right-3 bg-[#1e1b15]/85 hover:bg-[#342b1f] border border-[#c3a47b]/40 backdrop-blur-md px-3 py-1.5 rounded-full text-[11px] font-bold text-[#eee2ca] shadow-md transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+        >
+          <span>🔄</span>
+          <span>Góc chuẩn</span>
+        </button>
+
+        {/* Spinning Notification */}
+        {internalSpinning && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#1e1b15]/90 border border-[#f59e0b] px-5 py-2 rounded-full text-xs md:text-sm font-black text-[#fef08a] shadow-xl animate-pulse flex items-center gap-2 pointer-events-none">
+            <span className="animate-spin inline-block">🎡</span>
+            <span>Chiếc nón 3D đang quay...</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 });

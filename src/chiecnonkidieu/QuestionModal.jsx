@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { sounds } from "./SoundEffects";
 
 export default function QuestionModal({
@@ -24,6 +24,14 @@ export default function QuestionModal({
   // Submission state
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
+
+  const bodyRef = useRef(null);
+
+  useEffect(() => {
+    if (bodyRef.current) {
+      bodyRef.current.scrollTop = 0;
+    }
+  }, [question, isOpen]);
 
   useEffect(() => {
     if (question && isOpen) {
@@ -202,23 +210,23 @@ export default function QuestionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 md:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 md:p-6 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
       <div
-        className="relative w-full max-w-2xl bg-[#faf8f5] text-[#2c1a0e] rounded-3xl shadow-2xl border-2 border-[#c9922a]/50 overflow-hidden flex flex-col my-auto max-h-[94vh]"
+        className="relative w-[95vw] md:w-[75vw] max-w-[1100px] max-h-[92vh] bg-[#faf8f5] text-[#2c1a0e] rounded-3xl shadow-2xl border-2 border-[#c9922a]/60 overflow-hidden flex flex-col my-auto"
         style={{ fontFamily: "'Inter', sans-serif" }}
       >
         {/* Top Header Strip */}
-        <div className="bg-gradient-to-r from-[#2c1a0e] via-[#4a2e18] to-[#2c1a0e] text-white px-6 py-3.5 flex items-center justify-between border-b border-[#c9922a]/50">
-          <div className="flex items-center space-x-3">
-            <span className="w-8 h-8 rounded-full bg-[#c9922a] text-[#2c1a0e] font-black flex items-center justify-center text-sm shadow-md">
+        <div className="bg-gradient-to-r from-[#2c1a0e] via-[#4a2e18] to-[#2c1a0e] text-white px-6 md:px-8 py-3.5 md:py-4 flex items-center justify-between border-b border-[#c9922a]/50">
+          <div className="flex items-center space-x-3.5">
+            <span className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-[#c9922a] text-[#2c1a0e] font-black flex items-center justify-center text-base md:text-lg shadow-md">
               💡
             </span>
             <div>
-              <div className="text-[11px] tracking-widest uppercase text-[#fef08a] font-bold">
+              <div className="text-xs tracking-widest uppercase text-[#fef08a] font-bold">
                 {question.typeTag}
               </div>
               <div
-                className="text-base md:text-lg font-bold text-white"
+                className="text-lg md:text-2xl font-bold text-white tracking-wide"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
                 {question.title}
@@ -229,19 +237,19 @@ export default function QuestionModal({
             type="button"
             onClick={handleModalClose}
             aria-label="Đóng"
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-base cursor-pointer"
+            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-lg cursor-pointer active:scale-95"
           >
             ✕
           </button>
         </div>
 
         {/* Scrollable Body */}
-        <div className="p-5 md:p-6 overflow-y-auto space-y-4 flex-1">
+        <div ref={bodyRef} className="p-4 md:p-6 overflow-y-auto space-y-3.5 md:space-y-4 flex-1">
           {/* CÂU 1: 2 ẢNH THẬT (KHÔNG CHÚ THÍCH ẢNH) */}
           {question.id === "q1" && question.visualImages && (
-            <div className="flex items-center justify-center gap-3 md:gap-4 p-3 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
+            <div className="flex items-center justify-center gap-3 md:gap-6 p-3 md:p-4 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
               {/* Hình 1 */}
-              <div className="flex-1 aspect-[4/3] rounded-xl overflow-hidden shadow border border-gray-200 bg-gray-100">
+              <div className="flex-1 aspect-[16/10] max-h-[170px] md:max-h-[210px] rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-100">
                 <img
                   src={question.visualImages[0].src}
                   alt="Hình 1"
@@ -250,18 +258,18 @@ export default function QuestionModal({
               </div>
 
               {/* Dấu cộng */}
-              <div className="text-3xl font-black text-[#c9922a] select-none px-1">
+              <div className="text-3xl md:text-5xl font-black text-[#c9922a] select-none px-1">
                 +
               </div>
 
               {/* Hình 2 */}
-              <div className="flex-1 aspect-[4/3] rounded-xl overflow-hidden shadow border border-gray-200 bg-gray-100 relative">
+              <div className="flex-1 aspect-[16/10] max-h-[170px] md:max-h-[210px] rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-100 relative">
                 <img
                   src={question.visualImages[1].src}
                   alt="Hình 2"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute top-2 right-2 bg-red-600 text-white font-black text-xs md:text-sm px-2 py-0.5 rounded shadow">
+                <div className="absolute top-2 right-2 bg-red-600 text-white font-black text-xs md:text-sm px-2 py-0.5 rounded shadow-md">
                   + (´)
                 </div>
               </div>
@@ -270,11 +278,11 @@ export default function QuestionModal({
 
           {/* CÂU 5: 4 ẢNH THẬT LIÊN HOÀN (KHÔNG CHÚ THÍCH ẢNH) */}
           {question.id === "q5" && question.visualImages && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 p-3 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 p-3 md:p-4 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
               {question.visualImages.map((img, idx) => (
                 <div
                   key={idx}
-                  className="w-full aspect-[4/3] rounded-xl overflow-hidden shadow border border-gray-200 bg-gray-100"
+                  className="w-full aspect-[4/3] max-h-[125px] md:max-h-[150px] rounded-xl overflow-hidden shadow border border-gray-200 bg-gray-100"
                 >
                   <img
                     src={img.src}
@@ -287,23 +295,25 @@ export default function QuestionModal({
           )}
 
           {/* Question Text */}
-          <div className="p-3.5 bg-white rounded-xl shadow-sm border border-[#e5dfd5]">
+          <div className="p-3 md:p-4 bg-white rounded-2xl shadow-sm border border-[#e5dfd5]">
             <h3
-              className="text-sm md:text-base font-bold text-[#2c1a0e] leading-relaxed whitespace-pre-line"
+              className="text-base md:text-lg lg:text-xl font-bold text-[#2c1a0e] leading-snug whitespace-pre-line"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
-              {question.question}
+              {question.questionType === "anagram"
+                ? question.question.split("\n")[0]
+                : question.question}
             </h3>
           </div>
 
           {/* CÂU 2 & CÂU 3: DẠNG TRẮC NGHIỆM (A, B, C, D) */}
           {question.questionType === "multiple_choice" && question.options && (
-            <div className="space-y-2.5 p-4 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            <div className="space-y-4 md:space-y-5 p-4 md:p-6 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-4">
                 {question.options.map((opt) => {
                   const isChosen = selectedOptId === opt.id;
                   let cardClass =
-                    "relative flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all duration-200 cursor-pointer ";
+                    "relative flex items-center gap-3.5 p-3.5 md:p-5 rounded-2xl border text-left transition-all duration-200 cursor-pointer ";
 
                   if (!isSubmitted) {
                     if (isChosen) {
@@ -334,7 +344,7 @@ export default function QuestionModal({
                       className={cardClass}
                     >
                       <span
-                        className={`w-7 h-7 flex-shrink-0 rounded-lg font-bold text-sm flex items-center justify-center transition-colors ${
+                        className={`w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-xl font-bold text-sm md:text-base flex items-center justify-center transition-colors ${
                           isSubmitted && opt.isCorrect
                             ? "bg-[#10b981] text-white"
                             : isSubmitted && isChosen && !opt.isCorrect
@@ -346,14 +356,14 @@ export default function QuestionModal({
                       >
                         {opt.id}
                       </span>
-                      <span className="flex-1 text-sm md:text-base font-medium">
+                      <span className="flex-1 text-base md:text-lg font-medium leading-snug">
                         {opt.text}
                       </span>
                       {isSubmitted && opt.isCorrect && (
-                        <span className="text-emerald-600 font-bold text-xs ml-1">✓ Đúng</span>
+                        <span className="text-emerald-600 font-bold text-sm md:text-base ml-1">✓ Đúng</span>
                       )}
                       {isSubmitted && isChosen && !opt.isCorrect && (
-                        <span className="text-rose-600 font-bold text-xs ml-1">✗ Sai</span>
+                        <span className="text-rose-600 font-bold text-sm md:text-base ml-1">✗ Sai</span>
                       )}
                     </button>
                   );
@@ -366,7 +376,7 @@ export default function QuestionModal({
                     type="button"
                     disabled={!selectedOptId}
                     onClick={handleCheckMultipleChoice}
-                    className={`px-6 py-2.5 rounded-xl font-bold text-xs md:text-sm uppercase tracking-wider shadow transition-all ${
+                    className={`px-8 py-3 rounded-xl font-bold text-sm md:text-base uppercase tracking-wider shadow-md transition-all ${
                       selectedOptId
                         ? "bg-[#c9922a] hover:bg-[#b8860b] text-white hover:scale-105 active:scale-95 cursor-pointer"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
@@ -381,9 +391,9 @@ export default function QuestionModal({
 
           {/* CÂU 4: XẾP CHỮ VÀO DẤU GẠCH CHÂN (GIỮ NGUYÊN) */}
           {question.questionType === "anagram" && (
-            <div className="space-y-4 p-4 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
+            <div className="space-y-4 p-4 md:p-6 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
               {/* Dãy 11 chữ cái xáo trộn */}
-              <div className="flex flex-wrap items-center justify-center gap-2 p-2 bg-amber-50/60 rounded-xl border border-amber-200">
+              <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 p-2.5 md:p-3 bg-amber-50/70 rounded-2xl border border-amber-200">
                 {availableScrambled.length > 0 ? (
                   availableScrambled.map((tile) => (
                     <button
@@ -391,30 +401,30 @@ export default function QuestionModal({
                       type="button"
                       disabled={isSubmitted}
                       onClick={() => handlePickTile(tile)}
-                      className="w-9 h-10 md:w-10 md:h-11 rounded-lg bg-white hover:bg-amber-100 active:scale-95 border-2 border-amber-400 text-[#2c1a0e] font-black text-base md:text-lg flex items-center justify-center shadow-md transition-all cursor-pointer"
+                      className="w-9 h-10 md:w-11 md:h-12 rounded-xl bg-white hover:bg-amber-100 active:scale-95 border-2 border-amber-400 text-[#2c1a0e] font-black text-base md:text-xl flex items-center justify-center shadow-md transition-all cursor-pointer"
                     >
                       {tile.char}
                     </button>
                   ))
                 ) : (
-                  <span className="text-xs text-amber-700 italic py-1">
+                  <span className="text-xs md:text-sm text-amber-800 italic py-1 font-medium">
                     Đã xếp toàn bộ 11 chữ cái vào các ô gạch chân bên dưới!
                   </span>
                 )}
               </div>
 
               {/* Hàng ô gạch chân: THỜI (4) - KÌ (2) - QUÁ (3) - ĐỘ (2) */}
-              <div className="p-4 bg-gradient-to-b from-[#faf8f5] to-[#f4eee6] rounded-2xl border border-[#c9922a]/30">
-                <div className="flex flex-wrap items-center justify-center gap-3 md:gap-5">
+              <div className="p-3.5 md:p-4 bg-gradient-to-b from-[#faf8f5] to-[#f4eee6] rounded-2xl border border-[#c9922a]/30 shadow-inner">
+                <div className="flex flex-wrap items-center justify-center gap-2.5 md:gap-4">
                   {/* THỜI */}
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1 md:gap-1.5">
                     {[0, 1, 2, 3].map((slotIdx) => {
                       const tile = placedTiles[slotIdx];
                       return (
                         <div
                           key={slotIdx}
                           onClick={() => handleRemoveTile(slotIdx)}
-                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all select-none ${
+                          className={`w-8 h-10 md:w-11 md:h-12 rounded-xl border-b-4 flex items-center justify-center font-black text-base md:text-xl transition-all select-none ${
                             isSubmitted ? "cursor-default" : "cursor-pointer"
                           } ${
                             tile
@@ -431,14 +441,14 @@ export default function QuestionModal({
                   </div>
 
                   {/* KÌ */}
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1 md:gap-1.5">
                     {[4, 5].map((slotIdx) => {
                       const tile = placedTiles[slotIdx];
                       return (
                         <div
                           key={slotIdx}
                           onClick={() => handleRemoveTile(slotIdx)}
-                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all select-none ${
+                          className={`w-8 h-10 md:w-11 md:h-12 rounded-xl border-b-4 flex items-center justify-center font-black text-base md:text-xl transition-all select-none ${
                             isSubmitted ? "cursor-default" : "cursor-pointer"
                           } ${
                             tile
@@ -455,14 +465,14 @@ export default function QuestionModal({
                   </div>
 
                   {/* QUÁ */}
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1 md:gap-1.5">
                     {[6, 7, 8].map((slotIdx) => {
                       const tile = placedTiles[slotIdx];
                       return (
                         <div
                           key={slotIdx}
                           onClick={() => handleRemoveTile(slotIdx)}
-                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all select-none ${
+                          className={`w-8 h-10 md:w-11 md:h-12 rounded-xl border-b-4 flex items-center justify-center font-black text-base md:text-xl transition-all select-none ${
                             isSubmitted ? "cursor-default" : "cursor-pointer"
                           } ${
                             tile
@@ -479,14 +489,14 @@ export default function QuestionModal({
                   </div>
 
                   {/* ĐỘ */}
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1 md:gap-1.5">
                     {[9, 10].map((slotIdx) => {
                       const tile = placedTiles[slotIdx];
                       return (
                         <div
                           key={slotIdx}
                           onClick={() => handleRemoveTile(slotIdx)}
-                          className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-base md:text-lg transition-all select-none ${
+                          className={`w-8 h-10 md:w-11 md:h-12 rounded-xl border-b-4 flex items-center justify-center font-black text-base md:text-xl transition-all select-none ${
                             isSubmitted ? "cursor-default" : "cursor-pointer"
                           } ${
                             tile
@@ -506,7 +516,7 @@ export default function QuestionModal({
 
               {/* Anagram Actions */}
               {!isSubmitted && (
-                <div className="flex items-center justify-end gap-2 pt-1">
+                <div className="flex items-center justify-end gap-3 pt-2">
                   {placedTiles.length > 0 && (
                     <button
                       type="button"
@@ -516,7 +526,7 @@ export default function QuestionModal({
                         );
                         setPlacedTiles([]);
                       }}
-                      className="px-3 py-2 text-xs font-bold text-gray-500 hover:text-gray-800"
+                      className="px-4 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-800 cursor-pointer"
                     >
                       Xếp lại
                     </button>
@@ -524,7 +534,7 @@ export default function QuestionModal({
                   <button
                     type="button"
                     onClick={handleRevealAnswer}
-                    className="px-3.5 py-2 rounded-xl text-xs font-bold border border-[#c9922a] text-[#855318] hover:bg-amber-50"
+                    className="px-4 py-2.5 rounded-xl text-sm font-bold border border-[#c9922a] text-[#855318] hover:bg-amber-50 cursor-pointer"
                   >
                     Xem đáp án
                   </button>
@@ -532,7 +542,7 @@ export default function QuestionModal({
                     type="button"
                     disabled={placedTiles.length < 11}
                     onClick={handleCheckAnagram}
-                    className={`px-5 py-2 rounded-xl font-bold text-xs uppercase tracking-wider shadow transition-all ${
+                    className={`px-7 py-3 rounded-xl font-bold text-sm md:text-base uppercase tracking-wider shadow-md transition-all ${
                       placedTiles.length >= 11
                         ? "bg-[#c9922a] hover:bg-[#b8860b] text-white hover:scale-105 active:scale-95 cursor-pointer"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
@@ -552,10 +562,10 @@ export default function QuestionModal({
             let letterCounter = 0;
 
             return (
-              <div className="space-y-3.5 p-4 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
+              <div className="space-y-3 p-3.5 md:p-4 bg-white rounded-2xl border border-[#e5dfd5] shadow-sm">
                 {/* Hàng ô chữ điền đáp án */}
-                <div className="p-3.5 sm:p-4 bg-gradient-to-b from-[#faf8f5] to-[#f4eee6] rounded-2xl border border-[#c9922a]/30 shadow-inner">
-                  <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-5">
+                <div className="p-3 sm:p-3.5 bg-gradient-to-b from-[#faf8f5] to-[#f4eee6] rounded-2xl border border-[#c9922a]/30 shadow-inner">
+                  <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 md:gap-5">
                     {riddleWords.map((word, wIdx) => {
                       const chars = word.split("");
                       return (
@@ -576,7 +586,7 @@ export default function QuestionModal({
                             return (
                               <div
                                 key={cIdx}
-                                className={`w-8 h-10 sm:w-9 sm:h-11 md:w-10 md:h-12 rounded-lg border-b-4 flex items-center justify-center font-black text-sm sm:text-base md:text-lg transition-all select-none ${
+                                className={`w-8 h-10 sm:w-10 sm:h-12 md:w-11 md:h-13 rounded-xl border-b-4 flex items-center justify-center font-black text-sm sm:text-base md:text-lg transition-all select-none ${
                                   isFilled
                                     ? isSubmitted && isCorrect
                                       ? "bg-[#ecfdf5] border-emerald-500 text-emerald-800 shadow-sm scale-105"
@@ -596,20 +606,19 @@ export default function QuestionModal({
 
                 {/* Form Input */}
                 {!isSubmitted ? (
-                  <form onSubmit={handleCheckTyped} className="space-y-3">
-                    <div className="flex gap-2">
+                  <form onSubmit={handleCheckTyped} className="space-y-2.5">
+                    <div className="flex gap-2.5">
                       <input
                         type="text"
-                        autoFocus
                         value={typedAnswer}
                         onChange={(e) => setTypedAnswer(e.target.value)}
                         placeholder="Nhập từ ghép..."
-                        className="flex-1 px-4 py-2.5 border-2 border-[#e5dfd5] focus:border-[#c9922a] rounded-xl text-sm md:text-base font-bold text-[#2c1a0e] outline-none shadow-inner"
+                        className="flex-1 px-4 py-2.5 md:px-5 md:py-3 border-2 border-[#e5dfd5] focus:border-[#c9922a] rounded-xl text-sm md:text-base font-bold text-[#2c1a0e] outline-none shadow-inner"
                       />
                       <button
                         type="submit"
                         disabled={!typedAnswer.trim()}
-                        className={`px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm uppercase tracking-wider shadow transition-all ${
+                        className={`px-6 py-2.5 md:px-7 md:py-3 rounded-xl font-bold text-xs md:text-sm uppercase tracking-wider shadow-md transition-all ${
                           typedAnswer.trim()
                             ? "bg-[#c9922a] hover:bg-[#b8860b] text-white active:scale-95 cursor-pointer"
                             : "bg-gray-200 text-gray-400 cursor-not-allowed"
@@ -619,25 +628,25 @@ export default function QuestionModal({
                       </button>
                     </div>
 
-                    <div className="flex items-center justify-end pt-1">
+                    <div className="flex items-center justify-end pt-0.5">
                       <button
                         type="button"
                         onClick={handleRevealAnswer}
-                        className="text-xs font-bold text-[#c9922a] hover:underline cursor-pointer"
+                        className="text-xs md:text-sm font-bold text-[#c9922a] hover:underline cursor-pointer"
                       >
                         Xem đáp án →
                       </button>
                     </div>
                   </form>
                 ) : (
-                  <div className="flex gap-2 pt-1">
+                  <div className="flex gap-2.5 pt-0.5">
                     <input
                       type="text"
                       disabled
                       value={typedAnswer || question.secretWord}
-                      className="flex-1 px-4 py-2.5 border-2 border-emerald-400 bg-emerald-50/60 rounded-xl text-sm md:text-base font-bold text-emerald-900 outline-none shadow-inner cursor-not-allowed"
+                      className="flex-1 px-4 py-2.5 md:px-5 md:py-3 border-2 border-emerald-400 bg-emerald-50/60 rounded-xl text-sm md:text-base font-bold text-emerald-900 outline-none shadow-inner cursor-not-allowed"
                     />
-                    <div className="px-4 py-2.5 rounded-xl font-bold text-xs md:text-sm uppercase tracking-wider bg-emerald-600 text-white flex items-center justify-center shadow select-none">
+                    <div className="px-4 py-2.5 md:px-5 md:py-3 rounded-xl font-bold text-xs md:text-sm uppercase tracking-wider bg-emerald-600 text-white flex items-center justify-center shadow select-none">
                       ✓ Đáp Án
                     </div>
                   </div>
@@ -649,32 +658,32 @@ export default function QuestionModal({
           {/* Success / Result Box */}
           {isSubmitted && (
             <div
-              className={`p-4 rounded-2xl border space-y-1.5 animate-fade-in ${
+              className={`p-5 md:p-6 rounded-2xl border space-y-2.5 animate-fade-in ${
                 isCorrect
                   ? "bg-emerald-50 border-emerald-300 text-emerald-950"
                   : "bg-rose-50 border-rose-300 text-rose-950"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="font-black text-sm md:text-base flex items-center gap-1.5">
+                <div className="font-black text-base md:text-lg flex items-center gap-2">
                   <span>{isCorrect ? "🎯 CHÍNH XÁC!" : "💡 ĐÁP ÁN ĐÚNG:"}</span>
                 </div>
-                <div className="px-3.5 py-1 bg-white rounded-full border border-current text-xs font-black uppercase tracking-wider shadow-sm">
+                <div className="px-4 py-1.5 bg-white rounded-full border border-current text-xs md:text-sm font-black uppercase tracking-wider shadow-sm">
                   Đáp án: "{question.secretWord}"
                 </div>
               </div>
-              <p className="text-xs md:text-sm leading-relaxed">{question.explanation}</p>
+              <p className="text-sm md:text-base leading-relaxed">{question.explanation}</p>
             </div>
           )}
 
           {/* All Completed Banner */}
           {isSubmitted && allAnswered && (
-            <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg flex items-center justify-between animate-pulse">
-              <div className="flex items-center space-x-3">
-                <span className="text-2xl">🎉</span>
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg flex items-center justify-between animate-pulse">
+              <div className="flex items-center space-x-3.5">
+                <span className="text-3xl">🎉</span>
                 <div>
-                  <div className="font-bold text-sm">ĐÃ HOÀN THÀNH TẤT CẢ CÂU ĐỐ!</div>
-                  <div className="text-xs text-amber-100">
+                  <div className="font-bold text-base">ĐÃ HOÀN THÀNH TẤT CẢ CÂU ĐỐ!</div>
+                  <div className="text-xs md:text-sm text-amber-100">
                     Bấm để mở màn chúc mừng & tựa đề bài học
                   </div>
                 </div>
@@ -682,7 +691,7 @@ export default function QuestionModal({
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-4 py-2 bg-white text-amber-900 font-black text-xs uppercase rounded-lg shadow-md hover:bg-amber-50 active:scale-95 transition-transform whitespace-nowrap ml-2 cursor-pointer"
+                className="px-5 py-2.5 bg-white text-amber-900 font-black text-xs md:text-sm uppercase rounded-xl shadow-md hover:bg-amber-50 active:scale-95 transition-transform whitespace-nowrap ml-2 cursor-pointer"
               >
                 Màn Chúc Mừng 🎉
               </button>
@@ -691,12 +700,12 @@ export default function QuestionModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="bg-[#f2ece4] px-6 py-3 border-t border-[#e5dfd5] flex items-center justify-end">
+        <div className="bg-[#f2ece4] px-6 md:px-8 py-4 border-t border-[#e5dfd5] flex items-center justify-end">
           {isSubmitted ? (
             <button
               type="button"
               onClick={handleNext}
-              className={`px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer ${
+              className={`px-8 py-3.5 rounded-full font-bold text-base md:text-lg shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer ${
                 allAnswered
                   ? "bg-gradient-to-r from-[#d97706] to-[#b45309] text-white ring-2 ring-[#fde68a] animate-pulse"
                   : "bg-[#2c1a0e] hover:bg-[#4a2e18] text-white"
@@ -708,7 +717,7 @@ export default function QuestionModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 rounded-full text-xs font-bold text-gray-600 hover:bg-black/5"
+              className="px-6 py-2.5 rounded-full text-sm font-bold text-gray-600 hover:bg-black/5 cursor-pointer"
             >
               Đóng
             </button>

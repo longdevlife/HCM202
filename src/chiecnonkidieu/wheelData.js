@@ -154,14 +154,15 @@ export const DEFAULT_QUESTIONS = [
   },
 ];
 
-// 5 Slices on the spinning wheel (ẩn thứ tự mảnh ghép)
+// 5 Slices on the spinning wheel (5 gói snack Oishi thay cho câu hỏi)
 export const WHEEL_SLICES = [
   {
     id: "slice_q1",
     type: "question",
     questionId: "q1",
-    label: "ĐUỔI HÌNH",
-    subLabel: "Bắt Chữ",
+    label: "Snack Tôm Cay",
+    subLabel: "Đặc Biệt",
+    image: "/images/chiecnon/snack_tom_cay.png",
     color: "#e11d48", // Crimson
     textColor: "#ffffff",
   },
@@ -169,8 +170,9 @@ export const WHEEL_SLICES = [
     id: "slice_q2",
     type: "question",
     questionId: "q2",
-    label: "TRẮC NGHIỆM",
-    subLabel: "Khái Niệm",
+    label: "Snack Bắp Ngọt",
+    subLabel: "Bắp Ngọt",
+    image: "/images/chiecnon/snack_bap_ngot.png",
     color: "#059669", // Emerald
     textColor: "#ffffff",
   },
@@ -178,8 +180,9 @@ export const WHEEL_SLICES = [
     id: "slice_q3",
     type: "question",
     questionId: "q3",
-    label: "TRẮC NGHIỆM",
-    subLabel: "Xã Hội Học",
+    label: "Snack Bắp Phô Mai",
+    subLabel: "Vị Phô Mai",
+    image: "/images/chiecnon/snack_bap_phomai.png",
     color: "#2563eb", // Blue
     textColor: "#ffffff",
   },
@@ -187,8 +190,9 @@ export const WHEEL_SLICES = [
     id: "slice_q4",
     type: "question",
     questionId: "q4",
-    label: "XẾP CHỮ",
-    subLabel: "11 Chữ Cái",
+    label: "Snack Bí Đỏ",
+    subLabel: "Bí Đỏ",
+    image: "/images/chiecnon/snack_bi_do.png",
     color: "#d97706", // Dark Amber
     textColor: "#ffffff",
   },
@@ -196,8 +200,9 @@ export const WHEEL_SLICES = [
     id: "slice_q5",
     type: "question",
     questionId: "q5",
-    label: "LIÊN HOÀN",
-    subLabel: "4 Ô Hình",
+    label: "Snack Phô Mát",
+    subLabel: "Miếng",
+    image: "/images/chiecnon/snack_phomat_mieng.png",
     color: "#7c3aed", // Violet
     textColor: "#ffffff",
   },

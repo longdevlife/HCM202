@@ -23,6 +23,10 @@ export default function Navbar({ activeTab, onTabChange }) {
     if (activeTab !== targetId && onTabChange) {
       onTabChange(targetId);
     }
+
+    if (targetId === 'truytimmanhghep') {
+      window.dispatchEvent(new CustomEvent('open-truytimmanhghep-rules'));
+    }
   };
 
   const isDarkBg = activeTab === 'overview' || activeTab === 'book' || activeTab === 'chiecnon' || activeTab === 'truytimmanhghep';
