@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import WheelCanvas from "./WheelCanvas";
 import QuestionModal from "./QuestionModal";
 import VictoryModal from "./VictoryModal";
@@ -79,7 +79,20 @@ export default function ChiecNonKiDieuGame() {
     }
   };
 
-  // Directly click on a slice on the wheel to view/answer that question
+  // Handle clicking directly on a sector of the 3D conical hat
+  useEffect(() => {
+    window.__openQuestion = (id) => {
+      const q = questions.find((item) => item.id === id);
+      if (q) {
+        setActiveQuestion(q);
+        setIsQuestionModalOpen(true);
+      }
+    };
+    return () => {
+      delete window.__openQuestion;
+    };
+  }, [questions]);
+
   const handleSliceClick = (slice) => {
     if (isSpinning) return;
     if (slice?.type === "question") {
@@ -170,8 +183,8 @@ export default function ChiecNonKiDieuGame() {
         {/* Center Stage: The Wheel is the Pure Centered Focus */}
         <div className="flex flex-col items-center justify-center w-full">
           <div className="wheel-stage-card p-6 md:p-10 rounded-3xl relative flex flex-col items-center w-full max-w-[760px] mx-auto">
-            {/* Wheel Canvas (Click directly on any slice to view question, click center or button to spin) */}
-            <div className="flex justify-center items-center">
+            {/* 3D Conical Hat Canvas */}
+            <div className="flex justify-center items-center w-full">
               <WheelCanvas
                 ref={wheelRef}
                 slices={WHEEL_SLICES}
@@ -183,10 +196,25 @@ export default function ChiecNonKiDieuGame() {
               />
             </div>
 
-            {/* Actions Area Under the Wheel */}
-            <div className="mt-6 flex flex-col items-center w-full max-w-lg gap-3">
-              <div className="text-xs md:text-sm font-medium text-[#c5b79e] text-center">
-                💡 Bấm trực tiếp vào các ô trên nón để xem và trả lời câu hỏi!
+            {/* Actions Area Under the 3D Hat */}
+            <div className="mt-5 flex flex-col items-center w-full max-w-lg gap-3">
+              {/* Prominent Spin Button */}
+              <button
+                type="button"
+                disabled={isSpinning}
+                onClick={handleSpinClick}
+                className={`w-full max-w-xs py-3.5 px-6 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-2xl transition-all cursor-pointer ${
+                  isSpinning
+                    ? "bg-slate-700/80 text-slate-400 opacity-70 cursor-not-allowed"
+                    : "bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b] hover:brightness-110 text-white active:scale-95 shadow-lg shadow-[#d97706]/30 border border-[#fef08a]/40 animate-pulse-glow"
+                }`}
+              >
+                <span className={isSpinning ? "animate-spin text-base" : "text-base"}>🎡</span>
+                <span>{isSpinning ? "NÓN 3D ĐANG QUAY..." : "QUAY CHIẾC NÓN 3D"}</span>
+              </button>
+
+              <div className="text-xs md:text-sm font-medium text-[#c5b79e] text-center px-4">
+                💡 Bạn có thể <b>kéo chuột để ngắm nón 3D</b>, bấm trực tiếp vào từng ô để trả lời hoặc bấm nút <b>Quay</b>!
               </div>
 
               {/* WHEN ALL 5 QUESTIONS ARE ANSWERED: GRAND CELEBRATION & LESSON SUMMARY */}
