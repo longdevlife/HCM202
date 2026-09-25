@@ -5,7 +5,7 @@ const fs = require('fs');
 const ROOT_DIR = path.join(__dirname, '..');
 const OUT_DIR = path.join(ROOT_DIR, 'public', 'landing-pages', 'meng-to-sketchbook');
 
-// Các cặp trang sách thực tế cho 5 Spreads
+// Các cặp trang sách thực tế cho 5 Spreads - Thứ tự chuẩn xác 100%
 const SPREADS = [
   {
     filename: 'chapter5-spread-1.png',
@@ -33,9 +33,9 @@ const SPREADS = [
   },
   {
     filename: 'chapter5-spread-5.png',
-    leftImg: 'public/textures/chapter5/thanks.png',
-    rightImg: 'public/textures/chapter5/end.png',
-    title: 'Lời Cảm Ơn & Tổng Kết Chương 5',
+    leftImg: 'public/textures/chapter5/end.png',
+    rightImg: 'public/textures/chapter5/thanks.png',
+    title: 'Tổng Kết Chương 5 & Lời Cảm Ơn',
   }
 ];
 
@@ -62,8 +62,7 @@ function buildPureBookSpreadHtml(leftDataUri, rightDataUri) {
     display: grid;
     grid-template-columns: 880px 880px;
     position: relative;
-    background: #ece7dc linear-gradient(180deg, rgba(246,242,233,0.9) 0%, rgba(234,227,214,0.95) 100%);
-    box-shadow: inset 0 0 120px rgba(43,39,33,0.08);
+    background: #110d0a;
   }
 
   /* Gáy sách ở giữa */
@@ -73,15 +72,15 @@ function buildPureBookSpreadHtml(leftDataUri, rightDataUri) {
     left: 880px;
     width: 3px;
     transform: translateX(-50%);
-    background: linear-gradient(180deg, rgba(43,39,33,0.25) 0%, rgba(43,39,33,0.45) 50%, rgba(43,39,33,0.25) 100%);
+    background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.35) 100%);
     z-index: 10;
   }
   .spine-shadow-left {
     position: absolute;
     top: 0; bottom: 0;
     right: 880px;
-    width: 80px;
-    background: linear-gradient(90deg, transparent, rgba(43,39,33,0.09));
+    width: 70px;
+    background: linear-gradient(90deg, transparent, rgba(0,0,0,0.16));
     pointer-events: none;
     z-index: 9;
   }
@@ -89,49 +88,27 @@ function buildPureBookSpreadHtml(leftDataUri, rightDataUri) {
     position: absolute;
     top: 0; bottom: 0;
     left: 880px;
-    width: 80px;
-    background: linear-gradient(-90deg, transparent, rgba(43,39,33,0.09));
+    width: 70px;
+    background: linear-gradient(-90deg, transparent, rgba(0,0,0,0.16));
     pointer-events: none;
     z-index: 9;
   }
 
   .page-half {
+    width: 880px;
+    height: 1240px;
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 30px;
-    position: relative;
-  }
-
-  .page-half.left {
-    padding-right: 45px;
-    padding-left: 55px;
-  }
-
-  .page-half.right {
-    padding-left: 45px;
-    padding-right: 55px;
-  }
-
-  /* Khung chứa ảnh trang sách thực tế */
-  .book-page-wrap {
-    width: 100%;
-    height: 100%;
-    max-height: 1160px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
   }
 
   .book-page-img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    border-radius: 6px;
-    box-shadow: 0 14px 40px rgba(43,39,33,0.18), 0 2px 10px rgba(43,39,33,0.08);
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
     display: block;
-    background: #ffffff;
   }
 </style>
 </head>
@@ -142,15 +119,11 @@ function buildPureBookSpreadHtml(leftDataUri, rightDataUri) {
     <div class="spine-shadow-right"></div>
 
     <div class="page-half left">
-      <div class="book-page-wrap">
-        <img class="book-page-img" src="${leftDataUri}" alt="Trang trái">
-      </div>
+      <img class="book-page-img" src="${leftDataUri}" alt="Trang trái">
     </div>
 
     <div class="page-half right">
-      <div class="book-page-wrap">
-        <img class="book-page-img" src="${rightDataUri}" alt="Trang phải">
-      </div>
+      <img class="book-page-img" src="${rightDataUri}" alt="Trang phải">
     </div>
   </div>
 </body>
@@ -169,11 +142,11 @@ async function renderPureSpreads() {
 
     const html = buildPureBookSpreadHtml(leftUri, rightUri);
     await page.setContent(html, { waitUntil: 'load' });
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(300);
 
     const outPath = path.join(OUT_DIR, s.filename);
     await page.screenshot({ path: outPath });
-    console.log(`Rendered pure book spread: ${s.filename}`);
+    console.log(`Rendered pure book spread: ${s.filename} -> ${s.title}`);
   }
 
   await browser.close();
