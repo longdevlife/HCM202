@@ -6,27 +6,32 @@ import { BOOKS } from "./content/bookContent.js";
 export const pageAtom = atom(0);
 export const viewModeAtom = atom("showcase"); // "showcase" | "reading"
 
-// Legacy 3D Book page texture pairs preserved from HCM202 repository
+// 3D Book page texture pairs for Chapter 5 (10 pages)
 export const legacyPages = [
   {
-    front: "/textures/hinh/hinh1.png",
-    back: "/textures/hinh/hinh2.png",
+    front: "/textures/chapter5/bia.png",
+    back: "/textures/chapter5/muc_1.png",
+    label: "Bìa",
   },
   {
-    front: "/textures/hinh/hinh3.png",
-    back: "/textures/hinh/hinh4.png",
+    front: "/textures/chapter5/1.1.png",
+    back: "/textures/chapter5/1.2.png",
+    label: "Mục 1.1–1.2",
   },
   {
-    front: "/textures/hinh/hinh5.png",
-    back: "/textures/hinh/hinh6.png",
+    front: "/textures/chapter5/muc_2.png",
+    back: "/textures/chapter5/2.1.png",
+    label: "Mục 2–2.1",
   },
   {
-    front: "/textures/hinh/hinh7.png",
-    back: "/textures/hinh/hinh8.png",
+    front: "/textures/chapter5/2.2.png",
+    back: "/textures/chapter5/2.3.png",
+    label: "Mục 2.2–2.3",
   },
   {
-    front: "/textures/hinh/hinh9.png",
-    back: "/textures/hinh/hinh10.png",
+    front: "/textures/chapter5/thanks.png",
+    back: "/textures/chapter5/end.png",
+    label: "Cảm ơn & Kết",
   },
 ];
 

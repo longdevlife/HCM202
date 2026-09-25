@@ -18,7 +18,7 @@ test('Volume readiness strictly reflects verified asset availability: all 3 volu
   assert.equal(isBookReady(2), true, 'Book III is ready with verified textures');
 
   // Verify page counts
-  assert.equal(BOOKS[0].pages.length, 2, 'Book I has 2 sheets (4 surfaces)');
+  assert.equal(BOOKS[0].pages.length, 5, 'Book I has 5 sheets (10 surfaces)');
   assert.equal(BOOKS[1].pages.length, 3, 'Book II has 3 sheets (6 surfaces)');
   assert.equal(BOOKS[2].pages.length, 2, 'Book III has 2 sheets (4 surfaces)');
 

@@ -9,38 +9,33 @@ const OUT_DIR = path.join(ROOT_DIR, 'public', 'landing-pages', 'meng-to-sketchbo
 const SPREADS = [
   {
     filename: 'chapter5-spread-1.png',
-    leftImg: 'public/textures/books/book1/bia_1.png',
-    rightImg: 'public/textures/books/book1/1.png',
-    title: '1.1. Khái niệm Cơ cấu Xã hội - Giai cấp',
-    presenter: 'Anh Chánh'
+    leftImg: 'public/textures/chapter5/bia.png',
+    rightImg: 'public/textures/chapter5/muc_1.png',
+    title: 'Bìa & Mục 1: Khái niệm & Vị trí Cơ cấu Xã hội - Giai cấp',
   },
   {
     filename: 'chapter5-spread-2.png',
-    leftImg: 'public/textures/books/book1/1.png',
-    rightImg: 'public/textures/books/book1/1.1.png',
-    title: '1.2. Vị trí trong Hệ thống Xã hội',
-    presenter: 'Anh Khoa'
+    leftImg: 'public/textures/chapter5/1.1.png',
+    rightImg: 'public/textures/chapter5/1.2.png',
+    title: 'Mục 1.1 & 1.2: Khái niệm & Vị trí trong Hệ thống Xã hội',
   },
   {
     filename: 'chapter5-spread-3.png',
-    leftImg: 'public/textures/books/book2/bia_2.png',
-    rightImg: 'public/textures/books/book2/2.1.png',
-    title: '2.1. Quy định bởi Cơ cấu Kinh tế',
-    presenter: 'Như Quỳnh'
+    leftImg: 'public/textures/chapter5/muc_2.png',
+    rightImg: 'public/textures/chapter5/2.1.png',
+    title: 'Mục 2 & 2.1: Biến đổi có tính quy luật & Cơ cấu Kinh tế',
   },
   {
     filename: 'chapter5-spread-4.png',
-    leftImg: 'public/textures/books/book2/2.1.png',
-    rightImg: 'public/textures/books/book2/2.2.png',
-    title: '2.2. Biến đổi Phức tạp & Tầng lớp Mới',
-    presenter: 'Anh Long Anh'
+    leftImg: 'public/textures/chapter5/2.2.png',
+    rightImg: 'public/textures/chapter5/2.3.png',
+    title: 'Mục 2.2 & 2.3: Tầng lớp mới & Mối quan hệ Liên minh',
   },
   {
     filename: 'chapter5-spread-5.png',
-    leftImg: 'public/textures/books/book2/2.2.png',
-    rightImg: 'public/textures/books/book2/2.3.png',
-    title: '2.3. Vừa Đấu tranh, Vừa Liên minh',
-    presenter: 'Thi'
+    leftImg: 'public/textures/chapter5/thanks.png',
+    rightImg: 'public/textures/chapter5/end.png',
+    title: 'Lời Cảm Ơn & Tổng Kết Chương 5',
   }
 ];
 

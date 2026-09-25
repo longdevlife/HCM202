@@ -127,14 +127,6 @@ export default function TruyTimManhGhepGame() {
     showToast("🔄 Đã làm mới trò chơi! Toàn bộ 9 câu hỏi đã sẵn sàng.");
   };
 
-  const getLevelBadgeClass = (lvl) => {
-    if (lvl.includes("Nhận biết"))
-      return "bg-blue-900/60 text-blue-200 border-blue-500/40";
-    if (lvl.includes("Thông hiểu"))
-      return "bg-amber-900/60 text-amber-200 border-amber-500/40";
-    return "bg-purple-900/60 text-purple-200 border-purple-500/40";
-  };
-
   return (
     <div className="chiecnon-game-container min-h-screen text-[#eee2ca] pt-24 pb-16 px-3 sm:px-6 md:px-8 relative overflow-hidden flex flex-col items-center">
       {/* Texture grain overlay */}

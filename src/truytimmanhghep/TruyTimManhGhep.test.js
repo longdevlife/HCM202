@@ -148,3 +148,59 @@ test("TruyTimManhGhepGame.jsx mounts GameRulesModal and provides rules button an
   assert.ok(content.includes("<GameRulesModal"), "GameRulesModal is rendered in JSX");
 });
 
+test("GameRulesModal uses clean, unified question modal styling (warm light background, Inter font)", () => {
+  const modalPath = path.resolve(process.cwd(), "src", "truytimmanhghep", "GameRulesModal.jsx");
+  const content = fs.readFileSync(modalPath, "utf-8");
+
+  assert.ok(content.includes("#faf7f2"), "Uses clean warm cream background matching question modal");
+  assert.ok(content.includes("fontFamily: \"'Inter', sans-serif\""), "Uses clean Inter typography");
+});
+
+test("PuzzleQuestionModal unifies font to Inter and cleanly separates answer check vs piece reveal", () => {
+  const modalPath = path.resolve(process.cwd(), "src", "truytimmanhghep", "PuzzleQuestionModal.jsx");
+  const content = fs.readFileSync(modalPath, "utf-8");
+
+  // Single clean typography
+  assert.ok(content.includes("fontFamily: \"'Inter', sans-serif\""), "Uses unified Inter font format");
+  assert.ok(!content.includes("Playfair Display"), "Does not mix Playfair Display into puzzle questions/answers");
+
+  // Answer phase shows right/wrong directly
+  assert.ok(content.includes("isAnswerChecked"), "Tracks answer checking in the answer phase");
+  assert.ok(content.includes("isThisCorrect"), "Highlights correct option directly on answer choices");
+
+  // Piece reveal phase shows only the piece without explanation recap
+  assert.ok(content.includes("isPieceRevealed"), "Has separate piece reveal phase");
+  assert.ok(!content.includes("Ghi nhớ trọng tâm bài học"), "Does not show explanation text in piece reveal");
+});
+
+test("PuzzleQuestionCard designs clean jigsaw puzzle piece without topic, level, or CTA text", () => {
+  const cardPath = path.resolve(process.cwd(), "src", "truytimmanhghep", "PuzzleQuestionCard.jsx");
+  const content = fs.readFileSync(cardPath, "utf-8");
+
+  // Interlocking puzzle piece SVG path
+  assert.ok(content.includes("generatePuzzlePath"), "Uses jigsaw puzzle path generator");
+  assert.ok(content.includes("PUZZLE_TAB_CONFIGS"), "Has jigsaw interlocking tabs config");
+
+  // Removed clutter per user request
+  assert.ok(!content.includes("question.tag"), "Does not show topic tag");
+  assert.ok(!content.includes("question.level"), "Does not show difficulty / recognition level");
+  assert.ok(!content.includes("Bấm để mở câu hỏi"), "Does not show verbose CTA text");
+
+  // Features clean puzzle piece number
+  assert.ok(content.includes("MẢNH GHÉP {question.qNum}") || content.includes("{question.qNum}"), "Displays puzzle piece number cleanly");
+});
+
+test("PuzzleAssemblyStage uses clean light background matching question modal and unified Inter typography", () => {
+  const stagePath = path.resolve(process.cwd(), "src", "truytimmanhghep", "PuzzleAssemblyStage.jsx");
+  const content = fs.readFileSync(stagePath, "utf-8");
+
+  // Light background matching question modal
+  assert.ok(content.includes("#faf7f2"), "Uses #faf7f2 light cream background matching question modal");
+  assert.ok(content.includes("fontFamily: \"'Inter', sans-serif\""), "Uses unified Inter font format");
+
+  // Question & Answer formatting
+  assert.ok(content.includes("CÂU HỎI QUY LUẬT TRANH"), "Has question section header");
+  assert.ok(content.includes("ĐÁP ÁN CHÍNH XÁC"), "Has answer section header");
+  assert.ok(content.includes("mối quan hệ vừa đấu tranh, vừa liên minh, từng bước xóa bỏ bất bình đẳng xã hội dẫn đến sự xích lại gần nhau"), "Has exact answer copy");
+});
+
