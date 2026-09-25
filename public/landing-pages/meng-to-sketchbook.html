@@ -1510,6 +1510,132 @@ body {
   flex-wrap: wrap;
   gap: 8px;
 }
+
+/* ==========================================================================
+   BỐ CỤC ĐẢO CHIỀU (ZIG-ZAG EDITORIAL RHYTHM) VÀ INFOGRAPHIC THANH TRỰC QUAN
+   ========================================================================== */
+
+/* 1. Đảo vị trí 2 cột: Ảnh bên trái, Văn bản bên phải */
+.slide-body-grid.layout-reversed > .slide-col:first-child {
+  order: 2;
+}
+.slide-body-grid.layout-reversed > .slide-col:last-child {
+  order: 1;
+}
+
+@media (max-width: 860px) {
+  .slide-body-grid.layout-reversed > .slide-col:first-child {
+    order: 1;
+  }
+  .slide-body-grid.layout-reversed > .slide-col:last-child {
+    order: 2;
+  }
+}
+
+/* Đảo góc nghiêng tự nhiên của card ảnh khi nằm bên trái */
+.slide-body-grid.layout-reversed .interactive-card.slide-main-card {
+  transform: rotate(1.6deg);
+}
+.slide-body-grid.layout-reversed .interactive-card.sub-card-left {
+  transform: rotate(-3.6deg) translateY(14px);
+}
+.slide-body-grid.layout-reversed .interactive-card.sub-card-right {
+  transform: rotate(3.2deg) translateY(28px);
+}
+.slide-body-grid.layout-reversed .interactive-card.slide-main-card:hover {
+  transform: rotate(0deg) scale(1.02);
+}
+.slide-body-grid.layout-reversed .interactive-card.sub-card-left:hover {
+  transform: rotate(0deg) translateY(0) scale(1.05);
+}
+.slide-body-grid.layout-reversed .interactive-card.sub-card-right:hover {
+  transform: rotate(0deg) translateY(0) scale(1.05);
+}
+
+/* 2. Biểu đồ thanh trực quan (Visual Data Progress Bars) cho Slide 4 */
+.visual-bars-container {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--hairline-border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 14px rgba(62, 47, 28, 0.05);
+}
+
+.visual-bars-title {
+  font-family: 'Be Vietnam Pro', sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: var(--ink-light) !important;
+  border-bottom: 1px dashed var(--hairline-strong);
+  padding-bottom: 6px;
+  margin-bottom: 2px;
+}
+
+.visual-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.visual-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: 'Be Vietnam Pro', sans-serif !important;
+}
+
+.bar-label {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--ink-main) !important;
+}
+
+.bar-val {
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  font-family: 'Playfair Display', Georgia, serif !important;
+}
+
+.service-val { color: #96262a !important; }
+.industry-val { color: #b8860b !important; }
+.agriculture-val { color: #5c4033 !important; }
+
+.visual-bar-track {
+  width: 100%;
+  height: 9px;
+  background: rgba(100, 70, 34, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(100, 70, 34, 0.08);
+}
+
+.visual-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.bar-service {
+  background: linear-gradient(90deg, #96262a, #c5272d);
+  box-shadow: 0 0 8px rgba(150, 38, 42, 0.35);
+}
+
+.bar-industry {
+  background: linear-gradient(90deg, #b8860b, #d4af37);
+  box-shadow: 0 0 8px rgba(184, 134, 11, 0.35);
+}
+
+.bar-agriculture {
+  background: linear-gradient(90deg, #5c4033, #8b6b4f);
+  box-shadow: 0 0 8px rgba(92, 64, 51, 0.25);
+}
 </style>
 
 </head>
@@ -1778,6 +1904,11 @@ body {
             <p class="slide-concept-desc">Cơ cấu xã hội - giai cấp là tổng thể các giai cấp, tầng lớp, nhóm xã hội có mối quan hệ hợp tác và gắn bó chặt chẽ với nhau do cùng chung sức cải tạo xã hội cũ và xây dựng xã hội mới. Cơ cấu này bao gồm giai cấp công nhân, giai cấp nông dân, tầng lớp trí thức, tầng lớp doanh nhân, tầng lớp tiểu chủ, thanh niên, phụ nữ,... dưới sự lãnh đạo của Đảng Cộng sản.</p>
           </div>
 
+          <div class="slide-concept-box">
+            <span class="slide-concept-term">Tính chất phức tạp và xu hướng vận động:</span>
+            <p class="slide-concept-desc">Sự tồn tại của nền kinh tế nhiều thành phần quy định cơ cấu xã hội – giai cấp mang tính đa dạng, đan xen phức tạp. Song xu hướng căn bản là từng bước xóa bỏ bất bình đẳng, tăng cường sự liên minh và xích lại gần nhau giữa các tầng lớp nhân dân lao động.</p>
+          </div>
+
           <div class="slide-theory-link">
             <span class="slide-theory-tag">Ý Nghĩa Phương Pháp Luận &amp; Thực Tiễn</span>
             <p class="slide-theory-content">
@@ -1837,48 +1968,48 @@ body {
 
       <h2 class="slide-title">1.2. Vị trí của cơ cấu xã hội - giai cấp trong cơ cấu xã hội</h2>
 
-      <div class="slide-body-grid">
-        <!-- Cột trái: 3 Vị trí -->
+      <div class="slide-body-grid layout-reversed">
+        <!-- Cột lý luận (Hiển thị bên PHẢI nhờ layout-reversed) -->
         <div class="slide-col">
-          <h3 class="col-banner-title">3 Vị Trí Then Chốt Trong Hệ Thống</h3>
+          <h3 class="col-banner-title">3 Vị Trí Then Chốt Quyết Định</h3>
 
           <div class="slide-numbered-item">
             <div class="slide-numbered-idx">1</div>
             <p class="slide-numbered-text">
-              Liên quan trực tiếp đến các đảng phái chính trị và nhà nước; đến quyền sở hữu tư liệu sản xuất, quản lý tổ chức lao động và phân phối thu nhập trong hệ thống sản xuất.
+              <strong>Gắn liền với thể chế chính trị và quyền lực nhà nước:</strong> Liên quan trực tiếp đến các đảng phái chính trị, hệ thống pháp luật; đến quyền sở hữu tư liệu sản xuất, tổ chức quản lý lao động và nguyên tắc phân phối thu nhập trong nền kinh tế quốc dân.
             </p>
           </div>
 
           <div class="slide-numbered-item">
             <div class="slide-numbered-idx">2</div>
             <p class="slide-numbered-text">
-              Sự biến đổi của cơ cấu xã hội - giai cấp tất yếu ảnh hưởng đến sự biến đổi của các loại hình cơ cấu xã hội khác (như dân cư, nghề nghiệp, dân tộc, tôn giáo) và tác động đến toàn bộ cơ cấu xã hội.
+              <strong>Chi phối các loại hình cơ cấu xã hội khác:</strong> Sự biến đổi của cơ cấu xã hội – giai cấp tất yếu chi phối và quyết định sự biến đổi của cơ cấu dân số, dân tộc, tôn giáo và nghề nghiệp, tác động sâu sắc đến toàn bộ diện mạo xã hội.
             </p>
           </div>
 
           <div class="slide-numbered-item">
             <div class="slide-numbered-idx">3</div>
             <p class="slide-numbered-text">
-              Là căn cứ cơ bản để xây dựng chính sách phát triển kinh tế, văn hóa, xã hội của mỗi xã hội trong từng giai đoạn lịch sử.
+              <strong>Căn cứ khoa học hoạch định chính sách quốc gia:</strong> Là cơ sở lý luận và thực tiễn tối cao để Đảng và Nhà nước xây dựng chiến lược phát triển kinh tế, văn hóa, xã hội, củng cố khối đại đoàn kết toàn dân tộc trong từng giai đoạn cách mạng.
             </p>
           </div>
 
           <div class="slide-concept-box">
-            <span class="slide-concept-term">Vai trò chi phối các loại hình cơ cấu khác:</span>
+            <span class="slide-concept-term">Vai trò trung tâm chi phối toàn diện:</span>
             <p class="slide-concept-desc">
               Mặc dù cơ cấu dân cư, dân tộc, tôn giáo đều có vai trò quan trọng, song cơ cấu xã hội – giai cấp giữ vai trò chi phối và quyết định trực tiếp nhất. Mọi biến đổi về chính trị, nhà nước và thể chế đều bắt nguồn từ sự vận động của cơ cấu giai cấp.
             </p>
           </div>
 
           <div class="slide-theory-link">
-            <span class="slide-theory-tag">Liên Hệ Lý Luận Chiều Sâu</span>
+            <span class="slide-theory-tag">Liên Hệ Lý Luận &amp; Thực Tiễn Việt Nam</span>
             <p class="slide-theory-content">
-              Vị trí của các giai cấp, tầng lớp không cố định mà biến đổi cùng trình độ phát triển của lực lượng sản xuất. Khi nền kinh tế chuyển sang dựa vào tri thức, khoa học - công nghệ, vai trò của đội ngũ trí thức ngày càng được nâng cao.
+              Vị trí của các giai cấp, tầng lớp không cố định mà biến đổi cùng trình độ phát triển của lực lượng sản xuất. Khi nền kinh tế chuyển sang dựa vào tri thức, khoa học – công nghệ, vai trò nòng cốt của đội ngũ trí thức cùng công nhân hiện đại càng trở nên quyết định đối với tương lai dân tộc.
             </p>
           </div>
         </div>
 
-        <!-- Cột phải: Ví dụ 2, Nghị quyết 45 & Cụm ghép ảnh tạp chí -->
+        <!-- Cột minh chứng (Hiển thị bên TRÁI nhờ layout-reversed) -->
         <div class="slide-col">
           <h3 class="col-banner-title">Minh Chứng: Vai Trò Đội Ngũ Trí Thức</h3>
 
@@ -2008,6 +2139,41 @@ body {
             </p>
           </div>
 
+          <!-- KHỐI BIỂU ĐỒ THANH TRỰC QUAN (VISUAL DATA PROGRESS BARS) -->
+          <div class="visual-bars-container">
+            <div class="visual-bars-title">Tỷ trọng lao động theo ngành (Quý IV/2025 - GSO)</div>
+
+            <div class="visual-bar-item">
+              <div class="visual-bar-header">
+                <span class="bar-label">Dịch Vụ (Thương mại &amp; Công nghệ)</span>
+                <span class="bar-val service-val">40,8%</span>
+              </div>
+              <div class="visual-bar-track">
+                <div class="visual-bar-fill bar-service" style="width: 40.8%;"></div>
+              </div>
+            </div>
+
+            <div class="visual-bar-item">
+              <div class="visual-bar-header">
+                <span class="bar-label">Công Nghiệp &amp; Xây Dựng (CNH, HĐH)</span>
+                <span class="bar-val industry-val">33,8%</span>
+              </div>
+              <div class="visual-bar-track">
+                <div class="visual-bar-fill bar-industry" style="width: 33.8%;"></div>
+              </div>
+            </div>
+
+            <div class="visual-bar-item">
+              <div class="visual-bar-header">
+                <span class="bar-label">Nông, Lâm Nghiệp &amp; Thủy Sản (Giảm hợp lý)</span>
+                <span class="bar-val agriculture-val">25,4%</span>
+              </div>
+              <div class="visual-bar-track">
+                <div class="visual-bar-fill bar-agriculture" style="width: 25.4%;"></div>
+              </div>
+            </div>
+          </div>
+
           <div class="slide-stat-strip">
             <div class="slide-stat-item">
               <span class="slide-stat-num">40,8%</span>
@@ -2050,41 +2216,41 @@ body {
 
       <h2 class="slide-title">2.2. Biến đổi phức tạp, đa dạng, làm xuất hiện các tầng lớp xã hội mới</h2>
 
-      <div class="slide-body-grid">
-        <!-- Cột trái: Luận điểm -->
+      <div class="slide-body-grid layout-reversed">
+        <!-- Cột lý luận (Hiển thị bên PHẢI nhờ layout-reversed) -->
         <div class="slide-col">
-          <h3 class="col-banner-title">Cơ Sở Lý Luận</h3>
+          <h3 class="col-banner-title">Cơ Sở Lý Luận &amp; Động Lực Phát Triển Mới</h3>
 
           <div class="slide-concept-box">
             <span class="slide-concept-term">Kết cấu kinh tế nhiều thành phần:</span>
             <p class="slide-concept-desc">
-              Kết cấu kinh tế nhiều thành phần quy định sự tồn tại đan xen giữa yếu tố cũ và yếu tố mới.
+              Kết cấu kinh tế nhiều thành phần định hướng XHCN quy định sự tồn tại đan xen giữa các phương thức sản xuất, giữa yếu tố cũ và yếu tố mới, làm cho quan hệ giai tầng trở nên đa dạng và linh hoạt.
             </p>
           </div>
 
           <div class="slide-concept-box">
-            <span class="slide-concept-term">Sự xuất hiện các tầng lớp mới:</span>
+            <span class="slide-concept-term">Sự xuất hiện các tầng lớp xã hội mới:</span>
             <p class="slide-concept-desc">
-              Bên cạnh các giai cấp, tầng lớp cơ bản (công nhân, nông dân, trí thức, tư sản), thời kỳ này xuất hiện và phát triển các tầng lớp xã hội mới như đội ngũ doanh nhân, tiểu chủ, tầng lớp trung lưu và những người giàu có.
+              Bên cạnh các giai cấp, tầng lớp cơ bản truyền thống (công nhân, nông dân, trí thức), thời kỳ quá độ chứng kiến sự xuất hiện và phát triển mạnh mẽ của các tầng lớp mới: đội ngũ doanh nhân, tiểu chủ, tầng lớp trung lưu và lao động tự do công nghệ.
             </p>
           </div>
 
           <div class="slide-concept-box">
             <span class="slide-concept-term">Động lực phát triển của Tầng lớp Doanh nhân:</span>
             <p class="slide-concept-desc">
-              Đội ngũ doanh nhân và kinh tế tư nhân là động lực quan trọng của nền kinh tế thị trường định hướng XHCN. Sự lớn mạnh của lực lượng này góp phần giải quyết việc làm, huy động nguồn lực xã hội và thúc đẩy tăng trưởng kinh tế nhanh, bền vững.
+              Đội ngũ doanh nhân và khu vực kinh tế tư nhân là một động lực quan trọng hàng đầu của nền kinh tế thị trường định hướng XHCN. Sự lớn mạnh của lực lượng này góp phần giải quyết việc làm cho hàng triệu lao động, huy động nguồn vốn xã hội và thúc đẩy tăng trưởng kinh tế nhanh, bền vững.
             </p>
           </div>
 
           <div class="slide-theory-link">
             <span class="slide-theory-tag">Liên Hệ Lý Luận Chiều Sâu</span>
             <p class="slide-theory-content">
-              Nền kinh tế nhiều thành phần là cội nguồn khách quan làm cho cơ cấu xã hội – giai cấp trở nên phong phú, đan xen yếu tố mới và cũ. Bên cạnh giai cấp cơ bản, sự bứt phá của hơn 297,5 nghìn doanh nghiệp gia nhập thị trường chứng minh sinh động cho quy luật xuất hiện các tầng lớp xã hội mới.
+              Nền kinh tế nhiều thành phần là cội nguồn khách quan làm cho cơ cấu xã hội – giai cấp trở nên phong phú, đan xen yếu tố mới và cũ. Bên cạnh giai cấp cơ bản, sự bứt phá của hơn 297,5 nghìn doanh nghiệp gia nhập thị trường chứng minh sinh động cho quy luật xuất hiện các tầng lớp xã hội mới dưới sự quản lý của Nhà nước pháp quyền XHCN.
             </p>
           </div>
         </div>
 
-        <!-- Cột phải: Ví dụ 5, Doanh nhân & Cụm ghép ảnh tạp chí -->
+        <!-- Cột minh chứng (Hiển thị bên TRÁI nhờ layout-reversed) -->
         <div class="slide-col">
           <h3 class="col-banner-title">Sự Phát Triển Của Doanh Nhân &amp; Tư Liệu Ghép Ảnh</h3>
 
