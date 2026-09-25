@@ -60,27 +60,46 @@ export default function GameRulesModal({ isOpen, onClose }) {
                 VÒNG 1: TRUY TÌM MẢNH GHÉP
               </h3>
 
-              <p className="pt-0.5">
-                Mỗi câu trả lời đúng:{" "}
-                <strong className="font-bold text-red-600 whitespace-nowrap">10 điểm/câu.</strong>
-              </p>
+              <div className="space-y-2.5 pt-0.5">
+                <p>
+                  Mỗi mảnh ghép tương ứng với 01 câu hỏi.
+                </p>
 
-              <p className="italic text-[#4a382e]">
-                Ví dụ: Trả lời đúng 9/9 câu sẽ được{" "}
-                <strong className="font-bold text-red-600 not-italic whitespace-nowrap">90 điểm</strong>.
-              </p>
+                <p className="text-[#3d1a10]">
+                  Các nhóm trả lời bằng cách giơ số + đáp án.
+                  <br />
+                  <span className="italic text-[#5a4235] text-xs sm:text-sm">
+                    (Ví dụ: Nhóm 1 trả lời đáp án A thì giơ 1A)
+                  </span>
+                </p>
 
-              <p className="text-[#3d1a10]">
-                <strong className="font-bold text-[#7c2d12]">Lưu ý:</strong>{" "}
-                <span className="italic">nếu trả lời sai câu đó là sẽ bị khoá, và </span>
-                <strong className="font-bold text-red-600 not-italic whitespace-nowrap">mất 10 điểm</strong>.
-              </p>
+                <p>
+                  Trả lời đúng:{" "}
+                  <strong className="font-bold text-red-600 whitespace-nowrap">+10 điểm</strong>{" "}
+                  và nhận mảnh ghép tương ứng.
+                </p>
+
+                <p className="text-xs sm:text-sm text-[#5a4235] leading-normal">
+                  Các mảnh ghép thu được sẽ được sử dụng ở Vòng 2{" "}
+                  <span className="italic">
+                    (nên cân nhắc trả lời đúng nhiều nhất để có nhiều mảnh ghép phục vụ cho việc đoán hình)
+                  </span>
+                </p>
+
+                <p className="pt-0.5 text-[#3d1a10] whitespace-nowrap text-xs sm:text-[13px] md:text-[14px] lg:text-[15px]">
+                  <span className="text-[#7c2d12] font-bold">→ </span>
+                  Điểm Vòng 1 ={" "}
+                  <strong className="font-bold text-red-600 not-italic">
+                    Số câu đúng × 10 điểm
+                  </strong>
+                </p>
+              </div>
             </div>
 
             {/* CỘT PHẢI: PHẦN 2 */}
             <div className="space-y-3.5 text-sm sm:text-base text-[#2c1810] leading-relaxed">
               <h3 className="text-base sm:text-lg font-bold uppercase tracking-wider text-[#5a2b13] border-b border-[#d8c8b5]/60 pb-1">
-                VÒNG 2: GHÉP HÌNH - ĐOÁN TỪ KHÓA
+                VÒNG 2: GHÉP HÌNH – ĐOÁN TỪ KHÓA
               </h3>
 
               <div className="pt-0.5 space-y-1">
@@ -94,18 +113,18 @@ export default function GameRulesModal({ isOpen, onClose }) {
                 </p>
               </div>
 
-              <div className="pt-0.5 flex flex-wrap sm:flex-nowrap items-baseline gap-x-1.5 leading-snug">
-                <span className="whitespace-normal lg:whitespace-nowrap">
-                  Đoán đúng cụm từ khoá của ảnh nền phía sau:
+              <div className="pt-0.5 leading-snug">
+                <span>
+                  Sau khi ghép hình, các nhóm đoán đúng từ khóa/câu hỏi ẩn sau bức hình:{" "}
                 </span>
-                <strong className="font-bold text-red-600 whitespace-nowrap shrink-0">
-                  Cộng 30 điểm.
+                <strong className="font-bold text-red-600 whitespace-nowrap">
+                  +50 điểm.
                 </strong>
               </div>
 
               <div className="space-y-1.5 pt-0.5">
                 <p className="font-medium text-[#3d1a10]">
-                  Điểm tốc độ dành cho 3 nhóm hoàn thành nhanh nhất:
+                  Thưởng tốc độ cho 3 nhóm hoàn thành xếp hình + trả lời đúng từ khoá/ câu hỏi của bức hình nhanh nhất:
                 </p>
                 <ul className="space-y-1 pl-1 sm:pl-2">
                   <li className="flex items-start gap-2">
@@ -126,25 +145,34 @@ export default function GameRulesModal({ isOpen, onClose }) {
                       Nhanh thứ ba: <strong className="font-bold text-red-600 whitespace-nowrap">Cộng 10 điểm.</strong>
                     </span>
                   </li>
-                  <li className="flex items-start gap-2 text-xs sm:text-sm text-[#5a4235] italic">
-                    <span className="text-[#7c2d12] font-bold">•</span>
-                    <span>Các nhóm còn lại không được cộng điểm tốc độ.</span>
-                  </li>
                 </ul>
               </div>
+
+              <p className="pt-0.5 text-[#3d1a10] whitespace-nowrap text-xs sm:text-[13px] md:text-[14px] lg:text-[15px]">
+                <span className="text-[#7c2d12] font-bold">→ </span>
+                Điểm Vòng 2 ={" "}
+                <strong className="font-bold text-red-600 not-italic">
+                  50 điểm + Điểm tốc độ − Điểm mua mảnh ghép
+                </strong>
+              </p>
             </div>
           </div>
 
-          {/* ================= TỔNG KẾT ĐIỂM & ĐIỀU KIỆN CHIẾN THẮNG ================= */}
-          <div className="pt-3 border-t border-[#d8c8b5]/80 space-y-3 text-center">
+          {/* ================= KẾT QUẢ ================= */}
+          <div className="pt-3 border-t border-[#d8c8b5]/80 space-y-2.5 text-center">
+            <div className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#5a2b13]">
+              KẾT QUẢ
+            </div>
+
             <p className="text-sm sm:text-base md:text-lg font-semibold text-[#3d1a10] text-center">
-              Điểm cuối cùng mỗi nhóm = <span className="font-bold text-red-600 whitespace-nowrap">Điểm trả lời đúng</span> + <span className="font-bold text-red-600 whitespace-nowrap">Điểm đoán hình</span> + <span className="font-bold text-red-600 whitespace-nowrap">Điểm tốc độ</span>.
+              TỔNG ĐIỂM = <span className="font-bold text-red-600 whitespace-nowrap">VÒNG 1</span> + <span className="font-bold text-red-600 whitespace-nowrap">VÒNG 2</span>
             </p>
 
             <div className="border-t border-dashed border-[#cbb79c] w-full"></div>
 
             <p className="italic text-sm sm:text-base md:text-lg font-semibold text-[#2c1810] text-center">
-              → Nhóm có tổng điểm cao nhất sau khi kết thúc trò chơi sẽ giành chiến thắng.
+              <span className="text-[#7c2d12] font-bold not-italic">→ </span>
+              Nhóm có tổng điểm cao nhất sau hai vòng là đội chiến thắng.
             </p>
           </div>
 
