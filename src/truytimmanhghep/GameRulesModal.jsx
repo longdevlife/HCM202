@@ -1,5 +1,13 @@
 import React, { useEffect } from "react";
 
+/**
+ * GameRulesModal - Thể Lệ Tính Điểm
+ * Thiết kế tối giản, thanh lịch phong cách trang giấy/slide thuyết trình:
+ * - Nền giấy ngà ấm áp (#faf6ed), viền đôi cổ điển sang trọng
+ * - Tiêu đề serif "THỂ LỆ TÍNH ĐIỂM"
+ * - Chia làm 2 phần (Phần 1 và Phần 2) ở 2 bên không dùng khung hộp rườm rà
+ * - Công thức tính điểm và thông điệp chiến thắng ở dưới cùng
+ */
 export default function GameRulesModal({ isOpen, onClose }) {
   // Đóng modal khi nhấn phím Escape
   useEffect(() => {
@@ -16,163 +24,129 @@ export default function GameRulesModal({ isOpen, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-[250] flex items-center justify-center p-3 sm:p-5 md:p-6 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto"
+      className="fixed inset-0 z-[250] flex items-center justify-center p-3 sm:p-5 md:p-6 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto"
       onClick={onClose}
     >
-      {/* Khung Modal thiết kế tối giản, sạch sẽ, không lạm dụng icon */}
+      {/* Khung ngoài: Viền đôi cổ điển màu nâu đồng thanh lịch */}
       <div
-        className="relative w-[95vw] md:w-[75vw] max-w-5xl max-h-[92vh] bg-[#faf7f2] text-[#2c1a0e] rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.85)] border-2 sm:border-4 border-[#c9922a] overflow-hidden flex flex-col my-auto"
-        style={{ fontFamily: "'Inter', sans-serif" }}
+        className="relative w-[96vw] md:w-[90vw] lg:w-[86vw] max-w-5xl max-h-[94vh] bg-[#faf6ed] text-[#2c1810] border-2 sm:border-[3px] border-[#5a2b13] p-2 sm:p-3 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col my-auto"
+        style={{ fontFamily: "'Playfair Display', Georgia, 'Times New Roman', serif" }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ================= HEADER TỐI GIẢN ================= */}
-        <div className="bg-gradient-to-r from-[#2c1a0e] via-[#4a2e18] to-[#2c1a0e] text-white px-6 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between border-b-2 border-[#c9922a]/50 flex-shrink-0">
-          <div>
-            <h2 className="text-base sm:text-lg font-bold text-white tracking-wide uppercase">
-              THỂ LỆ TRÒ CHƠI: TRUY TÌM MẢNH GHÉP
+        {/* Nút đóng modal tối giản ở góc trên bên phải */}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Đóng thể lệ"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 z-20 w-8 h-8 rounded-full border border-[#8b5a2b]/40 text-[#5a2b13] hover:text-white hover:bg-[#5a2b13] flex items-center justify-center transition-all cursor-pointer text-sm font-sans"
+        >
+          ✕
+        </button>
+
+        {/* Khung viền chỉ mảnh bên trong tạo hiệu ứng viền đôi sang trọng như trang slide */}
+        <div className="border border-[#cbb79c] rounded-xl p-5 sm:p-7 md:p-9 overflow-y-auto flex-1 flex flex-col justify-between space-y-5">
+          {/* ================= TIÊU ĐỀ CHÍNH ================= */}
+          <div className="text-center pb-3 sm:pb-4 border-b border-[#d8c8b5]/80">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-wider text-[#3d1a10] uppercase">
+              THỂ LỆ TÍNH ĐIỂM
             </h2>
-            <p className="text-xs text-[#dbc39c]">
-              Quy tắc thi đấu &amp; cách tính điểm dành cho các nhóm
-            </p>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Đóng thể lệ"
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-base cursor-pointer border border-[#c9922a]/40"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* ================= MODAL BODY ================= */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
-          {/* HÀNG 1: 2 CỘT NỘI DUNG (VÒNG 1 VÀ VÒNG 2) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* CỘT 1: VÒNG 1 */}
-            <div className="bg-white rounded-2xl border border-[#e5dfd5] p-4 sm:p-5 shadow-xs flex flex-col justify-between space-y-3">
-              <h3 className="text-sm sm:text-base font-bold uppercase tracking-wider text-[#b45309] pb-2.5 border-b border-[#e5dfd5]">
-                VÒNG 1: TRUY TÌM MẢNH GHÉP
+          {/* ================= NỘI DUNG 2 CỘT: PHẦN 1 & PHẦN 2 ================= */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 py-2 flex-1 items-start">
+            {/* CỘT TRÁI: PHẦN 1 */}
+            <div className="space-y-3.5 text-sm sm:text-base text-[#2c1810] leading-relaxed">
+              <h3 className="text-base sm:text-lg font-bold uppercase tracking-wider text-[#5a2b13] border-b border-[#d8c8b5]/60 pb-1">
+                PHẦN 1: TRUY TÌM MẢNH GHÉP
               </h3>
 
-              <div className="space-y-3 text-xs sm:text-sm text-[#2c1a0e] leading-relaxed flex-1">
-                <p>
-                  Trong mỗi mảnh ghép sẽ có <strong>1 câu hỏi</strong> trắc nghiệm.
-                </p>
+              <p className="pt-0.5">
+                Mỗi câu trả lời đúng:{" "}
+                <strong className="font-bold text-red-600 whitespace-nowrap">5 điểm/câu.</strong>
+              </p>
 
-                <p>
-                  Mỗi câu trả lời đúng:{" "}
-                  <span className="font-bold text-red-600 whitespace-nowrap">
-                    10 điểm / câu
-                  </span>
-                </p>
+              <p className="italic text-[#4a382e]">
+                Ví dụ: Trả lời đúng 10/20 câu sẽ được{" "}
+                <strong className="font-bold text-red-600 not-italic whitespace-nowrap">50 điểm</strong>.
+              </p>
 
-                {/* Hộp quy định hình thức trả lời */}
-                <div className="p-3.5 rounded-xl bg-[#faf7f2] border border-[#e5dfd5] text-xs space-y-1.5 mt-2">
-                  <div className="font-bold text-[#b45309] uppercase tracking-wide text-xs">
-                    Quy định hình thức trả lời:
-                  </div>
-                  <p className="text-gray-700">
-                    Trả lời bằng hình thức:{" "}
-                    <strong className="text-[#2c1a0e] uppercase">
-                      ĐƯA CẢ SỐ (đại diện cho tên nhóm) + ĐÁP ÁN
-                    </strong>
-                  </p>
-                  <p className="text-xs text-gray-500 italic">
-                    Ví dụ: Nhóm 1 chọn A đưa &quot;<strong>1A</strong>&quot; · Nhóm 3 chọn C đưa &quot;<strong>3C</strong>&quot;.
-                  </p>
-                </div>
-              </div>
+              <p className="text-[#3d1a10]">
+                <strong className="font-bold text-[#7c2d12]">Lưu ý:</strong>{" "}
+                <span className="italic">nếu trả lời sai câu đó là sẽ bị khoá, và </span>
+                <strong className="font-bold text-red-600 not-italic whitespace-nowrap">mất 5đ</strong>.
+              </p>
             </div>
 
-            {/* CỘT 2: VÒNG 2 */}
-            <div className="bg-white rounded-2xl border border-[#e5dfd5] p-4 sm:p-5 shadow-xs flex flex-col justify-between space-y-3">
-              <h3 className="text-sm sm:text-base font-bold uppercase tracking-wider text-[#b45309] pb-2.5 border-b border-[#e5dfd5]">
-                VÒNG 2: SẮP XẾP MẢNH GHÉP + ĐOÁN TỪ KHOÁ
+            {/* CỘT PHẢI: PHẦN 2 */}
+            <div className="space-y-3.5 text-sm sm:text-base text-[#2c1810] leading-relaxed">
+              <h3 className="text-base sm:text-lg font-bold uppercase tracking-wider text-[#5a2b13] border-b border-[#d8c8b5]/60 pb-1">
+                PHẦN 2: TỪ KHOÁ &amp; TỐC ĐỘ
               </h3>
 
-              <div className="space-y-3 text-xs sm:text-sm text-[#2c1a0e] leading-relaxed flex-1">
-                <p>
-                  <strong>Sắp xếp mảnh ghép thành hình</strong> hoàn chỉnh theo sơ đồ 3×3.
+              <div className="pt-0.5 flex flex-wrap sm:flex-nowrap items-baseline gap-x-1.5 leading-snug">
+                <span className="whitespace-normal lg:whitespace-nowrap">
+                  Đoán đúng cụm từ khoá của ảnh nền phía sau:
+                </span>
+                <strong className="font-bold text-red-600 whitespace-nowrap shrink-0">
+                  Cộng 30 điểm.
+                </strong>
+              </div>
+
+              <div className="space-y-1.5 pt-0.5">
+                <p className="font-medium text-[#3d1a10]">
+                  Điểm tốc độ dành cho 3 nhóm hoàn thành nhanh nhất:
                 </p>
-
-                <p>
-                  Sắp xếp xong + Trả lời đúng câu hỏi ở dưới bức hình:{" "}
-                  <span className="font-bold text-red-600 whitespace-nowrap">
-                    +50 điểm
-                  </span>
-                </p>
-
-                {/* Hộp điểm tốc độ */}
-                <div className="p-3.5 rounded-xl bg-[#faf7f2] border border-[#e5dfd5] text-xs space-y-2 mt-2">
-                  <div className="font-bold text-[#b45309] uppercase tracking-wide text-xs">
-                    Điểm tốc độ dành cho 3 nhóm hoàn thành nhanh nhất:
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
-                    {/* Hạng 1 */}
-                    <div className="p-2 rounded-lg bg-white border border-[#e5dfd5]">
-                      <div className="text-gray-600 text-xs font-medium whitespace-nowrap">Nhanh nhất:</div>
-                      <div className="font-bold text-xs sm:text-sm text-[#b45309] mt-0.5 whitespace-nowrap">
-                        +20 điểm
-                      </div>
-                    </div>
-
-                    {/* Hạng 2 */}
-                    <div className="p-2 rounded-lg bg-white border border-[#e5dfd5]">
-                      <div className="text-gray-600 text-xs font-medium whitespace-nowrap">Nhanh thứ hai:</div>
-                      <div className="font-bold text-xs sm:text-sm text-[#b45309] mt-0.5 whitespace-nowrap">
-                        +15 điểm
-                      </div>
-                    </div>
-
-                    {/* Hạng 3 */}
-                    <div className="p-2 rounded-lg bg-white border border-[#e5dfd5]">
-                      <div className="text-gray-600 text-xs font-medium whitespace-nowrap">Nhanh thứ ba:</div>
-                      <div className="font-bold text-xs sm:text-sm text-[#b45309] mt-0.5 whitespace-nowrap">
-                        +10 điểm
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-gray-500 italic text-center pt-0.5">
-                    Các nhóm còn lại không được cộng điểm tốc độ.
-                  </div>
-                </div>
+                <ul className="space-y-1 pl-1 sm:pl-2">
+                  <li className="flex items-start gap-2">
+                    <span className="text-[#7c2d12] font-bold">•</span>
+                    <span>
+                      Nhanh nhất: <strong className="font-bold text-red-600 whitespace-nowrap">Cộng 20 điểm.</strong>
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-[#7c2d12] font-bold">•</span>
+                    <span>
+                      Nhanh thứ hai: <strong className="font-bold text-red-600 whitespace-nowrap">Cộng 15 điểm.</strong>
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-[#7c2d12] font-bold">•</span>
+                    <span>
+                      Nhanh thứ ba: <strong className="font-bold text-red-600 whitespace-nowrap">Cộng 10 điểm.</strong>
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2 text-xs sm:text-sm text-[#5a4235] italic">
+                    <span className="text-[#7c2d12] font-bold">•</span>
+                    <span>Các nhóm còn lại không được cộng điểm tốc độ.</span>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
 
-          {/* HÀNG 2: TỔNG KẾT ĐIỂM */}
-          <div className="bg-white rounded-2xl border border-[#e5dfd5] p-4 sm:p-5 shadow-xs text-center space-y-2">
-            <div className="text-xs sm:text-sm font-bold text-[#b45309] uppercase tracking-wider">
-              CÔNG THỨC TÍNH ĐIỂM TỔNG KẾT
-            </div>
+          {/* ================= TỔNG KẾT ĐIỂM & ĐIỀU KIỆN CHIẾN THẮNG ================= */}
+          <div className="pt-3 border-t border-[#d8c8b5]/80 space-y-3 text-center">
+            <p className="text-sm sm:text-base md:text-lg font-semibold text-[#3d1a10] text-center">
+              Điểm cuối cùng mỗi nhóm = <span className="font-bold text-red-600 whitespace-nowrap">Điểm trả lời đúng</span> + <span className="font-bold text-red-600 whitespace-nowrap">Điểm đoán hình</span> + <span className="font-bold text-red-600 whitespace-nowrap">Điểm tốc độ</span>.
+            </p>
 
-            <div className="text-xs sm:text-sm md:text-base font-bold text-[#2c1a0e]">
-              Điểm cuối cùng mỗi nhóm = Tổng điểm cả hai vòng chơi
-            </div>
+            <div className="border-t border-dashed border-[#cbb79c] w-full"></div>
 
-            <div className="text-xs sm:text-sm text-gray-700 bg-[#faf7f2] py-1 px-3.5 rounded-full inline-block border border-[#e5dfd5]">
-              ( = <span className="text-red-600 font-bold whitespace-nowrap">Điểm trả lời đúng</span> + <span className="text-[#b45309] font-bold whitespace-nowrap">Điểm đoán hình</span> + <span className="text-blue-700 font-bold whitespace-nowrap">Điểm tốc độ</span>. )
-            </div>
-
-            <p className="text-xs sm:text-sm text-[#2c1a0e] pt-1">
-              Nhóm có tổng điểm cao nhất sau khi kết thúc 2 vòng của trò chơi sẽ <span className="font-bold text-[#b45309]">giành chiến thắng</span>.
+            <p className="italic text-sm sm:text-base md:text-lg font-semibold text-[#2c1810] text-center">
+              → Nhóm có tổng điểm cao nhất sau khi kết thúc trò chơi sẽ giành chiến thắng.
             </p>
           </div>
-        </div>
 
-        {/* ================= FOOTER ================= */}
-        <div className="bg-[#f2ece4] px-6 sm:px-8 py-3 sm:py-3.5 border-t border-[#e5dfd5] flex items-center justify-end flex-shrink-0">
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full sm:w-auto px-8 py-2.5 rounded-full font-bold text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-r from-[#d97706] to-[#b45309] hover:from-[#f59e0b] hover:to-[#d97706] text-white shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            BẮT ĐẦU CHƠI!
-          </button>
+          {/* ================= NÚT BẮT ĐẦU CHƠI TỐI GIẢN ================= */}
+          <div className="flex justify-center pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-8 py-2.5 rounded-full font-serif font-bold text-xs sm:text-sm uppercase tracking-wider bg-[#5a2b13] hover:bg-[#783918] text-[#faf6ed] border border-[#cbb79c] shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            >
+              BẮT ĐẦU CHƠI
+            </button>
+          </div>
         </div>
       </div>
     </div>
