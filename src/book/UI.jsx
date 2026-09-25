@@ -29,9 +29,9 @@ export const legacyPages = [
     label: "Mục 2.2–2.3",
   },
   {
-    front: "/textures/chapter5/end.png",
-    back: "/textures/chapter5/thanks.png",
-    label: "Tổng Kết & Cảm Ơn",
+    front: "/textures/chapter5/thanks.png",
+    back: "/textures/chapter5/end.png",
+    label: "Lời Cảm Ơn & Tổng Kết",
   },
 ];
 
