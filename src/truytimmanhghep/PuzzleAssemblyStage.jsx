@@ -70,7 +70,7 @@ export default function PuzzleAssemblyStage({
             <div className="text-xs sm:text-sm uppercase font-bold text-[#fde68a] tracking-wider">
               {isRevealed
                 ? "KẾT QUẢ GHÉP TRANH & ĐÁP ÁN QUY LUẬT"
-                : "SÂN KHẤU GHÉP TRANH TỔNG KẾT"}
+                : "VÒNG 2: SÂN KHẤU GHÉP TRANH TỔNG KẾT"}
             </div>
             <div className="text-xs text-[#dbc39c]">
               {isRevealed
@@ -146,6 +146,20 @@ export default function PuzzleAssemblyStage({
 
       {/* ================= KHUNG TRÌNH CHIẾU NỀN SÁNG ĐỒNG BỘ CÂU HỎI ================= */}
       <div className="w-full bg-[#faf7f2] text-[#2c1a0e] rounded-3xl p-4 sm:p-7 md:p-8 border-2 sm:border-4 border-[#c9922a] shadow-[0_20px_50px_rgba(0,0,0,0.12)] relative overflow-hidden flex flex-col items-center space-y-5 sm:space-y-6 select-none">
+        {/* Banner hướng dẫn Vòng 2 */}
+        <div className="w-full max-w-4xl bg-[#fff9ee] border border-[#d97706]/40 rounded-2xl px-4 py-2.5 text-xs sm:text-sm text-[#3d1a10] flex flex-wrap items-center justify-between gap-2 shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🧩</span>
+            <span className="font-semibold whitespace-nowrap">
+              Dùng các mảnh ghép đã thu được ở Vòng 1 để hoàn thành bức hình.
+            </span>
+          </div>
+          <div className="font-bold text-[#b45309] whitespace-nowrap">
+            <span>→ Thiếu mảnh? Có thể mua thêm với giá </span>
+            <strong className="text-red-600">5 điểm/mảnh</strong>.
+          </div>
+        </div>
+
         {/* ================= KHU VỰC TRUNG TÂM: HÌNH GỢI Ý + KHUNG LƯỚI 3x3 ================= */}
         <div className="w-full max-w-5xl flex flex-col md:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-8 relative z-10">
           {/* HÌNH GỢI Ý BÊN TRÁI */}
