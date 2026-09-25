@@ -892,6 +892,112 @@ body {
   color: var(--ink-main) !important;
 }
 
+/* BỐ CỤC ĐA HÀNG CHO SLIDE 6 (MỤC 2.3) */
+.slide-multi-row-container {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.slide-row-block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 28px;
+  border-bottom: 1.5px dashed var(--hairline-strong);
+}
+.slide-row-block:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.slide-row-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: var(--vermilion) !important;
+  background: var(--vermilion-soft);
+  border: 1px solid rgba(150, 38, 42, 0.28);
+  padding: 4px 14px;
+  border-radius: 999px;
+  width: fit-content;
+  margin-bottom: 4px;
+}
+
+/* Khối ảnh lớn ở Hàng 1 */
+.slide-big-hero-photo {
+  width: 100%;
+  margin-top: 14px;
+}
+.slide-big-hero-photo .vnr-photo-card {
+  max-width: 920px;
+  margin: 0 auto;
+}
+.slide-big-hero-photo img {
+  width: 100%;
+  height: auto;
+  max-height: 440px;
+  object-fit: contain;
+  background: #ffffff;
+  display: block;
+}
+
+/* Lưới 4 ảnh ở Hàng 3 */
+.grid-4-photos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+@media (max-width: 620px) {
+  .grid-4-photos {
+    grid-template-columns: 1fr;
+  }
+}
+.grid-photo-card {
+  background: #ffffff;
+  border: 1.5px solid #7a1a1c;
+  border-radius: 4px;
+  padding: 6px;
+  box-shadow: 0 6px 16px rgba(62, 47, 28, 0.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+.grid-photo-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(62, 47, 28, 0.22);
+}
+.grid-photo-card img {
+  width: 100%;
+  height: 155px;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 2px;
+  cursor: pointer;
+  display: block;
+  transition: filter 0.2s;
+}
+.grid-photo-card:hover img {
+  filter: contrast(1.05) brightness(1.02);
+}
+.grid-photo-ribbon {
+  background: #7a1a1c;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-align: center;
+  padding: 5px 6px;
+  margin-top: 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ĐIỀU HƯỚNG DƯỚI ĐÁY TỪNG SLIDE */
 .slide-footer-nav {
   display: flex;
@@ -2398,127 +2504,213 @@ body {
 
       <h2 class="slide-title">2.3. Biến đổi trong mối quan hệ vừa đấu tranh, vừa liên minh, từng bước xóa bỏ bất bình đẳng xã hội dẫn đến sự xích lại gần nhau</h2>
 
-      <div class="slide-body-grid">
-        <!-- Cột trái: Đúng 5 Luận điểm cốt lõi bạn ấy soạn -->
-        <div class="slide-col">
-          <h3 class="col-banner-title">5 Luận Điểm Cốt Lõi Về Mối Quan Hệ Giai Cấp</h3>
+      <div class="slide-multi-row-container">
+        <!-- ================= HÀNG 1 ================= -->
+        <div class="slide-row-block">
+          <span class="slide-row-badge">Hàng 1 · Cơ Sở Lý Luận &amp; Mối Quan Hệ Liên Minh Giai Cấp</span>
 
-          <div class="slide-numbered-item">
-            <div class="slide-numbered-idx">1</div>
-            <p class="slide-numbered-text">
-              Giữa các giai cấp, tầng lớp vừa có mâu thuẫn, đấu tranh, vừa có mối quan hệ liên minh với nhau, đặc biệt là giữa giai cấp công nhân, giai cấp nông dân và tầng lớp trí thức.
-            </p>
+          <div class="slide-body-grid">
+            <!-- Bên trái: 3 luận điểm -->
+            <div class="slide-col">
+              <h3 class="col-banner-title">Mối Quan Hệ &amp; Xu Hướng Xích Lại Gần Nhau</h3>
+
+              <div class="slide-numbered-item">
+                <div class="slide-numbered-idx">1</div>
+                <p class="slide-numbered-text">
+                  Giữa các giai cấp, tầng lớp vừa có mâu thuẫn, đấu tranh, vừa có mối quan hệ liên minh với nhau, đặc biệt là giữa giai cấp công nhân, giai cấp nông dân và tầng lớp trí thức.
+                </p>
+              </div>
+
+              <div class="slide-numbered-item">
+                <div class="slide-numbered-idx">2</div>
+                <p class="slide-numbered-text">
+                  Mức độ liên minh, xích lại gần nhau phụ thuộc vào điều kiện kinh tế – xã hội của đất nước trong từng giai đoạn.
+                </p>
+              </div>
+
+              <div class="slide-numbered-item">
+                <div class="slide-numbered-idx">3</div>
+                <p class="slide-numbered-text">
+                  Giữa các nhóm xã hội diễn ra sự hòa nhập, chuyển đổi bộ phận, có xu hướng từng bước xóa bỏ dần tình trạng bóc lột giai cấp, hướng tới các giá trị công bằng, bình đẳng.
+                </p>
+              </div>
+            </div>
+
+            <!-- Bên phải: 2 luận điểm -->
+            <div class="slide-col">
+              <h3 class="col-banner-title">Vai Trò Chủ Đạo &amp; Nền Tảng Chính Trị – Xã Hội</h3>
+
+              <div class="slide-numbered-item">
+                <div class="slide-numbered-idx">4</div>
+                <p class="slide-numbered-text">
+                  Giai cấp công nhân giữ vai trò chủ đạo, tiên phong trong quá trình công nghiệp hóa, hiện đại hóa đất nước, cải tạo xã hội cũ, xây dựng xã hội mới.
+                </p>
+              </div>
+
+              <div class="slide-numbered-item">
+                <div class="slide-numbered-idx">5</div>
+                <p class="slide-numbered-text">
+                  Liên minh giữa giai cấp công nhân, giai cấp nông dân và đội ngũ trí thức ngày càng giữ vị trí nền tảng chính trị – xã hội, góp phần tạo nên sự thống nhất của cơ cấu xã hội – giai cấp trong thời kỳ quá độ lên chủ nghĩa xã hội.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div class="slide-numbered-item">
-            <div class="slide-numbered-idx">2</div>
-            <p class="slide-numbered-text">
-              Mức độ liên minh, xích lại gần nhau phụ thuộc vào điều kiện kinh tế – xã hội của đất nước trong từng giai đoạn.
-            </p>
-          </div>
-
-          <div class="slide-numbered-item">
-            <div class="slide-numbered-idx">3</div>
-            <p class="slide-numbered-text">
-              Giữa các nhóm xã hội diễn ra sự hòa nhập, chuyển đổi bộ phận, có xu hướng từng bước xóa bỏ dần tình trạng bóc lột giai cấp, hướng tới các giá trị công bằng, bình đẳng.
-            </p>
-          </div>
-
-          <div class="slide-numbered-item">
-            <div class="slide-numbered-idx">4</div>
-            <p class="slide-numbered-text">
-              Giai cấp công nhân giữ vai trò chủ đạo, tiên phong trong quá trình công nghiệp hóa, hiện đại hóa đất nước, cải tạo xã hội cũ, xây dựng xã hội mới.
-            </p>
-          </div>
-
-          <div class="slide-numbered-item">
-            <div class="slide-numbered-idx">5</div>
-            <p class="slide-numbered-text">
-              Liên minh giữa giai cấp công nhân, giai cấp nông dân và đội ngũ trí thức ngày càng giữ vị trí nền tảng chính trị – xã hội, góp phần tạo nên sự thống nhất của cơ cấu xã hội – giai cấp trong thời kỳ quá độ lên chủ nghĩa xã hội.
-            </p>
+          <!-- Xong ở dưới sẽ là cái ảnh bự 2.3.1.jpg -->
+          <div class="slide-big-hero-photo">
+            <figure class="vnr-photo-figure">
+              <div class="vnr-photo-card">
+                <img src="/images/sources/2.3.1.jpg" alt="Liên minh giai cấp công nhân - nông dân - trí thức và sự xích lại gần nhau giữa các tầng lớp xã hội" onclick="window.open(this.src, '_blank')">
+                <div class="vnr-photo-ribbon">
+                  Liên minh giai cấp công nhân – nông dân – trí thức: Nền tảng chính trị – xã hội và sự xích lại gần nhau trong thời kỳ quá độ lên CNXH
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 6px;">
+                  <a href="/images/sources/2.3.1.jpg" target="_blank" rel="noopener noreferrer" class="collage-source-btn" style="margin-top: 0; flex: 1;">
+                    🔍 Xem ảnh gốc độ phân giải cao ↗
+                  </a>
+                </div>
+              </div>
+            </figure>
           </div>
         </div>
 
-        <!-- Cột phải: Minh chứng thực tiễn & đúng nội dung gốc đã soạn -->
-        <div class="slide-col">
-          <h3 class="col-banner-title">Thực Tiễn Nông Nghiệp, Khoa Học &amp; Tư Liệu Báo Chí</h3>
+        <!-- ================= HÀNG 2 ================= -->
+        <div class="slide-row-block">
+          <span class="slide-row-badge">Hàng 2 · Ví Dụ Thực Tiễn Nông Nghiệp, Khoa Học &amp; Sự Kiện Tôn Vinh</span>
 
-          <!-- CỤM 2 ẢNH TƯ LIỆU XẾP DỌC CHUẨN STYLE VNR (BỎ ẢNH SÁCH) -->
-          <div class="vnr-dual-photo-stack">
-            <!-- ẢNH 1: TÔN VINH NÔNG DÂN & TRÍ THỨC -->
-            <figure class="vnr-photo-figure fig-top">
-              <div class="vnr-photo-card">
-                <img src="/images/sources/ton_vinh_nong_dan_tri_thuc.avif" alt="Lễ tôn vinh Nông dân Việt Nam xuất sắc và Nhà khoa học của nhà nông năm 2025">
-                <div class="vnr-photo-ribbon">
-                  Chủ tịch nước Lương Cường dự Lễ tôn vinh Nông dân xuất sắc &amp; Nhà khoa học của nhà nông 2025 — Báo Nhân Dân
+          <div class="slide-body-grid">
+            <!-- Bên trái: Ví dụ thực tiễn -->
+            <div class="slide-col">
+              <h3 class="col-banner-title">Minh Chứng Nông Nghiệp, Hợp Tác Xã &amp; Khoa Học</h3>
+
+              <div class="slide-practice-box">
+                <span class="slide-practice-tag">Ví Dụ Thực Tiễn</span>
+                <p class="slide-practice-content">
+                  → Ví dụ thực tiễn: Trong nông nghiệp Việt Nam hiện nay, sự phát triển của hợp tác xã, doanh nghiệp và việc ứng dụng khoa học – công nghệ cho thấy sự phối hợp ngày càng rõ giữa nông dân, doanh nghiệp/người lao động và đội ngũ trí thức, nhà khoa học. Năm 2025, cả nước có <strong>8.416 hợp tác xã</strong> và <strong>6.204 doanh nghiệp</strong> hoạt động trong lĩnh vực nông, lâm nghiệp và thủy sản; <strong>gần 7.000 thiết bị bay không người lái</strong> được sử dụng trong sản xuất nông nghiệp. Cùng năm, <strong>63 nông dân xuất sắc</strong> và <strong>32 “Nhà khoa học của nhà nông”</strong> được tôn vinh, cho thấy vai trò của cả người sản xuất và đội ngũ khoa học trong phát triển nông nghiệp hiện đại (Cục Thống kê, 2026; Báo Nhân Dân, 2025).
+                </p>
+              </div>
+
+              <div class="slide-stat-strip">
+                <div class="slide-stat-item">
+                  <span class="slide-stat-num">8.416</span>
+                  <span class="slide-stat-lbl">Hợp tác xã nông lâm thủy sản (2025)</span>
                 </div>
-                <a href="https://nhandan.vn/chu-tich-nuoc-luong-cuong-du-le-ton-vinh-nong-dan-viet-nam-xuat-sac-nha-khoa-hoc-cua-nha-nong-nam-2025-post915378.html" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
-                  Báo Nhân Dân: Lễ Tôn Vinh 2025 ↗
+                <div class="slide-stat-item">
+                  <span class="slide-stat-num">6.204</span>
+                  <span class="slide-stat-lbl">Doanh nghiệp nông nghiệp (2025)</span>
+                </div>
+                <div class="slide-stat-item">
+                  <span class="slide-stat-num">~7.000</span>
+                  <span class="slide-stat-lbl">Thiết bị bay drone nông nghiệp</span>
+                </div>
+                <div class="slide-stat-item">
+                  <span class="slide-stat-num">63</span>
+                  <span class="slide-stat-lbl">Nông dân xuất sắc</span>
+                </div>
+                <div class="slide-stat-item">
+                  <span class="slide-stat-num">32</span>
+                  <span class="slide-stat-lbl">Nhà khoa học của nhà nông</span>
+                </div>
+              </div>
+
+              <div class="slide-citation-bar">
+                <div>Nguồn tham chiếu dữ liệu:</div>
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 4px;">
+                  <a class="slide-citation-link" href="https://www.nso.gov.vn/tin-tuc-thong-ke/2026/04/thong-cao-bao-chi-mot-so-ket-qua-chinh-thuc-cua-tong-dieu-tra-nong-thon-nong-nghiep-nam-2025/" target="_blank" rel="noopener noreferrer">
+                    Cục Thống kê (2026): Thông cáo báo chí Tổng điều tra Nông thôn, Nông nghiệp ↗
+                  </a>
+                  <span style="opacity: 0.4;">·</span>
+                  <a class="slide-citation-link" href="https://nhandan.vn/chu-tich-nuoc-luong-cuong-du-le-ton-vinh-nong-dan-viet-nam-xuat-sac-nha-khoa-hoc-cua-nha-nong-nam-2025-post915378.html" target="_blank" rel="noopener noreferrer">
+                    Báo Nhân Dân (2025): Lễ Tôn Vinh ↗
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bên phải: 2 hình 2.3.7.jpg và 2.3.6.jpg -->
+            <div class="slide-col">
+              <h3 class="col-banner-title">Tư Liệu Sự Kiện &amp; Số Liệu Báo Chí</h3>
+
+              <div class="vnr-dual-photo-stack">
+                <!-- ẢNH 1: 2.3.7.JPG -->
+                <figure class="vnr-photo-figure fig-top">
+                  <div class="vnr-photo-card">
+                    <img src="/images/sources/2.3.7.jpg" alt="Số liệu tổng hợp từ Cục Thống kê (2026) và Báo Nhân Dân (2025)" onclick="window.open(this.src, '_blank')">
+                    <div class="vnr-photo-ribbon">
+                      Số liệu tổng hợp từ Cục Thống kê (2026) và Báo Nhân Dân (2025).
+                    </div>
+                    <a href="https://www.nso.gov.vn/tin-tuc-thong-ke/2026/04/thong-cao-bao-chi-mot-so-ket-qua-chinh-thuc-cua-tong-dieu-tra-nong-thon-nong-nghiep-nam-2025/" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
+                      Cục Thống Kê (2026) ↗
+                    </a>
+                  </div>
+                </figure>
+
+                <!-- ẢNH 2: 2.3.6.JPG -->
+                <figure class="vnr-photo-figure fig-bottom">
+                  <div class="vnr-photo-card">
+                    <img src="/images/sources/2.3.6.jpg" alt="Toàn cảnh buổi lễ (Ảnh: THỦY NGUYÊN) - Nguồn: Cục thống kê, 2025" onclick="window.open(this.src, '_blank')">
+                    <div class="vnr-photo-ribbon">
+                      Toàn cảnh buổi lễ (Ảnh: THỦY NGUYÊN) · (Nguồn: Cục thống kê, 2025)
+                    </div>
+                    <a href="https://nhandan.vn/chu-tich-nuoc-luong-cuong-du-le-ton-vinh-nong-dan-viet-nam-xuat-sac-nha-khoa-hoc-cua-nha-nong-nam-2025-post915378.html" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
+                      Báo Nhân Dân: Lễ Tôn Vinh ↗
+                    </a>
+                  </div>
+                </figure>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= HÀNG 3 ================= -->
+        <div class="slide-row-block">
+          <span class="slide-row-badge">Hàng 3 · Ứng Dụng Công Nghệ Cao &amp; Xu Hướng Xích Lại Gần Nhau</span>
+
+          <div class="slide-body-grid">
+            <!-- Bên trái: 4 ảnh 2.3.5, 2.3.4, 2.3.3, 2.3.2 -->
+            <div class="slide-col">
+              <h3 class="col-banner-title">Hình Ảnh Thực Tiễn Nông Nghiệp Công Nghệ Cao (4 Tư Liệu)</h3>
+
+              <div class="grid-4-photos">
+                <div class="grid-photo-card">
+                  <img src="/images/sources/2.3.5.jpg" alt="Ứng dụng nông nghiệp công nghệ cao - Báo Nhân Dân, 2025" onclick="window.open(this.src, '_blank')">
+                  <div class="grid-photo-ribbon">Phối hợp giữa nông dân &amp; kỹ sư</div>
+                </div>
+
+                <div class="grid-photo-card">
+                  <img src="/images/sources/2.3.4.jpg" alt="Ứng dụng nông nghiệp công nghệ cao - Báo Nhân Dân, 2025" onclick="window.open(this.src, '_blank')">
+                  <div class="grid-photo-ribbon">Công nghệ số trong canh tác</div>
+                </div>
+
+                <div class="grid-photo-card">
+                  <img src="/images/sources/2.3.3.jpg" alt="Ứng dụng nông nghiệp công nghệ cao - Báo Nhân Dân, 2025" onclick="window.open(this.src, '_blank')">
+                  <div class="grid-photo-ribbon">Cơ giới hóa và tự động hóa</div>
+                </div>
+
+                <div class="grid-photo-card">
+                  <img src="/images/sources/2.3.2.jpg" alt="Ứng dụng nông nghiệp công nghệ cao - Báo Nhân Dân, 2025" onclick="window.open(this.src, '_blank')">
+                  <div class="grid-photo-ribbon">Ứng dụng máy bay không người lái drone</div>
+                </div>
+              </div>
+
+              <div class="slide-citation-bar">
+                <div>Nguồn tư liệu chung 4 ảnh: Báo Nhân Dân, 2025.</div>
+                <a class="slide-citation-link" href="https://nhandan.vn/can-buoc-nhay-vot-cho-nong-nghiep-cong-nghe-cao-post861923.html" target="_blank" rel="noopener noreferrer">
+                  Cần bước nhảy vọt cho nông nghiệp công nghệ cao (Báo Nhân Dân) ↗
                 </a>
               </div>
-            </figure>
+            </div>
 
-            <!-- ẢNH 2: NÔNG NGHIỆP CÔNG NGHỆ CAO -->
-            <figure class="vnr-photo-figure fig-bottom">
-              <div class="vnr-photo-card">
-                <img src="/images/sources/nong_nghiep_cong_nghe_cao.webp" alt="Ứng dụng máy bay nông nghiệp không người lái drone tại Việt Nam">
-                <div class="vnr-photo-ribbon">
-                  Ứng dụng thiết bị bay không người lái drone trong nông nghiệp công nghệ cao — Báo Nhân Dân
-                </div>
-                <a href="https://nhandan.vn/can-buoc-nhay-vot-cho-nong-nghiep-cong-nghe-cao-post861923.html" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
-                  Báo Nhân Dân: Nông nghiệp CNC ↗
-                </a>
+            <!-- Bên phải: Nội dung nhận định lý thuyết -->
+            <div class="slide-col">
+              <h3 class="col-banner-title">Ý Nghĩa Thực Tiễn &amp; Xu Hướng Xích Lại Gần Nhau</h3>
+
+              <div class="slide-theory-link" style="margin-top: 8px;">
+                <span class="slide-theory-tag">Liên Hệ Lý Thuyết &amp; Nhận Định</span>
+                <p class="slide-theory-content">
+                  → Thực tế trên cho thấy các giai cấp, tầng lớp không tồn tại tách biệt mà có sự phối hợp, hỗ trợ và gắn kết với nhau trong quá trình sản xuất và phát triển kinh tế. Đây là biểu hiện thực tiễn của xu hướng liên minh và xích lại gần nhau giữa các giai cấp, tầng lớp, đặc biệt là giữa nông dân, công nhân/người lao động và trí thức, trong thời kỳ quá độ lên chủ nghĩa xã hội.
+                </p>
               </div>
-            </figure>
-          </div>
-
-          <div class="slide-practice-box">
-            <span class="slide-practice-tag">Ví dụ thực tiễn</span>
-            <p class="slide-practice-content">
-              Trong nông nghiệp Việt Nam hiện nay, sự phát triển của hợp tác xã, doanh nghiệp và việc ứng dụng khoa học – công nghệ cho thấy sự phối hợp ngày càng rõ giữa nông dân, doanh nghiệp/người lao động và đội ngũ trí thức, nhà khoa học. Năm 2025, cả nước có <strong>8.416 hợp tác xã</strong> và <strong>6.204 doanh nghiệp</strong> hoạt động trong lĩnh vực nông, lâm nghiệp và thủy sản; <strong>gần 7.000 thiết bị bay không người lái</strong> được sử dụng trong sản xuất nông nghiệp. Cùng năm, <strong>63 nông dân xuất sắc</strong> và <strong>32 “Nhà khoa học của nhà nông”</strong> được tôn vinh, cho thấy vai trò của cả người sản xuất và đội ngũ khoa học trong phát triển nông nghiệp hiện đại (Cục Thống kê, 2026; Báo Nhân Dân, 2025).
-            </p>
-          </div>
-
-          <div class="slide-stat-strip">
-            <div class="slide-stat-item">
-              <span class="slide-stat-num">8.416</span>
-              <span class="slide-stat-lbl">Hợp tác xã nông lâm thủy sản (2025)</span>
-            </div>
-            <div class="slide-stat-item">
-              <span class="slide-stat-num">6.204</span>
-              <span class="slide-stat-lbl">Doanh nghiệp nông nghiệp (2025)</span>
-            </div>
-            <div class="slide-stat-item">
-              <span class="slide-stat-num">~7.000</span>
-              <span class="slide-stat-lbl">Thiết bị bay drone nông nghiệp</span>
-            </div>
-            <div class="slide-stat-item">
-              <span class="slide-stat-num">63</span>
-              <span class="slide-stat-lbl">Nông dân xuất sắc</span>
-            </div>
-            <div class="slide-stat-item">
-              <span class="slide-stat-num">32</span>
-              <span class="slide-stat-lbl">Nhà khoa học của nhà nông</span>
-            </div>
-          </div>
-
-          <div class="slide-theory-link">
-            <span class="slide-theory-tag">Liên Hệ Lý Thuyết</span>
-            <p class="slide-theory-content">
-              Thực tế trên cho thấy các giai cấp, tầng lớp không tồn tại tách biệt mà có sự phối hợp, hỗ trợ và gắn kết với nhau trong quá trình sản xuất và phát triển kinh tế. Đây là biểu hiện thực tiễn của xu hướng liên minh và xích lại gần nhau giữa các giai cấp, tầng lớp, đặc biệt là giữa nông dân, công nhân/người lao động và trí thức, trong thời kỳ quá độ lên chủ nghĩa xã hội.
-            </p>
-          </div>
-
-          <div class="slide-citation-bar">
-            <div>Số liệu tổng hợp từ Cục Thống kê (2026) và Báo Nhân Dân (2025) · Toàn cảnh buổi lễ (Ảnh: THỦY NGUYÊN) · (Nguồn: Cục thống kê, 2025)</div>
-            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 4px;">
-              <a class="slide-citation-link" href="https://nhandan.vn/can-buoc-nhay-vot-cho-nong-nghiep-cong-nghe-cao-post861923.html" target="_blank" rel="noopener noreferrer">
-                Cần bước nhảy vọt cho nông nghiệp công nghệ cao (Báo Nhân Dân) ↗
-              </a>
-              <span style="opacity: 0.4;">·</span>
-              <a class="slide-citation-link" href="https://nhandan.vn/chu-tich-nuoc-luong-cuong-du-le-ton-vinh-nong-dan-viet-nam-xuat-sac-nha-khoa-hoc-cua-nha-nong-nam-2025-post915378.html" target="_blank" rel="noopener noreferrer">
-                Tôn vinh Nông dân xuất sắc &amp; Nhà khoa học của nhà nông năm 2025 (Báo Nhân Dân) ↗
-              </a>
             </div>
           </div>
         </div>
