@@ -1,0 +1,285 @@
+{
+  "title": "Lịch sử Đảng",
+  "imagesCount": 27,
+  "images": [
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-7-Dpq7ovsf.png",
+      "alt": "Chiến thắng Điện Biên Phủ",
+      "width": 594,
+      "height": 333,
+      "parentClass": "interactive-card",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-3-B4IkPHE9.png",
+      "alt": "Đại hội II",
+      "width": 480,
+      "height": 469,
+      "parentClass": "interactive-card",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-9-DvgUDzo5.png",
+      "alt": "Hiệp định Giơ-ne-vơ",
+      "width": 600,
+      "height": 315,
+      "parentClass": "interactive-card",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-3-B4IkPHE9.png",
+      "alt": "Toàn cảnh Đại hội II",
+      "width": 480,
+      "height": 469,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-4-BF47vkOi.png",
+      "alt": "Phát biểu tại Đại hội II",
+      "width": 476,
+      "height": 480,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-7-Dpq7ovsf.png",
+      "alt": "Cắm cờ Điện Biên Phủ",
+      "width": 594,
+      "height": 333,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-9-DvgUDzo5.png",
+      "alt": "Ký kết Hiệp định Giơ-ne-vơ",
+      "width": 600,
+      "height": 315,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-6-uWk7vQXt.png",
+      "alt": "Bộ Chỉ huy họp bàn",
+      "width": 870,
+      "height": 672,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-8-YAZpLn0a.png",
+      "alt": "Hội nghị Giơ-ne-vơ",
+      "width": 612,
+      "height": 418,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-10-gpDZXRrz.png",
+      "alt": "Vĩ tuyến 17",
+      "width": 1234,
+      "height": 871,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-13-gWswmrT4.png",
+      "alt": "Thủy nông Bắc Hưng Hải",
+      "width": 1024,
+      "height": 766,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/section2_images/hoi_nghi_tw15.jpg",
+      "alt": "Hội nghị Trung ương lần thứ 15",
+      "width": 480,
+      "height": 358,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-16-58zFI12_.png",
+      "alt": "Phong trào Đồng Khởi",
+      "width": 800,
+      "height": 583,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/section2_images/mat_tran_dtgp.jpg",
+      "alt": "Mặt trận Dân tộc giải phóng miền Nam",
+      "width": 600,
+      "height": 365,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/section2_images/dai_hoi_3.jpg",
+      "alt": "Đại hội Đảng III",
+      "width": 870,
+      "height": 635,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/section2_images/ba_dam_nhiem.jpg",
+      "alt": "Phong trào Ba đảm nhiệm",
+      "width": 709,
+      "height": 455,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-21-ClMjmJ0W.png",
+      "alt": "Phong trào Ba sẵn sàng",
+      "width": 870,
+      "height": 684,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-22-CqGRLo3-.png",
+      "alt": "Hình ảnh chiến dịch",
+      "width": 870,
+      "height": 515,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/to_lam_un-DLNmTq6S.jpg",
+      "alt": "Tổng Bí thư Tô Lâm tại LHQ",
+      "width": 665,
+      "height": 450,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/dip_bottom_1-BugHljyN.jpg",
+      "alt": "Hoạt động đối ngoại 1",
+      "width": 730,
+      "height": 546,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/dip_bottom_2-DfWCKwsp.jpg",
+      "alt": "Hoạt động đối ngoại 2",
+      "width": 334,
+      "height": 334,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/dip_bottom_3-BLrm5otV.jpg",
+      "alt": "Hoạt động đối ngoại 3",
+      "width": 870,
+      "height": 614,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/dip_bottom_4-BUOZX6vd.jpg",
+      "alt": "Hoạt động đối ngoại 4",
+      "width": 1100,
+      "height": 849,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-6-uWk7vQXt.png",
+      "alt": "Bộ Chỉ huy họp bàn",
+      "width": 870,
+      "height": 672,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-25-D9xaomqg.png",
+      "alt": "Bộ Tư lệnh chiến dịch",
+      "width": 480,
+      "height": 321,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-7-Dpq7ovsf.png",
+      "alt": "Cắm cờ chiến thắng Điện Biên Phủ",
+      "width": 594,
+      "height": 333,
+      "parentClass": "",
+      "classes": ""
+    },
+    {
+      "src": "https://vnr-lich-su-dang.vercel.app/assets/image-8-YAZpLn0a.png",
+      "alt": "Hội nghị Giơ-ne-vơ 1954",
+      "width": 612,
+      "height": 418,
+      "parentClass": "",
+      "classes": ""
+    }
+  ],
+  "galleries": [
+    {
+      "tag": "DIV",
+      "className": "",
+      "imgCount": 27,
+      "outerHTMLSnippet": "<div id=\"root\"><div style=\"font-family: &quot;EB Garamond&quot;, Garamond, serif; background: rgb(230, 220, 189); color: rgb(17, 8, 2); min-height: 100vh; position: relative; overflow-x: hidden;\"><div style=\"position: fixed; top: 0px; left: 0px; width: 100vw; height: 100vh; pointer-events: none; z-i"
+    },
+    {
+      "tag": "DIV",
+      "className": "",
+      "imgCount": 27,
+      "outerHTMLSnippet": "<div style=\"font-family: &quot;EB Garamond&quot;, Garamond, serif; background: rgb(230, 220, 189); color: rgb(17, 8, 2); min-height: 100vh; position: relative; overflow-x: hidden;\"><div style=\"position: fixed; top: 0px; left: 0px; width: 100vw; height: 100vh; pointer-events: none; z-index: 85; backg"
+    },
+    {
+      "tag": "SECTION",
+      "className": "",
+      "imgCount": 3,
+      "outerHTMLSnippet": "<section style=\"padding-top: 104px; background: rgb(230, 220, 189); padding-bottom: 24px; display: flex; justify-content: center;\"><div class=\"magazine-page-shadow\" style=\"width: 100%; max-width: 960px; background: rgb(252, 249, 242); color: rgb(17, 8, 2); border: 1.5px solid rgba(122, 26, 28, 0.25)"
+    },
+    {
+      "tag": "DIV",
+      "className": "magazine-page-shadow",
+      "imgCount": 3,
+      "outerHTMLSnippet": "<div class=\"magazine-page-shadow\" style=\"width: 100%; max-width: 960px; background: rgb(252, 249, 242); color: rgb(17, 8, 2); border: 1.5px solid rgba(122, 26, 28, 0.25); position: relative; margin: 0px 16px;\"><div style=\"margin: 16px; padding: 36px; border: 1px solid rgba(122, 26, 28, 0.3); outline"
+    },
+    {
+      "tag": "DIV",
+      "className": "",
+      "imgCount": 3,
+      "outerHTMLSnippet": "<div style=\"margin: 16px; padding: 36px; border: 1px solid rgba(122, 26, 28, 0.3); outline: rgba(122, 26, 28, 0.3) double 3px; outline-offset: -6px; display: flex; flex-direction: column; align-items: stretch;\"><div class=\"\" style=\"opacity: 1; transform: translate(0px) scale(1) rotate(0deg); transit"
+    },
+    {
+      "tag": "DIV",
+      "className": "",
+      "imgCount": 3,
+      "outerHTMLSnippet": "<div style=\"display: grid; grid-template-columns: 1.2fr 1fr; gap: 36px; align-items: start;\"><div style=\"display: flex; flex-direction: column; border-right: 1px dotted rgba(122, 26, 28, 0.3); padding-right: 32px;\"><div class=\"\" style=\"opacity: 1; transform: translate(0px) scale(1) rotate(0deg); tra"
+    },
+    {
+      "tag": "DIV",
+      "className": "",
+      "imgCount": 3,
+      "outerHTMLSnippet": "<div style=\"display: flex; flex-direction: column; position: relative; padding-bottom: 24px;\"><div class=\"\" style=\"opacity: 1; transform: translate(0px) scale(1) rotate(0deg); transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 250ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 250ms;\"><div cl"
+    },
+    {
+      "tag": "DIV",
+      "className": "",
+      "imgCount": 2,
+      "outerHTMLSnippet": "<div class=\"\" style=\"opacity: 1; transform: translate(0px) scale(1) rotate(0deg); transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 400ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 400ms;\"><div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: -20px; position: re"
+    },
+    {
+      "tag": "DIV",
+      "className": "",
+      "imgCount": 2,
+      "outerHTMLSnippet": "<div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: -20px; position: relative; z-index: 3; padding-left: 6px; padding-right: 6px;\"><div class=\"interactive-card\" style=\"border: 1.5px solid rgba(0, 0, 0, 0.1); padding: 6px 6px 12px; background: rgb(255, 255, 255); box-sha"
+    },
+    {
+      "tag": "DIV",
+      "className": "",
+      "imgCount": 6,
+      "outerHTMLSnippet": "<div class=\"\" style=\"opacity: 0; transform: scale(0.92); transition: opacity 950ms cubic-bezier(0.16, 1, 0.3, 1), transform 950ms cubic-bezier(0.16, 1, 0.3, 1);\"><article id=\"phan-1\" class=\"magazine-page-shadow section-container\" style=\"width: 100%; max-width: 960px; margin: 64px auto; background: r"
+    }
+  ],
+  "bodyTextSnippet": "Lịch sử Đảng\nI.\nPhần I\nII.\nPhần II\nIII.\nPhần III\nMINI GAME\nBẢO TÀNG 3D\nBÁO CÁO AI\n★\n\nTƯ LIỆU LỊCH SỬ ĐẢNG CỘNG SẢN VIỆT NAM\n\nLỊCH SỬ ĐẢNG\nCHUYÊN ĐỀ ĐẶC BIỆT\nĐẢNG\nLÃNH ĐẠO\nHai cuộc kháng chiến hào hùng\n\nBa mươi năm lịch sử vĩ đại — Đảng lãnh đạo nhân dân Việt Nam vừa xây dựng chủ nghĩa xã hội ở miền Bắc, vừa kháng chiến chống đế quốc Mỹ xâm lược, giải phóng miền Nam, thống nhất Tổ quốc.\n\nMỤC LỤC CHUYÊN ĐỀ:\nI.\nKháng chiến chống thực dân Pháp\n1945–1954\nII.\nLãnh đạo xây dựng chủ nghĩa xã hội ở miền Bắc và kháng chiến chống đế quốc Mỹ xâm lược, giải phóng miền Nam, thống nhất đất nước (1954 - 1975)\n1954–1975\nIII.\nTình huống thảo luận\nĐiện Biên Phủ\nCHIẾN THẮNG ĐIỆN BIÊN PHỦ LỪNG LẪY ĐỊA CẦU — 7/5/1954\n\nĐại hội II (2/1951)\n\nKý kết Giơ-ne-vơ (1954)\n\nBản quyền lưu hành nội bộ\n\nCHƯƠNG II · PHẦN I\n\nKHÁNG CHIẾN CHỐNG PHÁP\nĐẩy mạnh kháng chiến đến thắng lợi\n1945 – 1954\n\nSau Cách mạng Tháng Tám, Việt Nam đối mặt thử thách to lớn. Dưới sự lãnh đạo của Đảng và Chủ tịch Hồ Chí Minh, cả nước bước vào cu"
+}
