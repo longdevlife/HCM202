@@ -931,19 +931,40 @@ body {
 /* Khối ảnh lớn ở Hàng 1 */
 .slide-big-hero-photo {
   width: 100%;
-  margin-top: 14px;
+  margin-top: 16px;
+}
+.slide-big-hero-photo .vnr-photo-figure {
+  width: 100%;
+  margin: 0;
+  transform: none !important;
 }
 .slide-big-hero-photo .vnr-photo-card {
-  max-width: 920px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1.5px solid #7a1a1c;
+  box-shadow: 0 12px 30px rgba(62, 47, 28, 0.2);
 }
 .slide-big-hero-photo img {
   width: 100%;
   height: auto;
-  max-height: 440px;
-  object-fit: contain;
-  background: #ffffff;
+  max-height: 540px;
+  object-fit: cover;
   display: block;
+  transition: transform 0.3s ease;
+}
+.slide-big-hero-photo .vnr-photo-card:hover img {
+  transform: scale(1.01);
+}
+.slide-big-hero-photo .vnr-photo-ribbon {
+  margin-top: 0;
+  border-top: 1px solid #d4a345;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
 }
 
 /* Lưới 4 ảnh ở Hàng 3 */
@@ -2556,18 +2577,13 @@ body {
             </div>
           </div>
 
-          <!-- Xong ở dưới sẽ là cái ảnh bự 2.3.1.jpg -->
+          <!-- Xong ở dưới sẽ là cái ảnh bự 2.3.1.jpg (Full khung) -->
           <div class="slide-big-hero-photo">
             <figure class="vnr-photo-figure">
               <div class="vnr-photo-card">
-                <img src="/images/sources/2.3.1.jpg" alt="Liên minh giai cấp công nhân - nông dân - trí thức và sự xích lại gần nhau giữa các tầng lớp xã hội" onclick="window.open(this.src, '_blank')">
+                <img src="/images/sources/2.3.1.jpg" alt="Liên minh giai cấp công nhân - nông dân - trí thức và sự xích lại gần nhau giữa các tầng lớp xã hội">
                 <div class="vnr-photo-ribbon">
                   Liên minh giai cấp công nhân – nông dân – trí thức: Nền tảng chính trị – xã hội và sự xích lại gần nhau trong thời kỳ quá độ lên CNXH
-                </div>
-                <div style="display: flex; gap: 8px; margin-top: 6px;">
-                  <a href="/images/sources/2.3.1.jpg" target="_blank" rel="noopener noreferrer" class="collage-source-btn" style="margin-top: 0; flex: 1;">
-                    🔍 Xem ảnh gốc độ phân giải cao ↗
-                  </a>
                 </div>
               </div>
             </figure>
