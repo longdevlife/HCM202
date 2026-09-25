@@ -33,9 +33,9 @@ const SPREADS = [
   },
   {
     filename: 'chapter5-spread-5.png',
-    leftImg: 'public/textures/chapter5/end.png',
-    rightImg: 'public/textures/chapter5/thanks.png',
-    title: 'Tổng Kết Chương 5 & Lời Cảm Ơn',
+    leftImg: 'public/textures/chapter5/thanks.png',
+    rightImg: 'public/textures/chapter5/end.png',
+    title: 'Lời Cảm Ơn & Tổng Kết Chương 5',
   }
 ];
 
