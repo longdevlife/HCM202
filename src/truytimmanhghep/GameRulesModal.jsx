@@ -57,7 +57,7 @@ export default function GameRulesModal({ isOpen, onClose }) {
             {/* CỘT TRÁI: PHẦN 1 */}
             <div className="space-y-3.5 text-sm sm:text-base text-[#2c1810] leading-relaxed">
               <h3 className="text-base sm:text-lg font-bold uppercase tracking-wider text-[#5a2b13] border-b border-[#d8c8b5]/60 pb-1">
-                PHẦN 1: TRUY TÌM MẢNH GHÉP
+                VÒNG 1: TRUY TÌM MẢNH GHÉP
               </h3>
 
               <p className="pt-0.5">
@@ -80,7 +80,7 @@ export default function GameRulesModal({ isOpen, onClose }) {
             {/* CỘT PHẢI: PHẦN 2 */}
             <div className="space-y-3.5 text-sm sm:text-base text-[#2c1810] leading-relaxed">
               <h3 className="text-base sm:text-lg font-bold uppercase tracking-wider text-[#5a2b13] border-b border-[#d8c8b5]/60 pb-1">
-                PHẦN 2: TỪ KHOÁ &amp; TỐC ĐỘ
+                VÒNG 2: GHÉP HÌNH - ĐOÁN TỪ KHÓA 
               </h3>
 
               <div className="pt-0.5 flex flex-wrap sm:flex-nowrap items-baseline gap-x-1.5 leading-snug">
