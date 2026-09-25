@@ -4,7 +4,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1059,6 +1059,457 @@ body {
 .dock-icon-btn:hover {
   color: #ffffff;
 }
+
+/* ==========================================================================
+   PHONG CÁCH TẠP CHÍ HỌC THUẬT & CỤM GHÉP ẢNH ĐA TẦNG (PHOTO COLLAGE)
+   Tham chiếu chuẩn mực từ vnr-lich-su-dang.vercel.app & Screenshot đề bài
+   ========================================================================== */
+
+/* Font chữ chuyên biệt cho Tạp chí */
+.magazine-main-title,
+.magazine-focus-title,
+.magazine-hero-title,
+.serif-heading {
+  font-family: 'Playfair Display', Georgia, serif !important;
+}
+
+.magazine-lead-para,
+.magazine-sub-serif,
+.interactive-caption,
+.serif-quote {
+  font-family: 'EB Garamond', Garamond, Georgia, serif !important;
+}
+
+/* Thẻ bao ngoài tạp chí có bóng đổ sâu */
+.magazine-hero-card {
+  width: 100%;
+  max-width: 1060px;
+  background: #fcf9f2;
+  color: #110802;
+  border: 1.5px solid rgba(122, 26, 28, 0.28);
+  position: relative;
+  margin: 0 auto 36px;
+  box-shadow: 0 24px 60px rgba(62, 47, 28, 0.22), 0 0 0 1px rgba(122, 26, 28, 0.12);
+  transition: box-shadow 0.3s ease;
+}
+.magazine-hero-card:hover {
+  box-shadow: 0 30px 72px rgba(62, 47, 28, 0.28), 0 0 0 1px rgba(122, 26, 28, 0.18);
+}
+
+.magazine-inner-border {
+  margin: 14px;
+  padding: clamp(24px, 4vw, 36px);
+  border: 1px solid rgba(122, 26, 28, 0.3);
+  outline: rgba(122, 26, 28, 0.3) double 3px;
+  outline-offset: -6px;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .magazine-inner-border {
+    margin: 8px;
+    padding: 20px 14px;
+    outline-offset: -4px;
+  }
+}
+
+/* Tiêu đề đầu báo / tạp chí */
+.magazine-header-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: 3px solid #7a1a1c;
+  padding-bottom: 20px;
+  margin-bottom: 32px;
+  text-align: center;
+}
+.magazine-kicker-meta {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.38em !important;
+  text-transform: uppercase !important;
+  color: #7a1a1c !important;
+  margin-bottom: 10px !important;
+}
+.magazine-main-title {
+  font-size: clamp(30px, 4.8vw, 44px) !important;
+  font-weight: 900 !important;
+  color: #110802 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  margin: 0 !important;
+  line-height: 1.15 !important;
+}
+
+/* Bố cục 2 cột tạp chí */
+.magazine-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(24px, 3.5vw, 40px);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .magazine-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+.magazine-left-col {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px dotted rgba(122, 26, 28, 0.32);
+  padding-right: clamp(16px, 2.5vw, 32px);
+}
+@media (max-width: 900px) {
+  .magazine-left-col {
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px dotted rgba(122, 26, 28, 0.32);
+    padding-bottom: 28px;
+  }
+}
+
+.magazine-section-badge {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.24em !important;
+  text-transform: uppercase !important;
+  color: #7a1a1c !important;
+  margin-bottom: 8px !important;
+  display: block;
+}
+.magazine-focus-title {
+  font-size: clamp(42px, 5.5vw, 68px) !important;
+  font-weight: 900 !important;
+  color: #7a1a1c !important;
+  line-height: 0.92 !important;
+  letter-spacing: -0.03em !important;
+  text-transform: uppercase !important;
+  margin: 0 0 16px !important;
+}
+.magazine-focus-title .highlight-ink {
+  color: #110802 !important;
+}
+
+.magazine-subtitle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.magazine-sub-serif {
+  font-size: 21px !important;
+  font-style: italic !important;
+  color: #644622 !important;
+  font-weight: 700 !important;
+  line-height: 1.35;
+}
+
+.magazine-lead-para {
+  font-size: 19px !important;
+  line-height: 1.8 !important;
+  color: #110802 !important;
+  opacity: 0.96;
+  margin-bottom: 28px !important;
+  text-align: justify;
+}
+
+/* Mục lục chuyên đề điều hướng (TOC) */
+.magazine-toc-box {
+  border-top: 1.5px solid #7a1a1c;
+  padding-top: 20px;
+}
+.magazine-toc-title {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
+  color: #110802 !important;
+  margin-bottom: 14px !important;
+}
+.magazine-toc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.magazine-toc-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-decoration: none !important;
+  font-size: 14px !important;
+  color: #110802 !important;
+  font-weight: 700 !important;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: all 0.22s ease;
+  cursor: pointer;
+}
+.magazine-toc-item:hover {
+  background: rgba(122, 26, 28, 0.06);
+  border-color: rgba(122, 26, 28, 0.2);
+  color: #7a1a1c !important;
+  transform: translateX(4px);
+}
+.magazine-toc-item.highlight-toc {
+  background: rgba(212, 163, 69, 0.12);
+  border-color: rgba(212, 163, 69, 0.35);
+}
+.toc-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.toc-roman {
+  font-family: 'Playfair Display', Georgia, serif !important;
+  color: #d4a345 !important;
+  font-weight: 900;
+  font-size: 16px;
+  min-width: 22px;
+}
+.toc-text {
+  font-size: 13.5px !important;
+  line-height: 1.35;
+}
+.toc-badge-tag {
+  color: #7a1a1c !important;
+  background: rgba(122, 26, 28, 0.08);
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(122, 26, 28, 0.2);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   CỤM GHÉP ẢNH ĐA TẦNG (INTERACTIVE PHOTO COLLAGE STACK)
+   Đặc trưng của vnr-lich-su-dang & Screenshot người dùng
+   ========================================================================== */
+.magazine-right-col {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-bottom: 24px;
+}
+
+.magazine-collage-wrapper,
+.slide-collage-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  width: 100%;
+}
+
+/* Thẻ ảnh tương tác mang phong cách Polaroid / Magazine Card */
+.interactive-card {
+  position: relative;
+  background: #ffffff;
+  padding: 8px;
+  border: 1.5px solid rgba(122, 26, 28, 0.25);
+  box-shadow: 0 18px 36px rgba(62, 47, 28, 0.2);
+  border-radius: 2px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.3s ease;
+  user-select: none;
+}
+.interactive-card:hover {
+  transform: rotate(0deg) scale(1.03) translateY(-6px) !important;
+  box-shadow: 0 26px 52px rgba(62, 47, 28, 0.32), 0 0 0 2px #d4a345 !important;
+  border-color: #7a1a1c !important;
+  z-index: 10 !important;
+}
+
+/* Thẻ ảnh chính lớn */
+.interactive-card.main-hero-card {
+  border: 1.5px solid #7a1a1c;
+  transform: rotate(-1.8deg);
+  z-index: 2;
+  cursor: pointer;
+}
+.interactive-card.main-hero-card img {
+  width: 100%;
+  height: 290px;
+  object-fit: cover;
+  display: block;
+  filter: sepia(0.12) contrast(1.1) brightness(0.92);
+  transition: filter 0.3s ease;
+}
+.interactive-card.main-hero-card:hover img {
+  filter: sepia(0) contrast(1.05) brightness(1);
+}
+
+/* Thẻ ảnh chính của từng slide */
+.interactive-card.slide-main-card {
+  border: 1.5px solid #7a1a1c;
+  transform: rotate(-1.6deg);
+  z-index: 2;
+}
+.interactive-card.slide-main-card img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  display: block;
+  filter: sepia(0.08) contrast(1.08) brightness(0.95);
+  transition: filter 0.3s ease;
+}
+.interactive-card.slide-main-card:hover img {
+  filter: sepia(0) contrast(1.05) brightness(1);
+}
+
+/* Ruy-băng đỏ chữ hoa viền vàng đặc trưng */
+.interactive-ribbon {
+  background: #7a1a1c;
+  color: #ffffff !important;
+  padding: 8px 14px;
+  font-family: 'Be Vietnam Pro', sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-align: center;
+  text-transform: uppercase;
+  margin-top: 8px;
+  border: 1px solid #d4a345;
+  box-shadow: 0 2px 6px rgba(122, 26, 28, 0.25);
+  line-height: 1.35;
+}
+
+.card-hint-badge {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #644622 !important;
+  text-align: center;
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+  font-style: italic;
+}
+
+/* Grid 2 thẻ polaroid phụ đè lớp */
+.collage-sub-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: -24px;
+  position: relative;
+  z-index: 3;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+@media (max-width: 540px) {
+  .collage-sub-grid {
+    grid-template-columns: 1fr;
+    margin-top: 12px;
+  }
+}
+
+.interactive-card.sub-card-left {
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  padding: 6px 6px 12px;
+  box-shadow: 2px 10px 22px rgba(62, 47, 28, 0.18);
+  transform: rotate(3.8deg) translateY(14px);
+  cursor: pointer;
+}
+.interactive-card.sub-card-left img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+  filter: sepia(0.18) contrast(1.08) brightness(0.92);
+  transition: filter 0.3s ease;
+}
+.interactive-card.sub-card-left:hover img {
+  filter: sepia(0) contrast(1.05) brightness(1);
+}
+
+.interactive-card.sub-card-right {
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  padding: 6px 6px 12px;
+  box-shadow: -3px 12px 26px rgba(62, 47, 28, 0.22);
+  transform: rotate(-3.2deg) translateY(28px);
+  cursor: pointer;
+}
+.interactive-card.sub-card-right img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+  filter: sepia(0.2) contrast(1.08) brightness(0.92);
+  transition: filter 0.3s ease;
+}
+.interactive-card.sub-card-right:hover img {
+  filter: sepia(0) contrast(1.05) brightness(1);
+}
+
+.interactive-caption {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  text-align: center;
+  color: #644622 !important;
+  margin-top: 6px !important;
+  margin-bottom: 2px !important;
+  font-style: italic !important;
+  line-height: 1.35;
+}
+
+.polaroid-tag {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: #7a1a1c !important;
+  text-align: center;
+  display: block;
+  opacity: 0.85;
+}
+
+/* Nút liên kết nguồn ngoài trỏ trực tiếp bài báo gốc */
+.collage-source-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-family: 'Be Vietnam Pro', sans-serif !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  color: #7a1a1c !important;
+  background: rgba(122, 26, 28, 0.06);
+  border: 1px solid rgba(122, 26, 28, 0.22);
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-top: 5px;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: center;
+}
+.collage-source-btn:hover {
+  background: #7a1a1c !important;
+  color: #ffffff !important;
+  border-color: #7a1a1c !important;
+}
+
+/* Dòng bản quyền cuối tạp chí */
+.magazine-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 36px;
+  border-top: 1.5px solid #d4a345;
+  padding-top: 12px;
+  font-family: 'Be Vietnam Pro', sans-serif !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  color: #685032 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 </style>
 
 </head>
@@ -1085,6 +1536,145 @@ body {
     <img class="botany r" src="meng-to-sketchbook/botany-right.png" alt="" aria-hidden="true">
 
     <p class="hero-kicker">Chủ nghĩa Xã hội Khoa học (MLN131) · Nhóm 3 · Slide 01 / 06</p>
+
+    <!-- =====================================================================
+         KHỐI HERO TẠP CHÍ & CỤM GHÉP ẢNH ĐA TẦNG (PHOTO COLLAGE)
+         Chuẩn phong cách vnr-lich-su-dang & Screenshot người dùng
+         ===================================================================== -->
+    <div class="magazine-hero-card magazine-page-shadow">
+      <div class="magazine-inner-border">
+        <!-- Header đầu tạp chí -->
+        <div class="magazine-header-group">
+          <p class="magazine-kicker-meta">Tư liệu Chuyên đề Chủ nghĩa Xã hội Khoa học (MLN131)</p>
+          <h1 class="magazine-main-title">CƠ CẤU XÃ HỘI – GIAI CẤP</h1>
+        </div>
+
+        <!-- Bố cục 2 cột: Cột trái văn bản & Mục lục, Cột phải cụm ảnh ghép -->
+        <div class="magazine-grid">
+          <!-- Cột trái: Giới thiệu & Mục lục -->
+          <div class="magazine-left-col">
+            <span class="magazine-section-badge">Chuyên đề Đặc biệt</span>
+            <h2 class="magazine-focus-title">
+              CƠ CẤU <br><span class="highlight-ink">GIAI</span> CẤP
+            </h2>
+
+            <div class="magazine-subtitle-row">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#d4a345" stroke="#d4a345" stroke-width="1.5">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <span class="magazine-sub-serif">Thời kỳ quá độ lên chủ nghĩa xã hội ở Việt Nam</span>
+            </div>
+
+            <p class="magazine-lead-para">
+              Cơ cấu xã hội – giai cấp giữ vị trí trung tâm trong toàn bộ hệ thống cơ cấu xã hội; liên quan trực tiếp đến các đảng phái chính trị, nhà nước và quyền sở hữu tư liệu sản xuất. Trong thời kỳ quá độ, cơ cấu này biến đổi theo quy luật kinh tế, xuất hiện nhiều tầng lớp mới và vận động trong mối quan hệ vừa đấu tranh vừa liên minh, tạo nền tảng chính trị – xã hội vững chắc.
+            </p>
+
+            <!-- Khối Mục lục Chuyên đề điều hướng -->
+            <div class="magazine-toc-box">
+              <h3 class="magazine-toc-title">Mục lục Chuyên đề:</h3>
+              <div class="magazine-toc-list">
+                <a href="#slide-2" class="magazine-toc-item" onclick="goToSlide(1)">
+                  <span class="toc-item-left">
+                    <span class="toc-roman">I.</span>
+                    <span class="toc-text">Khái niệm cơ cấu xã hội – giai cấp</span>
+                  </span>
+                  <span class="toc-badge-tag">Mục 1.1</span>
+                </a>
+
+                <a href="#slide-3" class="magazine-toc-item" onclick="goToSlide(2)">
+                  <span class="toc-item-left">
+                    <span class="toc-roman">II.</span>
+                    <span class="toc-text">Vị trí trong hệ thống &amp; Đội ngũ trí thức</span>
+                  </span>
+                  <span class="toc-badge-tag">Mục 1.2</span>
+                </a>
+
+                <a href="#slide-4" class="magazine-toc-item" onclick="goToSlide(3)">
+                  <span class="toc-item-left">
+                    <span class="toc-roman">III.</span>
+                    <span class="toc-text">Biến đổi quy định bởi cơ cấu kinh tế</span>
+                  </span>
+                  <span class="toc-badge-tag">Mục 2.1</span>
+                </a>
+
+                <a href="#slide-5" class="magazine-toc-item" onclick="goToSlide(4)">
+                  <span class="toc-item-left">
+                    <span class="toc-roman">IV.</span>
+                    <span class="toc-text">Xuất hiện các tầng lớp mới &amp; Doanh nhân</span>
+                  </span>
+                  <span class="toc-badge-tag">Mục 2.2</span>
+                </a>
+
+                <a href="#slide-6" class="magazine-toc-item" onclick="goToSlide(5)">
+                  <span class="toc-item-left">
+                    <span class="toc-roman">V.</span>
+                    <span class="toc-text">Liên minh Công – Nông – Trí thức hiện đại</span>
+                  </span>
+                  <span class="toc-badge-tag">Mục 2.3</span>
+                </a>
+
+                <a href="#sbWrap" class="magazine-toc-item highlight-toc" onclick="document.getElementById('sbStage').scrollIntoView({behavior:'smooth'})">
+                  <span class="toc-item-left">
+                    <span class="toc-roman">📖</span>
+                    <span class="toc-text">Sách 3D Tương tác (10 trang tư liệu số hóa)</span>
+                  </span>
+                  <span class="toc-badge-tag">Trải Nghiệm 3D</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cột phải: Cụm Ghép Ảnh Đa Tầng Chuẩn Screenshot -->
+          <div class="magazine-right-col">
+            <div class="magazine-collage-wrapper">
+              <!-- Ảnh thẻ chính lớn: Bìa sách Chương 5 -->
+              <div class="interactive-card main-hero-card" onclick="document.getElementById('sbStage').scrollIntoView({behavior:'smooth'})" title="Click để trải nghiệm Sách 3D tương tác">
+                <img src="/textures/chapter5/bia.png" alt="Bìa Giáo trình Chương 5">
+                <div class="interactive-ribbon">
+                  CƠ CẤU XÃ HỘI – GIAI CẤP TRONG THỜI KỲ QUÁ ĐỘ LÊN CNXH
+                </div>
+                <div class="card-hint-badge">Bìa Chương 5 · Cuộn xuống để lật sách 3D</div>
+              </div>
+
+              <!-- 2 Thẻ polaroid phụ xếp chồng chéo đè lên chân thẻ chính -->
+              <div class="collage-sub-grid">
+                <div class="interactive-card sub-card-left" onclick="goToSlide(1)" title="Xem Mục 1.1: Khái niệm">
+                  <img src="/textures/chapter5/muc_1.png" alt="Mục 1: Khái niệm & Vị trí">
+                  <p class="interactive-caption">Mục 1: Khái niệm &amp; Vị trí</p>
+                  <span class="polaroid-tag">Giáo trình MLN131</span>
+                </div>
+
+                <div class="interactive-card sub-card-right" onclick="goToSlide(3)" title="Xem Mục 2.1: Tính quy luật biến đổi">
+                  <img src="/textures/chapter5/muc_2.png" alt="Mục 2: Tính quy luật biến đổi">
+                  <p class="interactive-caption">Mục 2: Tính quy luật</p>
+                  <span class="polaroid-tag">Giáo trình MLN131</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dòng bản quyền chân trang tạp chí -->
+        <div class="magazine-bottom-bar">
+          <span>CHỦ NGHĨA XÃ HỘI KHOA HỌC (MLN131)</span>
+          <span>BẢN QUYỀN LƯU HÀNH NỘI BỘ</span>
+          <span>KHOA LÝ LUẬN CHÍNH TRỊ · FPT UNIVERSITY</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIÊU ĐỀ DẪN VÀO SÁCH 3D -->
+    <div style="width: 100%; max-width: 1060px; margin: 10px auto 18px; text-align: center; border-top: 1px dashed rgba(122,26,28,0.25); padding-top: 22px;">
+      <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--vermilion); background: var(--vermilion-soft); padding: 4px 16px; border-radius: 999px; border: 1px solid rgba(150, 38, 42, 0.2);">
+        KHÔNG GIAN TRẢI NGHIỆM TƯƠNG TÁC
+      </span>
+      <h3 style="font-family: 'Playfair Display', Georgia, serif; font-size: 23px; font-weight: 800; color: #110802; margin: 10px 0 4px;">
+        Sách 3D Lật Trang &amp; Kính Lúp Phóng Đại
+      </h3>
+      <p style="font-size: 13.5px; color: var(--ink-light); margin: 0;">
+        Kéo chuột để lật 10 trang tư liệu số hóa · Rê kính lúp để phóng to chi tiết trang sách
+      </p>
+    </div>
 
     <div class="sb-wrap" id="sbWrap">
       <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1176,9 +1766,29 @@ body {
           </div>
         </div>
 
-        <!-- Cột phải: Minh chứng thực tiễn Ví dụ 1 -->
+        <!-- Cột phải: Minh chứng thực tiễn Ví dụ 1 & Cụm ghép ảnh tạp chí -->
         <div class="slide-col">
-          <h3 class="col-banner-title">Minh Chứng Thực Tiễn Tại Việt Nam</h3>
+          <h3 class="col-banner-title">Minh Chứng Thực Tiễn &amp; Tư Liệu Ghép Ảnh</h3>
+
+          <!-- CỤM GHÉP ẢNH TẠP CHÍ ĐA TẦNG (PHOTO COLLAGE) -->
+          <div class="slide-collage-wrapper">
+            <div class="interactive-card slide-main-card" title="Trang sách Mục 1.1: Khái niệm">
+              <img src="/textures/chapter5/1.1.png" alt="Giáo trình Mục 1.1: Khái niệm cơ cấu xã hội - giai cấp">
+              <div class="interactive-ribbon">1.1. KHÁI NIỆM CƠ CẤU XÃ HỘI – GIAI CẤP</div>
+            </div>
+            <div class="collage-sub-grid">
+              <div class="interactive-card sub-card-left" title="Tư liệu: Đa dạng hóa giai tầng xã hội">
+                <img src="/images/truytimmanhghep/cocauxahoigiaicap.jpg" alt="Cơ cấu các giai tầng xã hội Việt Nam">
+                <p class="interactive-caption">Đa dạng hóa giai tầng XH</p>
+                <span class="polaroid-tag">Tư liệu minh chứng</span>
+              </div>
+              <div class="interactive-card sub-card-right" title="Trang sách Mục 1: Khái niệm và Vị trí">
+                <img src="/textures/chapter5/muc_1.png" alt="Mục 1: Khái niệm & Vị trí">
+                <p class="interactive-caption">Cấu trúc hệ thống xã hội</p>
+                <span class="polaroid-tag">Giáo trình MLN131</span>
+              </div>
+            </div>
+          </div>
 
           <div class="slide-practice-box">
             <span class="slide-practice-tag">Ví dụ 1: Đa dạng hóa các tầng lớp xã hội</span>
@@ -1241,9 +1851,31 @@ body {
           </div>
         </div>
 
-        <!-- Cột phải: Ví dụ 2 & Nghị quyết 45 -->
+        <!-- Cột phải: Ví dụ 2, Nghị quyết 45 & Cụm ghép ảnh tạp chí -->
         <div class="slide-col">
           <h3 class="col-banner-title">Minh Chứng: Vai Trò Đội Ngũ Trí Thức</h3>
+
+          <!-- CỤM GHÉP ẢNH TẠP CHÍ ĐA TẦNG (PHOTO COLLAGE) -->
+          <div class="slide-collage-wrapper">
+            <div class="interactive-card slide-main-card" title="Trang sách Mục 1.2: Ba vị trí then chốt">
+              <img src="/textures/chapter5/1.2.png" alt="Giáo trình Mục 1.2: Vị trí của cơ cấu xã hội - giai cấp">
+              <div class="interactive-ribbon">1.2. BA VỊ TRÍ THEN CHỐT CỦA CƠ CẤU XÃ HỘI – GIAI CẤP</div>
+            </div>
+            <div class="collage-sub-grid">
+              <div class="interactive-card sub-card-left" title="Nghị quyết số 45-NQ/TW - Báo Chính phủ">
+                <img src="/images/truytimmanhghep/hoi_nghi_tong_ket.jpg" alt="Hội nghị toàn quốc quán triệt Nghị quyết 45-NQ/TW">
+                <p class="interactive-caption">Nghị quyết 45-NQ/TW: Trí thức</p>
+                <a href="https://xaydungchinhsach.chinhphu.vn" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
+                  Báo Chính Phủ ↗
+                </a>
+              </div>
+              <div class="interactive-card sub-card-right" title="Trang sách Mục 1: Khái niệm & Vị trí">
+                <img src="/textures/chapter5/muc_1.png" alt="Mục 1: Khái niệm & Vị trí">
+                <p class="interactive-caption">Căn cứ hoạch định chính sách</p>
+                <span class="polaroid-tag">Giáo trình MLN131</span>
+              </div>
+            </div>
+          </div>
 
           <div class="slide-practice-box">
             <span class="slide-practice-tag">Ví dụ 2: Đội ngũ trí thức ngày càng có vai trò lớn</span>
@@ -1306,9 +1938,31 @@ body {
           </div>
         </div>
 
-        <!-- Cột phải: Ví dụ 3, Thống kê & Liên hệ -->
+        <!-- Cột phải: Ví dụ 3, Thống kê, Cụm ghép ảnh tạp chí & Liên hệ -->
         <div class="slide-col">
-          <h3 class="col-banner-title">Chuyển Dịch Lao Động Thực Tế Tại Việt Nam</h3>
+          <h3 class="col-banner-title">Chuyển Dịch Lao Động Thực Tế &amp; Tư Liệu Ghép Ảnh</h3>
+
+          <!-- CỤM GHÉP ẢNH TẠP CHÍ ĐA TẦNG (PHOTO COLLAGE) -->
+          <div class="slide-collage-wrapper">
+            <div class="interactive-card slide-main-card" title="Trang sách Mục 2.1: Cơ cấu kinh tế quy định">
+              <img src="/textures/chapter5/2.1.png" alt="Giáo trình Mục 2.1: Biến đổi gắn liền và bị quy định bởi cơ cấu kinh tế">
+              <div class="interactive-ribbon">2.1. CƠ CẤU KINH TẾ QUY ĐỊNH CƠ CẤU GIAI CẤP</div>
+            </div>
+            <div class="collage-sub-grid">
+              <div class="interactive-card sub-card-left" title="Thống kê lao động việc làm 2025 - Cục Thống kê">
+                <img src="/images/sources/doanh_nghiep_gso_2025.jpg" alt="Dữ liệu thống kê việc làm và doanh nghiệp của GSO">
+                <p class="interactive-caption">Lao động việc làm 2025 (GSO)</p>
+                <a href="https://www.nso.gov.vn" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
+                  Cục Thống Kê (nso.gov.vn) ↗
+                </a>
+              </div>
+              <div class="interactive-card sub-card-right" title="Trang sách Mục 2: Tính quy luật biến đổi">
+                <img src="/textures/chapter5/muc_2.png" alt="Mục 2: Tính quy luật biến đổi">
+                <p class="interactive-caption">Quy luật chuyển dịch kinh tế</p>
+                <span class="polaroid-tag">Giáo trình MLN131</span>
+              </div>
+            </div>
+          </div>
 
           <div class="slide-practice-box">
             <span class="slide-practice-tag">Ví dụ 3: Lao động chuyển từ nông nghiệp sang công nghiệp và dịch vụ</span>
@@ -1389,9 +2043,31 @@ body {
           </div>
         </div>
 
-        <!-- Cột phải: Ví dụ 5 & Doanh nhân -->
+        <!-- Cột phải: Ví dụ 5, Doanh nhân & Cụm ghép ảnh tạp chí -->
         <div class="slide-col">
-          <h3 class="col-banner-title">Sự Phát Triển Của Doanh Nhân &amp; Kinh Tế Tư Nhân</h3>
+          <h3 class="col-banner-title">Sự Phát Triển Của Doanh Nhân &amp; Tư Liệu Ghép Ảnh</h3>
+
+          <!-- CỤM GHÉP ẢNH TẠP CHÍ ĐA TẦNG (PHOTO COLLAGE) -->
+          <div class="slide-collage-wrapper">
+            <div class="interactive-card slide-main-card" title="Trang sách Mục 2.2: Tầng lớp mới">
+              <img src="/textures/chapter5/2.2.png" alt="Giáo trình Mục 2.2: Biến đổi phức tạp, đa dạng, làm xuất hiện tầng lớp mới">
+              <div class="interactive-ribbon">2.2. XUẤT HIỆN TẦNG LỚP DOANH NHÂN &amp; TIỂU CHỦ MỚI</div>
+            </div>
+            <div class="collage-sub-grid">
+              <div class="interactive-card sub-card-left" title="Báo cáo phát triển doanh nghiệp 2025 - Cục Thống kê">
+                <img src="/images/sources/doanh_nghiep_gso_2025.jpg" alt="Số liệu doanh nghiệp gia nhập thị trường 2025">
+                <p class="interactive-caption">297,5K DN gia nhập 2025</p>
+                <a href="https://www.nso.gov.vn/du-lieu-va-so-lieu-thong-ke/2026/01/buc-tranh-phat-trien-doanh-nghiep-viet-nam-nam-2025/" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
+                  Bức Tranh DN 2025 (GSO) ↗
+                </a>
+              </div>
+              <div class="interactive-card sub-card-right" title="Trang sách Mục 2.1: Cơ cấu kinh tế">
+                <img src="/textures/chapter5/2.1.png" alt="Trang sách Mục 2.1: Chuyển dịch kinh tế">
+                <p class="interactive-caption">Kinh tế tư nhân lớn mạnh</p>
+                <span class="polaroid-tag">Giáo trình MLN131</span>
+              </div>
+            </div>
+          </div>
 
           <div class="slide-practice-box">
             <span class="slide-practice-tag">Ví dụ 5: Sự phát triển của đội ngũ doanh nhân và khu vực kinh tế tư nhân</span>
@@ -1490,9 +2166,34 @@ body {
           </div>
         </div>
 
-        <!-- Cột phải: Ví dụ thực tiễn & Drone nông nghiệp -->
+        <!-- Cột phải: Ví dụ thực tiễn, Drone nông nghiệp & Cụm ghép ảnh tạp chí -->
         <div class="slide-col">
-          <h3 class="col-banner-title">Thực Tiễn Nông Nghiệp &amp; Khoa Học Công Nghệ Cao</h3>
+          <h3 class="col-banner-title">Thực Tiễn Nông Nghiệp, Khoa Học &amp; Tư Liệu Ghép Ảnh</h3>
+
+          <!-- CỤM GHÉP ẢNH TẠP CHÍ ĐA TẦNG (PHOTO COLLAGE) -->
+          <div class="slide-collage-wrapper">
+            <div class="interactive-card slide-main-card" title="Chủ tịch nước Lương Cường dự Lễ tôn vinh Nông dân xuất sắc & Nhà khoa học của nhà nông 2025 - Báo Nhân Dân">
+              <img src="/images/sources/ton_vinh_nong_dan_tri_thuc.avif" alt="Lễ tôn vinh Nông dân Việt Nam xuất sắc và Nhà khoa học của nhà nông năm 2025">
+              <div class="interactive-ribbon">TÔN VINH NÔNG DÂN XUẤT SẮC &amp; NHÀ KHOA HỌC CỦA NHÀ NÔNG 2025</div>
+              <a href="https://nhandan.vn/chu-tich-nuoc-luong-cuong-du-le-ton-vinh-nong-dan-viet-nam-xuat-sac-nha-khoa-hoc-cua-nha-nong-nam-2025-post915378.html" target="_blank" rel="noopener noreferrer" class="collage-source-btn" style="margin-top: 6px;">
+                Báo Nhân Dân: Lễ Tôn Vinh 2025 ↗
+              </a>
+            </div>
+            <div class="collage-sub-grid">
+              <div class="interactive-card sub-card-left" title="Ứng dụng thiết bị bay không người lái trong nông nghiệp - Báo Nhân Dân">
+                <img src="/images/sources/nong_nghiep_cong_nghe_cao.webp" alt="Ứng dụng máy bay nông nghiệp không người lái drone tại Việt Nam">
+                <p class="interactive-caption">~7.000 Drone trên đồng ruộng</p>
+                <a href="https://nhandan.vn/can-buoc-nhay-vot-cho-nong-nghiep-cong-nghe-cao-post861923.html" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
+                  Nông nghiệp CNC ↗
+                </a>
+              </div>
+              <div class="interactive-card sub-card-right" title="Trang sách Mục 2.3: Mối quan hệ liên minh">
+                <img src="/textures/chapter5/2.3.png" alt="Trang sách Mục 2.3: Quan hệ liên minh giai cấp">
+                <p class="interactive-caption">Giáo trình: 2.3 Liên minh GC</p>
+                <span class="polaroid-tag">Giáo trình MLN131</span>
+              </div>
+            </div>
+          </div>
 
           <div class="slide-practice-box">
             <span class="slide-practice-tag">Ví dụ thực tiễn</span>

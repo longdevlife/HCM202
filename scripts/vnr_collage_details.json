@@ -1,0 +1,37 @@
+{
+  "cards": [
+    {
+      "className": "interactive-card",
+      "style": "border: 1.5px solid rgb(122, 26, 28); padding: 8px; background: rgb(255, 255, 255); box-shadow: rgba(62, 47, 28, 0.2) 0px 18px 36px; transform: rotate(-1.8deg); position: relative; z-index: 2;",
+      "computedStyle": {
+        "background": "rgb(255, 255, 255) none repeat scroll 0% 0% / auto padding-box border-box",
+        "boxShadow": "rgba(62, 47, 28, 0.2) 0px 18px 36px 0px",
+        "borderRadius": "0px",
+        "transform": "matrix(0.999507, -0.0314108, 0.0314108, 0.999507, 0, 0)"
+      },
+      "html": "<img src=\"/assets/image-7-Dpq7ovsf.png\" alt=\"Chiến thắng Điện Biên Phủ\" style=\"width: 100%; height: 310px; object-fit: cover; display: block; filter: sepia(0.18) contrast(1.12) brightness(0.88);\"><div style=\"background: rgb(122, 26, 28); color: rgb(255, 255, 255); padding: 8px 14px; font-family: &qu"
+    },
+    {
+      "className": "interactive-card",
+      "style": "border: 1.5px solid rgba(0, 0, 0, 0.1); padding: 6px 6px 12px; background: rgb(255, 255, 255); box-shadow: rgba(62, 47, 28, 0.18) 2px 10px 22px; transform: rotate(3.8deg) translateY(14px);",
+      "computedStyle": {
+        "background": "rgb(255, 255, 255) none repeat scroll 0% 0% / auto padding-box border-box",
+        "boxShadow": "rgba(62, 47, 28, 0.18) 2px 10px 22px 0px",
+        "borderRadius": "0px",
+        "transform": "matrix(0.997801, 0.0662739, -0.0662739, 0.997801, -0.927835, 13.9692)"
+      },
+      "html": "<img src=\"/assets/image-3-B4IkPHE9.png\" alt=\"Đại hội II\" style=\"width: 100%; height: 125px; object-fit: cover; display: block; filter: sepia(0.22) contrast(1.08) brightness(0.92);\"><p style=\"font-family: &quot;EB Garamond&quot;, Garamond, serif; font-size: 16.5px; font-weight: 700; text-align: cente"
+    },
+    {
+      "className": "interactive-card",
+      "style": "border: 1.5px solid rgba(0, 0, 0, 0.1); padding: 6px 6px 12px; background: rgb(255, 255, 255); box-shadow: rgba(62, 47, 28, 0.22) -3px 12px 26px; transform: rotate(-3.2deg) translateY(32px);",
+      "computedStyle": {
+        "background": "rgb(255, 255, 255) none repeat scroll 0% 0% / auto padding-box border-box",
+        "boxShadow": "rgba(62, 47, 28, 0.22) -3px 12px 26px 0px",
+        "borderRadius": "0px",
+        "transform": "matrix(0.998441, -0.0558215, 0.0558215, 0.998441, 1.78629, 31.9501)"
+      },
+      "html": "<img src=\"/assets/image-9-DvgUDzo5.png\" alt=\"Hiệp định Giơ-ne-vơ\" style=\"width: 100%; height: 125px; object-fit: cover; display: block; filter: sepia(0.25) contrast(1.08) brightness(0.9);\"><p style=\"font-family: &quot;EB Garamond&quot;, Garamond, serif; font-size: 16.5px; font-weight: 700; text-alig"
+    }
+  ]
+}
