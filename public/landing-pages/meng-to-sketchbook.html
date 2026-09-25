@@ -1453,6 +1453,88 @@ body {
   border-color: #7a1a1c !important;
 }
 
+/* Layout 2 ảnh tư liệu cân bằng, sắc nét cho Mục 2.1 */
+.slide-dual-evidence-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 14px;
+  margin-bottom: 20px;
+}
+@media (max-width: 640px) {
+  .slide-dual-evidence-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+.interactive-card.evidence-equal-card {
+  border: 1.5px solid rgba(122, 26, 28, 0.22);
+  border-radius: 8px;
+  padding: 8px 8px 12px;
+  box-shadow: 0 10px 24px rgba(62, 47, 28, 0.16);
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transform: none !important;
+}
+.interactive-card.evidence-equal-card:hover {
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: 0 18px 36px rgba(122, 26, 28, 0.25), 0 0 0 2px #d4a345 !important;
+  border-color: #7a1a1c !important;
+}
+
+.evidence-img-container {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  background: #ffffff;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: zoom-in;
+}
+.evidence-img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: contrast(1.05) brightness(1.01);
+  transition: transform 0.3s ease;
+  background-color: #ffffff;
+}
+.evidence-img-container:hover img {
+  transform: scale(1.04);
+}
+
+.evidence-zoom-hint {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  background: rgba(44, 26, 14, 0.75);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+}
+.evidence-img-container:hover .evidence-zoom-hint {
+  opacity: 1;
+  background: rgba(122, 26, 28, 0.9);
+}
+
+.evidence-card-body {
+  margin-top: 8px;
+}
+
 /* Dòng bản quyền cuối tạp chí */
 .magazine-bottom-bar {
   display: flex;
@@ -2065,24 +2147,29 @@ body {
 
         <!-- Cột phải: Ví dụ 3, Thống kê, Cụm ghép ảnh tạp chí & Liên hệ -->
         <div class="slide-col">
-          <h3 class="col-banner-title">Chuyển Dịch Lao Động Thực Tế &amp; Tư Liệu Ghép Ảnh</h3>
+          <h3 class="col-banner-title">Chuyển Dịch Lao Động Thực Tế &amp; Dữ Liệu Báo Chí, Thống Kê</h3>
 
-          <!-- CỤM GHÉP ẢNH TẠP CHÍ ĐA TẦNG (PHOTO COLLAGE) -->
-          <div class="slide-collage-wrapper">
-            <div class="interactive-card slide-main-card" title="Trang sách Mục 2.1: Cơ cấu kinh tế quy định">
-              <img src="/textures/chapter5/2.1.png" alt="Giáo trình Mục 2.1: Biến đổi gắn liền và bị quy định bởi cơ cấu kinh tế">
-              <div class="interactive-ribbon">2.1. CƠ CẤU KINH TẾ QUY ĐỊNH CƠ CẤU GIAI CẤP</div>
-            </div>
-            <div class="collage-sub-grid">
-              <div class="interactive-card sub-card-left" title="Tăng trưởng kinh tế & Cơ cấu lao động - Báo Điện Tử Chính Phủ (2024)">
+          <!-- CỤM 2 ẢNH TƯ LIỆU ĐỐI XỨNG CÂN BẰNG & RÕ NÉT CHO MỤC 2.1 (CHỈ 2 ẢNH ĐỀU NHAU) -->
+          <div class="slide-dual-evidence-grid">
+            <div class="interactive-card evidence-equal-card" title="Tăng trưởng kinh tế & Chuyển dịch cơ cấu lao động - Báo Điện Tử Chính Phủ (2024)">
+              <div class="evidence-img-container" onclick="window.open('/images/sources/2.1.jpg', '_blank')" title="Nhấp để mở xem ảnh kích thước gốc">
                 <img src="/images/sources/2.1.jpg" alt="Chuyển dịch cơ cấu ngành kinh tế và lao động - Báo Điện Tử Chính Phủ, 2024">
+                <span class="evidence-zoom-hint">🔍 Nhấp phóng to</span>
+              </div>
+              <div class="evidence-card-body">
                 <p class="interactive-caption">Cơ cấu kinh tế &amp; Lực lượng LĐ</p>
                 <a href="https://baochinhphu.vn" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
                   Báo Điện Tử Chính Phủ (2024) ↗
                 </a>
               </div>
-              <div class="interactive-card sub-card-right" title="Cơ cấu lao động theo khu vực kinh tế 2021-2025 - Cục Thống kê (2026)">
+            </div>
+
+            <div class="interactive-card evidence-equal-card" title="Cơ cấu lao động theo khu vực kinh tế 2021-2025 - Cục Thống kê (2026)">
+              <div class="evidence-img-container" onclick="window.open('/images/sources/2.1.2.jpg', '_blank')" title="Nhấp để mở xem ảnh kích thước gốc">
                 <img src="/images/sources/2.1.2.jpg" alt="Biểu đồ cơ cấu lao động 2021-2025 - Cục Thống kê, 2026">
+                <span class="evidence-zoom-hint">🔍 Nhấp phóng to</span>
+              </div>
+              <div class="evidence-card-body">
                 <p class="interactive-caption">Biểu đồ cơ cấu LĐ 2021-2025</p>
                 <a href="https://www.nso.gov.vn" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
                   Cục Thống Kê (2026) ↗
