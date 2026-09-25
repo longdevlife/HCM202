@@ -1497,14 +1497,20 @@ body {
 
 .vnr-photo-card img {
   width: 100%;
-  height: 185px;
-  object-fit: cover;
+  height: 200px;
+  object-fit: contain;
   display: block;
-  filter: sepia(0.1) contrast(1.08) brightness(0.94);
-  transition: filter 0.3s ease;
+  background: #ffffff;
+  filter: contrast(1.05) brightness(1.01);
+  transition: filter 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+}
+.vnr-photo-card img.img-tall {
+  height: 260px;
 }
 .vnr-photo-figure:hover .vnr-photo-card img {
-  filter: sepia(0) contrast(1.05) brightness(1);
+  filter: contrast(1.08) brightness(1.03);
+  transform: scale(1.015);
 }
 
 .vnr-photo-ribbon {
@@ -1947,26 +1953,35 @@ body {
 
         <!-- Cột phải: Minh chứng thực tiễn Ví dụ 1 & Cụm ghép ảnh tạp chí -->
         <div class="slide-col">
-          <h3 class="col-banner-title">Minh Chứng Thực Tiễn &amp; Tư Liệu Ghép Ảnh</h3>
+          <h3 class="col-banner-title">Minh Chứng Thực Tiễn &amp; Tư Liệu Báo Chí</h3>
 
-          <!-- CỤM GHÉP ẢNH TẠP CHÍ ĐA TẦNG (PHOTO COLLAGE) -->
-          <div class="slide-collage-wrapper">
-            <div class="interactive-card slide-main-card" title="Trang sách Mục 1.1: Khái niệm">
-              <img src="/textures/chapter5/1.1.png" alt="Giáo trình Mục 1.1: Khái niệm cơ cấu xã hội - giai cấp">
-              <div class="interactive-ribbon">1.1. KHÁI NIỆM CƠ CẤU XÃ HỘI – GIAI CẤP</div>
-            </div>
-            <div class="collage-sub-grid">
-              <div class="interactive-card sub-card-left" title="Tư liệu: Đa dạng hóa giai tầng xã hội">
-                <img src="/images/truytimmanhghep/cocauxahoigiaicap.jpg" alt="Cơ cấu các giai tầng xã hội Việt Nam">
-                <p class="interactive-caption">Đa dạng hóa giai tầng XH</p>
-                <span class="polaroid-tag">Tư liệu minh chứng</span>
+          <!-- CỤM 2 ẢNH TƯ LIỆU XẾP DỌC CHUẨN STYLE VNR (BỎ ẢNH SÁCH) -->
+          <div class="vnr-dual-photo-stack">
+            <!-- ẢNH 1: SLIDE GIÁO TRÌNH MLN131 -->
+            <figure class="vnr-photo-figure fig-top">
+              <div class="vnr-photo-card">
+                <img src="/images/sources/1.1.1.jpg" alt="Khái niệm cơ cấu xã hội - giai cấp trong thời kỳ quá độ lên CNXH - Giáo trình MLN131">
+                <div class="vnr-photo-ribbon">
+                  Khái niệm cơ cấu xã hội – giai cấp trong thời kỳ quá độ — Slide Giáo trình MLN131
+                </div>
+                <div class="collage-source-btn" style="pointer-events: none; margin-top: 6px;">
+                  Nguồn: Slide Giáo Trình MLN131
+                </div>
               </div>
-              <div class="interactive-card sub-card-right" title="Trang sách Mục 1: Khái niệm và Vị trí">
-                <img src="/textures/chapter5/muc_1.png" alt="Mục 1: Khái niệm & Vị trí">
-                <p class="interactive-caption">Cấu trúc hệ thống xã hội</p>
-                <span class="polaroid-tag">Giáo trình MLN131</span>
+            </figure>
+
+            <!-- ẢNH 2: VÍ DỤ 1.1 THỰC TIỄN -->
+            <figure class="vnr-photo-figure fig-bottom">
+              <div class="vnr-photo-card">
+                <img src="/images/sources/1.1.2.jpg" alt="Ví dụ minh họa đa dạng hóa các tầng lớp xã hội Việt Nam thời kỳ đổi mới">
+                <div class="vnr-photo-ribbon">
+                  Ví dụ thực tiễn: Đa dạng hóa các tầng lớp xã hội Việt Nam thời kỳ đổi mới
+                </div>
+                <div class="collage-source-btn" style="pointer-events: none; margin-top: 6px;">
+                  Tư Liệu Minh Chứng Thực Tiễn
+                </div>
               </div>
-            </div>
+            </figure>
           </div>
 
           <div class="slide-practice-box">
@@ -1974,6 +1989,11 @@ body {
             <p class="slide-practice-content">
               Cơ cấu xã hội – giai cấp Việt Nam hiện nay gồm nhiều giai cấp, tầng lớp như công nhân, nông dân, trí thức và doanh nhân. Sự phát triển của kinh tế tư nhân làm đội ngũ doanh nhân ngày càng mở rộng. Điều này cho thấy cơ cấu xã hội – giai cấp ngày càng đa dạng cùng với sự phát triển kinh tế.
             </p>
+          </div>
+
+          <div class="slide-citation-bar">
+            <div>Nguồn trích dẫn: Giáo trình Chủ nghĩa xã hội khoa học (Bộ GD&amp;ĐT - MLN131)</div>
+            <span class="slide-citation-link">Tư liệu học phần MLN131</span>
           </div>
         </div>
       </div>
@@ -2039,42 +2059,55 @@ body {
 
         <!-- Cột minh chứng (Hiển thị bên TRÁI nhờ layout-reversed) -->
         <div class="slide-col">
-          <h3 class="col-banner-title">Minh Chứng: Vai Trò Đội Ngũ Trí Thức</h3>
+          <h3 class="col-banner-title">Định Hướng Nhà Nước &amp; Vai Trò Trí Thức KH-CN</h3>
 
-          <!-- CỤM GHÉP ẢNH TẠP CHÍ ĐA TẦNG (PHOTO COLLAGE) -->
-          <div class="slide-collage-wrapper">
-            <div class="interactive-card slide-main-card" title="Trang sách Mục 1.2: Ba vị trí then chốt">
-              <img src="/textures/chapter5/1.2.png" alt="Giáo trình Mục 1.2: Vị trí của cơ cấu xã hội - giai cấp">
-              <div class="interactive-ribbon">1.2. BA VỊ TRÍ THEN CHỐT CỦA CƠ CẤU XÃ HỘI – GIAI CẤP</div>
-            </div>
-            <div class="collage-sub-grid">
-              <div class="interactive-card sub-card-left" title="Nghị quyết số 45-NQ/TW - Báo Chính phủ">
-                <img src="/images/truytimmanhghep/hoi_nghi_tong_ket.jpg" alt="Hội nghị toàn quốc quán triệt Nghị quyết 45-NQ/TW">
-                <p class="interactive-caption">Nghị quyết 45-NQ/TW: Trí thức</p>
-                <a href="https://xaydungchinhsach.chinhphu.vn" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
-                  Báo Chính Phủ ↗
+          <!-- CỤM 2 ẢNH TƯ LIỆU XẾP DỌC CHUẨN STYLE VNR (BỎ ẢNH SÁCH) -->
+          <div class="vnr-dual-photo-stack">
+            <!-- ẢNH 1: 1.1.3.JPG - DIỄN ĐÀN KINH TẾ - XÃ HỘI 2023 -->
+            <figure class="vnr-photo-figure fig-top">
+              <div class="vnr-photo-card">
+                <img src="/images/sources/1.1.3.jpg" alt="Diễn đàn Kinh tế - Xã hội Việt Nam 2023 - Thể hiện vai trò của Nhà nước trong định hướng chính sách phát triển kinh tế - xã hội">
+                <div class="vnr-photo-ribbon">
+                  Diễn đàn Kinh tế - Xã hội Việt Nam 2023 thể hiện vai trò của Nhà nước trong định hướng chính sách phát triển kinh tế – xã hội
+                </div>
+                <a href="https://baocantho.com.vn/khai-mac-dien-dan-kinh-te-xa-hoi-viet-nam-nam-2023-a164386.html" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
+                  Báo Cần Thơ: Diễn Đàn KT-XH 2023 ↗
                 </a>
               </div>
-              <div class="interactive-card sub-card-right" title="Trang sách Mục 1: Khái niệm & Vị trí">
-                <img src="/textures/chapter5/muc_1.png" alt="Mục 1: Khái niệm & Vị trí">
-                <p class="interactive-caption">Căn cứ hoạch định chính sách</p>
-                <span class="polaroid-tag">Giáo trình MLN131</span>
+            </figure>
+
+            <!-- ẢNH 2: 1.1.4.JPG - TRÍ THỨC KHOA HỌC CÔNG NGHỆ -->
+            <figure class="vnr-photo-figure fig-bottom">
+              <div class="vnr-photo-card">
+                <img src="/images/sources/1.1.4.jpg" alt="Sự phát triển của khoa học - công nghệ làm tăng vai trò của tầng lớp trí thức trong cơ cấu xã hội hiện nay">
+                <div class="vnr-photo-ribbon">
+                  Sự phát triển của khoa học – công nghệ làm tăng vai trò của tầng lớp trí thức trong cơ cấu xã hội hiện nay
+                </div>
+                <a href="https://vietnamnet.vn/en/two-new-viettel-inventions-granted-exclusive-protection-certificate-in-the-us-2023867.html" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
+                  VietnamNet: Hai Sáng Chế Viettel Được Cấp Bằng Tại Mỹ ↗
+                </a>
               </div>
-            </div>
+            </figure>
           </div>
 
           <div class="slide-practice-box">
-            <span class="slide-practice-tag">Ví dụ 2: Đội ngũ trí thức ngày càng có vai trò lớn</span>
+            <span class="slide-practice-tag">Ví dụ 2: Định hướng chính sách của Nhà nước &amp; Vị thế đội ngũ trí thức</span>
             <p class="slide-practice-content">
-              Sự phát triển của khoa học – công nghệ, kinh tế tri thức và chuyển đổi số đang làm tăng vai trò của tầng lớp trí thức. Nghị quyết số 45-NQ/TW năm 2023 xác định đội ngũ trí thức Việt Nam đã phát triển cả về số lượng và chất lượng, là lực lượng đi đầu trong nghiên cứu, đổi mới sáng tạo, ứng dụng khoa học – công nghệ và hội nhập quốc tế. Nghị quyết cũng xác định trí thức là nguồn lực đặc biệt trong phát triển kinh tế tri thức, công nghiệp hóa và hiện đại hóa đất nước (Ban Chấp hành Trung ương, 2023).
+              Diễn đàn Kinh tế – Xã hội Việt Nam 2023 là minh chứng cho thấy cơ cấu xã hội – giai cấp là căn cứ khoa học để Nhà nước định hướng chính sách vĩ mô (Báo Cần Thơ, 2023). Bên cạnh đó, sự bứt phá mạnh mẽ của khoa học – công nghệ đang nâng cao rõ rệt vai trò nòng cốt của tầng lớp trí thức, tiêu biểu như các nhà khoa học, chuyên gia công nghệ Viettel được cấp bằng bảo hộ độc quyền sáng chế tại Mỹ (VietnamNet, 2023).
             </p>
           </div>
 
           <div class="slide-citation-bar">
-            <div>Nguồn trích dẫn: Ban Chấp hành Trung ương (2023)</div>
-            <a class="slide-citation-link" href="https://xaydungchinhsach.chinhphu.vn" target="_blank" rel="noopener noreferrer">
-              Nghị quyết số 45-NQ/TW tại Báo Điện tử Chính phủ (xaydungchinhsach.chinhphu.vn)
-            </a>
+            <div>Nguồn trích dẫn: Báo Cần Thơ (2023) &amp; Báo VietnamNet (2023)</div>
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <a class="slide-citation-link" href="https://baocantho.com.vn/khai-mac-dien-dan-kinh-te-xa-hoi-viet-nam-nam-2023-a164386.html" target="_blank" rel="noopener noreferrer">
+                Báo Cần Thơ ↗
+              </a>
+              <span style="opacity: 0.4;">·</span>
+              <a class="slide-citation-link" href="https://vietnamnet.vn/en/two-new-viettel-inventions-granted-exclusive-protection-certificate-in-the-us-2023867.html" target="_blank" rel="noopener noreferrer">
+                VietnamNet ↗
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -2293,28 +2326,35 @@ body {
 
         <!-- Cột minh chứng (Hiển thị bên TRÁI nhờ layout-reversed) -->
         <div class="slide-col">
-          <h3 class="col-banner-title">Sự Phát Triển Của Doanh Nhân &amp; Tư Liệu Ghép Ảnh</h3>
+          <h3 class="col-banner-title">Sự Phát Triển Của Doanh Nhân &amp; Tầng Lớp Mới</h3>
 
-          <!-- CỤM GHÉP ẢNH TẠP CHÍ ĐA TẦNG (PHOTO COLLAGE) -->
-          <div class="slide-collage-wrapper">
-            <div class="interactive-card slide-main-card" title="Trang sách Mục 2.2: Tầng lớp mới">
-              <img src="/textures/chapter5/2.2.png" alt="Giáo trình Mục 2.2: Biến đổi phức tạp, đa dạng, làm xuất hiện tầng lớp mới">
-              <div class="interactive-ribbon">2.2. XUẤT HIỆN TẦNG LỚP DOANH NHÂN &amp; TIỂU CHỦ MỚI</div>
-            </div>
-            <div class="collage-sub-grid">
-              <div class="interactive-card sub-card-left" title="Đa dạng hoá các tầng lớp xã hội mới: Doanh nhân, Trí thức, Lao động công nghệ">
-                <img src="/images/sources/2.2.1.jpg" alt="Đa dạng hoá các tầng lớp xã hội mới: Công nhân hiện đại, Doanh nhân, Lao động số">
-                <p class="interactive-caption">Đa dạng hóa tầng lớp mới</p>
-                <span class="polaroid-tag">Tầng Lớp Xã Hội Mới</span>
+          <!-- CỤM 2 ẢNH TƯ LIỆU XẾP DỌC CHUẨN STYLE VNR (BỎ ẢNH SÁCH) -->
+          <div class="vnr-dual-photo-stack">
+            <!-- ẢNH 1: 2.2.1.JPG - CÁC TẦNG LỚP XÃ HỘI MỚI -->
+            <figure class="vnr-photo-figure fig-top">
+              <div class="vnr-photo-card">
+                <img src="/images/sources/2.2.1.jpg" alt="Đa dạng hoá các tầng lớp xã hội mới trong thời kỳ đổi mới và chuyển đổi số">
+                <div class="vnr-photo-ribbon">
+                  Đa dạng hóa các tầng lớp xã hội mới: Doanh nhân, Trí thức số, Lao động công nghệ, Freelancer
+                </div>
+                <div class="collage-source-btn" style="pointer-events: none; margin-top: 6px;">
+                  Tầng Lớp Xã Hội Mới Thời Kỳ Đổi Mới
+                </div>
               </div>
-              <div class="interactive-card sub-card-right" title="Bức tranh phát triển doanh nghiệp 2025 - Cục Thống kê & TTXVN">
-                <img src="/images/sources/2.2.2.jpg" alt="Số liệu 297,4 nghìn doanh nghiệp gia nhập thị trường 2025 (Cục Thống kê / TTXVN)">
-                <p class="interactive-caption">297,4K DN gia nhập 2025</p>
-                <a href="https://www.nso.gov.vn/du-lieu-va-so-lieu-thong-ke/2026/01/buc-tranh-phat-trien-doanh-nghiep-viet-nam-nam-2025/" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
-                  Cục Thống Kê / TTXVN ↗
+            </figure>
+
+            <!-- ẢNH 2: 2.2.2.JPG - BỨC TRANH DOANH NGHIỆP 2025 -->
+            <figure class="vnr-photo-figure fig-bottom">
+              <div class="vnr-photo-card">
+                <img class="img-tall" src="/images/sources/2.2.2.jpg" alt="Bức tranh phát triển doanh nghiệp Việt Nam năm 2025: 297,4 nghìn doanh nghiệp gia nhập thị trường - Cục Thống kê / TTXVN">
+                <div class="vnr-photo-ribbon">
+                  Bức tranh phát triển doanh nghiệp 2025: 297,4 nghìn doanh nghiệp gia nhập thị trường — Cục Thống Kê / TTXVN
+                </div>
+                <a href="https://www.nso.gov.vn/du-lieu-va-so-lieu-thong-ke/2026/01/buc-tranh-phat-trien-doanh-nghiep-viet-nam-nam-2025/" target="_blank" rel="noopener noreferrer" class="collage-source-btn" style="margin-top: 6px;">
+                  Cục Thống Kê / TTXVN (2026) ↗
                 </a>
               </div>
-            </div>
+            </figure>
           </div>
 
           <div class="slide-practice-box">
