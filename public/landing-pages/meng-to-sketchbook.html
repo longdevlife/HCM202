@@ -892,46 +892,6 @@ body {
   color: var(--ink-main) !important;
 }
 
-/* KHỐI 3 TRỤ CỘT LIÊN MINH (SLIDE 6) */
-.alliance-pillars {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 8px;
-}
-@media (max-width: 820px) {
-  .alliance-pillars { grid-template-columns: 1fr; }
-}
-.alliance-pillar-card {
-  background: rgba(255, 255, 255, 0.65);
-  border: 1px solid var(--hairline-border);
-  border-top: 3px solid var(--vermilion);
-  border-radius: 8px;
-  padding: 18px 16px;
-}
-.alliance-pillar-title {
-  font-size: 16px !important;
-  font-weight: 700 !important;
-  color: var(--ink-main) !important;
-  margin-bottom: 4px;
-}
-.alliance-pillar-role {
-  font-size: 11.5px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-  color: var(--vermilion) !important;
-  margin-bottom: 10px;
-  display: block;
-}
-.alliance-pillar-desc {
-  font-size: 14px !important;
-  line-height: 1.65 !important;
-  color: var(--ink-body) !important;
-  text-align: justify;
-  margin: 0;
-}
-
 /* ĐIỀU HƯỚNG DƯỚI ĐÁY TỪNG SLIDE */
 .slide-footer-nav {
   display: flex;
@@ -2114,17 +2074,19 @@ body {
               <div class="interactive-ribbon">2.1. CƠ CẤU KINH TẾ QUY ĐỊNH CƠ CẤU GIAI CẤP</div>
             </div>
             <div class="collage-sub-grid">
-              <div class="interactive-card sub-card-left" title="Thống kê lao động việc làm 2025 - Cục Thống kê">
-                <img src="/images/sources/doanh_nghiep_gso_2025.jpg" alt="Dữ liệu thống kê việc làm và doanh nghiệp của GSO">
-                <p class="interactive-caption">Lao động việc làm 2025 (GSO)</p>
-                <a href="https://www.nso.gov.vn" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
-                  Cục Thống Kê (nso.gov.vn) ↗
+              <div class="interactive-card sub-card-left" title="Tăng trưởng kinh tế & Cơ cấu lao động - Báo Điện Tử Chính Phủ (2024)">
+                <img src="/images/sources/2.1.jpg" alt="Chuyển dịch cơ cấu ngành kinh tế và lao động - Báo Điện Tử Chính Phủ, 2024">
+                <p class="interactive-caption">Cơ cấu kinh tế &amp; Lực lượng LĐ</p>
+                <a href="https://baochinhphu.vn" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
+                  Báo Điện Tử Chính Phủ (2024) ↗
                 </a>
               </div>
-              <div class="interactive-card sub-card-right" title="Trang sách Mục 2: Tính quy luật biến đổi">
-                <img src="/textures/chapter5/muc_2.png" alt="Mục 2: Tính quy luật biến đổi">
-                <p class="interactive-caption">Quy luật chuyển dịch kinh tế</p>
-                <span class="polaroid-tag">Giáo trình MLN131</span>
+              <div class="interactive-card sub-card-right" title="Cơ cấu lao động theo khu vực kinh tế 2021-2025 - Cục Thống kê (2026)">
+                <img src="/images/sources/2.1.2.jpg" alt="Biểu đồ cơ cấu lao động 2021-2025 - Cục Thống kê, 2026">
+                <p class="interactive-caption">Biểu đồ cơ cấu LĐ 2021-2025</p>
+                <a href="https://www.nso.gov.vn" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
+                  Cục Thống Kê (2026) ↗
+                </a>
               </div>
             </div>
           </div>
@@ -2190,10 +2152,16 @@ body {
           </div>
 
           <div class="slide-citation-bar">
-            <div>Nguồn trích dẫn: Cục Thống kê (General Statistics Office of Vietnam, 2026)</div>
-            <a class="slide-citation-link" href="https://www.nso.gov.vn" target="_blank" rel="noopener noreferrer">
-              Cổng thông tin Cục Thống kê Quốc gia (nso.gov.vn)
-            </a>
+            <div>Nguồn trích dẫn: Báo Điện Tử Chính Phủ (2024) &amp; Cục Thống kê (General Statistics Office, 2026)</div>
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <a class="slide-citation-link" href="https://baochinhphu.vn" target="_blank" rel="noopener noreferrer">
+                Báo Chính phủ (baochinhphu.vn) ↗
+              </a>
+              <span style="opacity: 0.4;">·</span>
+              <a class="slide-citation-link" href="https://www.nso.gov.vn" target="_blank" rel="noopener noreferrer">
+                Cục Thống kê (nso.gov.vn) ↗
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -2261,17 +2229,17 @@ body {
               <div class="interactive-ribbon">2.2. XUẤT HIỆN TẦNG LỚP DOANH NHÂN &amp; TIỂU CHỦ MỚI</div>
             </div>
             <div class="collage-sub-grid">
-              <div class="interactive-card sub-card-left" title="Báo cáo phát triển doanh nghiệp 2025 - Cục Thống kê">
-                <img src="/images/sources/doanh_nghiep_gso_2025.jpg" alt="Số liệu doanh nghiệp gia nhập thị trường 2025">
-                <p class="interactive-caption">297,5K DN gia nhập 2025</p>
-                <a href="https://www.nso.gov.vn/du-lieu-va-so-lieu-thong-ke/2026/01/buc-tranh-phat-trien-doanh-nghiep-viet-nam-nam-2025/" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
-                  Bức Tranh DN 2025 (GSO) ↗
-                </a>
+              <div class="interactive-card sub-card-left" title="Đa dạng hoá các tầng lớp xã hội mới: Doanh nhân, Trí thức, Lao động công nghệ">
+                <img src="/images/sources/2.2.1.jpg" alt="Đa dạng hoá các tầng lớp xã hội mới: Công nhân hiện đại, Doanh nhân, Lao động số">
+                <p class="interactive-caption">Đa dạng hóa tầng lớp mới</p>
+                <span class="polaroid-tag">Tầng Lớp Xã Hội Mới</span>
               </div>
-              <div class="interactive-card sub-card-right" title="Trang sách Mục 2.1: Cơ cấu kinh tế">
-                <img src="/textures/chapter5/2.1.png" alt="Trang sách Mục 2.1: Chuyển dịch kinh tế">
-                <p class="interactive-caption">Kinh tế tư nhân lớn mạnh</p>
-                <span class="polaroid-tag">Giáo trình MLN131</span>
+              <div class="interactive-card sub-card-right" title="Bức tranh phát triển doanh nghiệp 2025 - Cục Thống kê & TTXVN">
+                <img src="/images/sources/2.2.2.jpg" alt="Số liệu 297,4 nghìn doanh nghiệp gia nhập thị trường 2025 (Cục Thống kê / TTXVN)">
+                <p class="interactive-caption">297,4K DN gia nhập 2025</p>
+                <a href="https://www.nso.gov.vn/du-lieu-va-so-lieu-thong-ke/2026/01/buc-tranh-phat-trien-doanh-nghiep-viet-nam-nam-2025/" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
+                  Cục Thống Kê / TTXVN ↗
+                </a>
               </div>
             </div>
           </div>
@@ -2299,9 +2267,9 @@ body {
           </div>
 
           <div class="slide-citation-bar">
-            <div>Nguồn trích dẫn: Cục Thống kê (General Statistics Office of Vietnam, 2026)</div>
+            <div>Nguồn trích dẫn: Cục Thống kê &amp; Thông tấn xã Việt Nam (TTXVN, 2026)</div>
             <a class="slide-citation-link" href="https://www.nso.gov.vn/du-lieu-va-so-lieu-thong-ke/2026/01/buc-tranh-phat-trien-doanh-nghiep-viet-nam-nam-2025/" target="_blank" rel="noopener noreferrer">
-              Bức tranh phát triển doanh nghiệp Việt Nam năm 2025 (nso.gov.vn)
+              Bức tranh phát triển doanh nghiệp Việt Nam năm 2025 (nso.gov.vn) ↗
             </a>
           </div>
         </div>
@@ -2326,7 +2294,7 @@ body {
       <h2 class="slide-title">2.3. Biến đổi trong mối quan hệ vừa đấu tranh, vừa liên minh, từng bước xóa bỏ bất bình đẳng xã hội dẫn đến sự xích lại gần nhau</h2>
 
       <div class="slide-body-grid">
-        <!-- Cột trái: 5 Luận điểm -->
+        <!-- Cột trái: Đúng 5 Luận điểm cốt lõi bạn ấy soạn -->
         <div class="slide-col">
           <h3 class="col-banner-title">5 Luận Điểm Cốt Lõi Về Mối Quan Hệ Giai Cấp</h3>
 
@@ -2354,33 +2322,19 @@ body {
           <div class="slide-numbered-item">
             <div class="slide-numbered-idx">4</div>
             <p class="slide-numbered-text">
-              <strong>Giai cấp công nhân:</strong> Giữ vai trò chủ đạo, tiên phong trong quá trình công nghiệp hóa, hiện đại hóa đất nước, cải tạo xã hội cũ, xây dựng xã hội mới.
+              Giai cấp công nhân giữ vai trò chủ đạo, tiên phong trong quá trình công nghiệp hóa, hiện đại hóa đất nước, cải tạo xã hội cũ, xây dựng xã hội mới.
             </p>
           </div>
 
           <div class="slide-numbered-item">
             <div class="slide-numbered-idx">5</div>
             <p class="slide-numbered-text">
-              <strong>Nền tảng chính trị – xã hội:</strong> Liên minh giữa giai cấp công nhân, giai cấp nông dân và đội ngũ trí thức ngày càng giữ vị trí nền tảng chính trị – xã hội, góp phần tạo nên sự thống nhất của cơ cấu xã hội – giai cấp trong thời kỳ quá độ lên chủ nghĩa xã hội.
-            </p>
-          </div>
-
-          <div class="slide-numbered-item">
-            <div class="slide-numbered-idx">6</div>
-            <p class="slide-numbered-text">
-              <strong>Nguyên tắc cốt lõi của liên minh:</strong> Đảm bảo vai trò lãnh đạo của Đảng Cộng sản; kết hợp hài hòa lợi ích chính đáng của các giai tầng; lấy liên minh kinh tế làm cơ sở vững chắc cho liên minh chính trị – xã hội.
-            </p>
-          </div>
-
-          <div class="slide-theory-link">
-            <span class="slide-theory-tag">Liên Hệ Lý Luận Chiều Sâu</span>
-            <p class="slide-theory-content">
-              Các giai cấp, tầng lớp không tồn tại tách biệt mà phối hợp, hỗ trợ và gắn kết chặt chẽ trong quá trình sản xuất. Đây là biểu hiện thực tiễn sinh động của xu hướng liên minh và xích lại gần nhau giữa công nhân, nông dân và trí thức, tạo sức mạnh tổng hợp thực hiện thắng lợi công cuộc đổi mới.
+              Liên minh giữa giai cấp công nhân, giai cấp nông dân và đội ngũ trí thức ngày càng giữ vị trí nền tảng chính trị – xã hội, góp phần tạo nên sự thống nhất của cơ cấu xã hội – giai cấp trong thời kỳ quá độ lên chủ nghĩa xã hội.
             </p>
           </div>
         </div>
 
-        <!-- Cột phải: Ví dụ thực tiễn, Drone nông nghiệp & Cụm ghép ảnh tạp chí -->
+        <!-- Cột phải: Minh chứng thực tiễn & đúng nội dung gốc đã soạn -->
         <div class="slide-col">
           <h3 class="col-banner-title">Thực Tiễn Nông Nghiệp, Khoa Học &amp; Tư Liệu Ghép Ảnh</h3>
 
@@ -2412,65 +2366,48 @@ body {
           <div class="slide-practice-box">
             <span class="slide-practice-tag">Ví dụ thực tiễn</span>
             <p class="slide-practice-content">
-              Trong nông nghiệp Việt Nam hiện nay, sự phát triển của hợp tác xã, doanh nghiệp và việc ứng dụng khoa học – công nghệ cho thấy sự phối hợp ngày càng rõ giữa nông dân, doanh nghiệp/người lao động và đội ngũ trí thức, nhà khoa học. Năm 2025, cả nước có <strong>8.416 hợp tác xã</strong> và <strong>6.204 doanh nghiệp</strong> hoạt động trong lĩnh vực nông, lâm nghiệp và thủy sản; gần <strong>7.000 thiết bị bay không người lái</strong> được sử dụng trong sản xuất nông nghiệp. Cùng năm, <strong>63 nông dân xuất sắc</strong> và <strong>32 “Nhà khoa học của nhà nông”</strong> được tôn vinh, cho thấy vai trò của cả người sản xuất và đội ngũ khoa học trong phát triển nông nghiệp hiện đại (Cục Thống kê, 2026; Báo Nhân Dân, 2025).
+              Trong nông nghiệp Việt Nam hiện nay, sự phát triển của hợp tác xã, doanh nghiệp và việc ứng dụng khoa học – công nghệ cho thấy sự phối hợp ngày càng rõ giữa nông dân, doanh nghiệp/người lao động và đội ngũ trí thức, nhà khoa học.
             </p>
           </div>
 
           <div class="slide-stat-strip">
             <div class="slide-stat-item">
               <span class="slide-stat-num">8.416</span>
-              <span class="slide-stat-lbl">Hợp tác xã</span>
+              <span class="slide-stat-lbl">Hợp tác xã nông, lâm, thủy sản (2025)</span>
             </div>
             <div class="slide-stat-item">
               <span class="slide-stat-num">6.204</span>
-              <span class="slide-stat-lbl">Doanh nghiệp NN</span>
+              <span class="slide-stat-lbl">Doanh nghiệp nông, lâm, thủy sản (2025)</span>
             </div>
             <div class="slide-stat-item">
               <span class="slide-stat-num">~7.000</span>
-              <span class="slide-stat-lbl">Thiết bị bay drone</span>
+              <span class="slide-stat-lbl">Thiết bị bay drone nông nghiệp (2025)</span>
+            </div>
+            <div class="slide-stat-item">
+              <span class="slide-stat-num">63</span>
+              <span class="slide-stat-lbl">Nông dân xuất sắc (2025)</span>
+            </div>
+            <div class="slide-stat-item">
+              <span class="slide-stat-num">32</span>
+              <span class="slide-stat-lbl">Nhà khoa học của nhà nông (2025)</span>
             </div>
           </div>
 
+          <div class="slide-theory-link">
+            <span class="slide-theory-tag">Liên Hệ Lý Thuyết</span>
+            <p class="slide-theory-content">
+              Thực tế cho thấy các giai cấp, tầng lớp không tồn tại tách biệt mà có sự phối hợp, hỗ trợ và gắn kết với nhau trong quá trình sản xuất và phát triển kinh tế. Đây là biểu hiện thực tiễn của xu hướng liên minh và xích lại gần nhau giữa các giai cấp, tầng lớp, đặc biệt là giữa nông dân, công nhân/người lao động và trí thức, trong thời kỳ quá độ lên chủ nghĩa xã hội.
+            </p>
+          </div>
+
           <div class="slide-citation-bar">
-            <div>Nguồn trích dẫn: Cục Thống kê (2026), Báo Nhân Dân (2025)</div>
+            <div>Nguồn trích dẫn: Cục Thống kê (2026); Báo Nhân Dân (2025)</div>
             <a class="slide-citation-link" href="https://nhandan.vn/can-buoc-nhay-vot-cho-nong-nghiep-cong-nghe-cao-post861923.html" target="_blank" rel="noopener noreferrer">
               Cần bước nhảy vọt cho nông nghiệp công nghệ cao (Báo Nhân Dân)
             </a><br>
             <a class="slide-citation-link" href="https://nhandan.vn/chu-tich-nuoc-luong-cuong-du-le-ton-vinh-nong-dan-viet-nam-xuat-sac-nha-khoa-hoc-cua-nha-nong-nam-2025-post915378.html" target="_blank" rel="noopener noreferrer">
               Tôn vinh Nông dân xuất sắc &amp; Nhà khoa học của nhà nông năm 2025 (Báo Nhân Dân)
             </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- MÔ HÌNH 3 TRỤ CỘT LIÊN MINH GIAI CẤP -->
-      <div style="margin-top: 32px; border-top: 1px solid var(--hairline-border); padding-top: 24px;">
-        <h3 class="col-banner-title" style="border: 0; margin-bottom: 12px !important;">
-          Mô Hình 3 Trụ Cột: Liên Minh Công Nhân – Nông Dân – Trí Thức
-        </h3>
-        <div class="alliance-pillars">
-          <div class="alliance-pillar-card">
-            <div class="alliance-pillar-title">Giai Cấp Công Nhân</div>
-            <span class="alliance-pillar-role">Vai trò Tiên Phong</span>
-            <p class="alliance-pillar-desc">
-              Giữ vai trò chủ đạo, tiên phong trong quá trình công nghiệp hóa, hiện đại hóa đất nước; là hạt nhân liên minh chính trị, cung cấp công cụ, máy móc và giải pháp công nghệ chế biến.
-            </p>
-          </div>
-
-          <div class="alliance-pillar-card">
-            <div class="alliance-pillar-title">Giai Cấp Nông Dân</div>
-            <span class="alliance-pillar-role">Lực Lượng Nòng Cốt</span>
-            <p class="alliance-pillar-desc">
-              Lực lượng sản xuất trực tiếp trong 8.416 hợp tác xã và 6.204 doanh nghiệp; ứng dụng công nghệ, vươn lên thành lực lượng sản xuất nông nghiệp hàng hóa quy mô lớn.
-            </p>
-          </div>
-
-          <div class="alliance-pillar-card">
-            <div class="alliance-pillar-title">Đội Ngũ Trí Thức</div>
-            <span class="alliance-pillar-role">Động Lực Đổi Mới</span>
-            <p class="alliance-pillar-desc">
-              Nguồn lực đặc biệt đưa khoa học công nghệ, gần 7.000 thiết bị bay không người lái (drone) vào đồng ruộng; liên kết chặt chẽ với nhà nông để nâng cao năng suất và chất lượng.
-            </p>
           </div>
         </div>
       </div>
