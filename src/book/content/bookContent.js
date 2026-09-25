@@ -69,14 +69,29 @@ export const BOOKS = [
     ],
     pages: [
       {
-        front: "/textures/books/book1/bia_1.png",
-        back: "/textures/books/book1/1.png",
+        front: "/textures/chapter5/bia.png",
+        back: "/textures/chapter5/muc_1.png",
         label: "Bìa",
       },
       {
-        front: "/textures/books/book1/1.1.png",
-        back: "/textures/books/book1/end_1.png",
-        label: "Trang 1–1.1",
+        front: "/textures/chapter5/1.1.png",
+        back: "/textures/chapter5/1.2.png",
+        label: "Mục 1.1–1.2",
+      },
+      {
+        front: "/textures/chapter5/muc_2.png",
+        back: "/textures/chapter5/2.1.png",
+        label: "Mục 2–2.1",
+      },
+      {
+        front: "/textures/chapter5/2.2.png",
+        back: "/textures/chapter5/2.3.png",
+        label: "Mục 2.2–2.3",
+      },
+      {
+        front: "/textures/chapter5/thanks.png",
+        back: "/textures/chapter5/end.png",
+        label: "Cảm ơn & Kết",
       },
     ],
     sources: SOURCES,
