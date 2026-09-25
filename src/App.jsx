@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import Navbar from "./game/sections/Navbar";
+import TabLockGuard from "./components/TabLockGuard";
 
 const OverviewLandingPage = lazy(() => import("./overview/OverviewLandingPage"));
 const TheoryPage = lazy(() => import("./game/TheoryPage").then((module) => ({ default: module.TheoryPage || module.default })));
@@ -70,8 +71,28 @@ function App() {
           {activeTab === "overview" && <OverviewLandingPage />}
           {activeTab === "book" && <BookPage skipIntro={hasVisitedBook} onIntroFinish={() => setHasVisitedBook(true)} />}
           {activeTab === "minigame" && <MinigamePage />}
-          {activeTab === "chiecnon" && <ChiecNonKiDieuGame />}
-          {activeTab === "truytimmanhghep" && <TruyTimManhGhepGame />}
+          {activeTab === "chiecnon" && (
+            <TabLockGuard
+              tabId="chiecnon"
+              tabTitle="Chiếc Nón Kỳ Diệu"
+              gameSubtitle="Vòng quay tri thức & giải mã bài học Chương 5"
+              password="hostbygroup3"
+              onBackToOverview={() => handleTabChange("overview")}
+            >
+              <ChiecNonKiDieuGame />
+            </TabLockGuard>
+          )}
+          {activeTab === "truytimmanhghep" && (
+            <TabLockGuard
+              tabId="truytimmanhghep"
+              tabTitle="Truy Tìm Mảnh Ghép"
+              gameSubtitle="Chinh phục 9 câu hỏi & giải mã bức tranh Chương 5"
+              password="hostbygroup3"
+              onBackToOverview={() => handleTabChange("overview")}
+            >
+              <TruyTimManhGhepGame />
+            </TabLockGuard>
+          )}
         </Suspense>
       </div>
     </div>
