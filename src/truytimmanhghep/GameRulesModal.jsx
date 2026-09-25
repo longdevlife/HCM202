@@ -62,18 +62,18 @@ export default function GameRulesModal({ isOpen, onClose }) {
 
               <p className="pt-0.5">
                 Mỗi câu trả lời đúng:{" "}
-                <strong className="font-bold text-red-600 whitespace-nowrap">5 điểm/câu.</strong>
+                <strong className="font-bold text-red-600 whitespace-nowrap">10 điểm/câu.</strong>
               </p>
 
               <p className="italic text-[#4a382e]">
-                Ví dụ: Trả lời đúng 10/20 câu sẽ được{" "}
-                <strong className="font-bold text-red-600 not-italic whitespace-nowrap">50 điểm</strong>.
+                Ví dụ: Trả lời đúng 9/9 câu sẽ được{" "}
+                <strong className="font-bold text-red-600 not-italic whitespace-nowrap">90 điểm</strong>.
               </p>
 
               <p className="text-[#3d1a10]">
                 <strong className="font-bold text-[#7c2d12]">Lưu ý:</strong>{" "}
                 <span className="italic">nếu trả lời sai câu đó là sẽ bị khoá, và </span>
-                <strong className="font-bold text-red-600 not-italic whitespace-nowrap">mất 5 điểm</strong>.
+                <strong className="font-bold text-red-600 not-italic whitespace-nowrap">mất 10 điểm</strong>.
               </p>
             </div>
 
