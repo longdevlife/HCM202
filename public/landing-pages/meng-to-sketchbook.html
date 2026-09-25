@@ -2449,31 +2449,35 @@ body {
 
         <!-- Cột phải: Minh chứng thực tiễn & đúng nội dung gốc đã soạn -->
         <div class="slide-col">
-          <h3 class="col-banner-title">Thực Tiễn Nông Nghiệp, Khoa Học &amp; Tư Liệu Ghép Ảnh</h3>
+          <h3 class="col-banner-title">Thực Tiễn Nông Nghiệp, Khoa Học &amp; Tư Liệu Báo Chí</h3>
 
-          <!-- CỤM GHÉP ẢNH TẠP CHÍ ĐA TẦNG (PHOTO COLLAGE) -->
-          <div class="slide-collage-wrapper">
-            <div class="interactive-card slide-main-card" title="Chủ tịch nước Lương Cường dự Lễ tôn vinh Nông dân xuất sắc & Nhà khoa học của nhà nông 2025 - Báo Nhân Dân">
-              <img src="/images/sources/ton_vinh_nong_dan_tri_thuc.avif" alt="Lễ tôn vinh Nông dân Việt Nam xuất sắc và Nhà khoa học của nhà nông năm 2025">
-              <div class="interactive-ribbon">TÔN VINH NÔNG DÂN XUẤT SẮC &amp; NHÀ KHOA HỌC CỦA NHÀ NÔNG 2025</div>
-              <a href="https://nhandan.vn/chu-tich-nuoc-luong-cuong-du-le-ton-vinh-nong-dan-viet-nam-xuat-sac-nha-khoa-hoc-cua-nha-nong-nam-2025-post915378.html" target="_blank" rel="noopener noreferrer" class="collage-source-btn" style="margin-top: 6px;">
-                Báo Nhân Dân: Lễ Tôn Vinh 2025 ↗
-              </a>
-            </div>
-            <div class="collage-sub-grid">
-              <div class="interactive-card sub-card-left" title="Ứng dụng thiết bị bay không người lái trong nông nghiệp - Báo Nhân Dân">
-                <img src="/images/sources/nong_nghiep_cong_nghe_cao.webp" alt="Ứng dụng máy bay nông nghiệp không người lái drone tại Việt Nam">
-                <p class="interactive-caption">~7.000 Drone trên đồng ruộng</p>
-                <a href="https://nhandan.vn/can-buoc-nhay-vot-cho-nong-nghiep-cong-nghe-cao-post861923.html" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
-                  Nông nghiệp CNC ↗
+          <!-- CỤM 2 ẢNH TƯ LIỆU XẾP DỌC CHUẨN STYLE VNR (BỎ ẢNH SÁCH) -->
+          <div class="vnr-dual-photo-stack">
+            <!-- ẢNH 1: TÔN VINH NÔNG DÂN & TRÍ THỨC -->
+            <figure class="vnr-photo-figure fig-top">
+              <div class="vnr-photo-card">
+                <img src="/images/sources/ton_vinh_nong_dan_tri_thuc.avif" alt="Lễ tôn vinh Nông dân Việt Nam xuất sắc và Nhà khoa học của nhà nông năm 2025">
+                <div class="vnr-photo-ribbon">
+                  Chủ tịch nước Lương Cường dự Lễ tôn vinh Nông dân xuất sắc &amp; Nhà khoa học của nhà nông 2025 — Báo Nhân Dân
+                </div>
+                <a href="https://nhandan.vn/chu-tich-nuoc-luong-cuong-du-le-ton-vinh-nong-dan-viet-nam-xuat-sac-nha-khoa-hoc-cua-nha-nong-nam-2025-post915378.html" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
+                  Báo Nhân Dân: Lễ Tôn Vinh 2025 ↗
                 </a>
               </div>
-              <div class="interactive-card sub-card-right" title="Trang sách Mục 2.3: Mối quan hệ liên minh">
-                <img src="/textures/chapter5/2.3.png" alt="Trang sách Mục 2.3: Quan hệ liên minh giai cấp">
-                <p class="interactive-caption">Giáo trình: 2.3 Liên minh GC</p>
-                <span class="polaroid-tag">Giáo trình MLN131</span>
+            </figure>
+
+            <!-- ẢNH 2: NÔNG NGHIỆP CÔNG NGHỆ CAO -->
+            <figure class="vnr-photo-figure fig-bottom">
+              <div class="vnr-photo-card">
+                <img src="/images/sources/nong_nghiep_cong_nghe_cao.webp" alt="Ứng dụng máy bay nông nghiệp không người lái drone tại Việt Nam">
+                <div class="vnr-photo-ribbon">
+                  Ứng dụng thiết bị bay không người lái drone trong nông nghiệp công nghệ cao — Báo Nhân Dân
+                </div>
+                <a href="https://nhandan.vn/can-buoc-nhay-vot-cho-nong-nghiep-cong-nghe-cao-post861923.html" target="_blank" rel="noopener noreferrer" class="collage-source-btn">
+                  Báo Nhân Dân: Nông nghiệp CNC ↗
+                </a>
               </div>
-            </div>
+            </figure>
           </div>
 
           <div class="slide-practice-box">
@@ -2580,7 +2584,7 @@ const PAGES=[
   {file:'chapter5-spread-2.png', title:'Mục 1.1 & 1.2: Khái niệm & Vị trí trong Hệ thống Xã hội', place:'Phần 1'},
   {file:'chapter5-spread-3.png', title:'Mục 2 & 2.1: Biến đổi có tính quy luật & Cơ cấu Kinh tế', place:'Phần 2'},
   {file:'chapter5-spread-4.png', title:'Mục 2.2 & 2.3: Tầng lớp mới & Mối quan hệ Liên minh', place:'Phần 2'},
-  {file:'chapter5-spread-5.png', title:'Lời Cảm Ơn & Tổng Kết Chương 5', place:'Kết Thúc'}
+  {file:'chapter5-spread-5.png', title:'Tổng Kết Chương 5 & Lời Cảm Ơn', place:'Kết Thúc'}
 ];
 PAGES.forEach(p=>p.url=DIR+p.file);
 const M=PAGES.length, LAND=0;
