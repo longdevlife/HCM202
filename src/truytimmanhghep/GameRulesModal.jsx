@@ -29,7 +29,7 @@ export default function GameRulesModal({ isOpen, onClose }) {
     >
       {/* Khung ngoài: Viền đôi cổ điển màu nâu đồng thanh lịch */}
       <div
-        className="relative w-[96vw] md:w-[90vw] lg:w-[86vw] max-w-5xl max-h-[94vh] bg-[#faf6ed] text-[#2c1810] border-2 sm:border-[3px] border-[#5a2b13] p-2 sm:p-3 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col my-auto"
+        className="relative w-[96vw] md:w-[92vw] lg:w-[90vw] max-w-6xl max-h-[94vh] bg-[#faf6ed] text-[#2c1810] border-2 sm:border-[3px] border-[#5a2b13] p-2 sm:p-3 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col my-auto"
         style={{ fontFamily: "'Playfair Display', Georgia, 'Times New Roman', serif" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -44,7 +44,7 @@ export default function GameRulesModal({ isOpen, onClose }) {
         </button>
 
         {/* Khung viền chỉ mảnh bên trong tạo hiệu ứng viền đôi sang trọng như trang slide */}
-        <div className="border border-[#cbb79c] rounded-xl p-5 sm:p-7 md:p-9 overflow-y-auto flex-1 flex flex-col justify-between space-y-5">
+        <div className="border border-[#cbb79c] rounded-xl px-5 sm:px-8 md:px-10 py-5 sm:py-7 md:py-8 overflow-y-auto flex-1 flex flex-col justify-between space-y-5">
           {/* ================= TIÊU ĐỀ CHÍNH ================= */}
           <div className="text-center pb-3 sm:pb-4 border-b border-[#d8c8b5]/80">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-wider text-[#3d1a10] uppercase">
@@ -53,7 +53,7 @@ export default function GameRulesModal({ isOpen, onClose }) {
           </div>
 
           {/* ================= NỘI DUNG 2 CỘT: PHẦN 1 & PHẦN 2 ================= */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 py-2 flex-1 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 md:gap-12 lg:gap-14 py-2 flex-1 items-start px-1 sm:px-3 md:px-5">
             {/* CỘT TRÁI: PHẦN 1 */}
             <div className="space-y-3.5 text-sm sm:text-base text-[#2c1810] leading-relaxed">
               <h3 className="text-base sm:text-lg font-bold uppercase tracking-wider text-[#5a2b13] border-b border-[#d8c8b5]/60 pb-1">
@@ -73,15 +73,26 @@ export default function GameRulesModal({ isOpen, onClose }) {
               <p className="text-[#3d1a10]">
                 <strong className="font-bold text-[#7c2d12]">Lưu ý:</strong>{" "}
                 <span className="italic">nếu trả lời sai câu đó là sẽ bị khoá, và </span>
-                <strong className="font-bold text-red-600 not-italic whitespace-nowrap">mất 5đ</strong>.
+                <strong className="font-bold text-red-600 not-italic whitespace-nowrap">mất 5 điểm</strong>.
               </p>
             </div>
 
             {/* CỘT PHẢI: PHẦN 2 */}
             <div className="space-y-3.5 text-sm sm:text-base text-[#2c1810] leading-relaxed">
               <h3 className="text-base sm:text-lg font-bold uppercase tracking-wider text-[#5a2b13] border-b border-[#d8c8b5]/60 pb-1">
-                VÒNG 2: GHÉP HÌNH - ĐOÁN TỪ KHÓA 
+                VÒNG 2: GHÉP HÌNH - ĐOÁN TỪ KHÓA
               </h3>
+
+              <div className="pt-0.5 space-y-1">
+                <p className="text-[#2c1810] whitespace-nowrap text-xs sm:text-[13.5px] md:text-[14.5px] lg:text-[15.5px]">
+                  Dùng các mảnh ghép đã thu được ở Vòng 1 để hoàn thành bức hình.
+                </p>
+                <p className="text-[#3d1a10] whitespace-nowrap text-xs sm:text-[13.5px] md:text-[14.5px] lg:text-[15.5px]">
+                  <span className="text-[#7c2d12] font-bold">→ </span>
+                  <span className="italic">Thiếu mảnh? Có thể mua thêm với giá </span>
+                  <strong className="font-bold text-red-600 not-italic whitespace-nowrap">5 điểm/mảnh</strong>.
+                </p>
+              </div>
 
               <div className="pt-0.5 flex flex-wrap sm:flex-nowrap items-baseline gap-x-1.5 leading-snug">
                 <span className="whitespace-normal lg:whitespace-nowrap">

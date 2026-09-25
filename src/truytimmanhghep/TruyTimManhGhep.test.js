@@ -124,6 +124,14 @@ test("GameRulesModal component file exists and contains all required game rules 
 
   // Vòng/Phần 2 rules
   assert.ok(content.includes("PHẦN 2") || content.includes("VÒNG 2"), "Must include PHẦN 2 or VÒNG 2");
+  assert.ok(
+    content.includes("Dùng các mảnh ghép đã thu được ở Vòng 1 để hoàn thành bức hình"),
+    "Must explain using pieces collected in round 1 to complete picture"
+  );
+  assert.ok(
+    content.includes("Thiếu mảnh? Có thể mua thêm với giá") && content.includes("5 điểm/mảnh"),
+    "Must explain buying missing pieces at 5 points per piece"
+  );
   assert.ok(content.includes("30 điểm"), "Must specify 30 points for mystery keyword");
   assert.ok(content.includes("20 điểm") && content.includes("Nhanh nhất"), "Must specify 20 points for 1st fastest team");
   assert.ok(content.includes("15 điểm") && content.includes("Nhanh thứ hai"), "Must specify 15 points for 2nd fastest team");
