@@ -180,7 +180,7 @@ export const ALL_PUZZLE_QUESTIONS = [
     options: [
       { id: "A", text: "Nông, lâm nghiệp và thủy sản.", isCorrect: false },
       { id: "B", text: "Công nghiệp và xây dựng.", isCorrect: false },
-      { id: "C", text: "Dịch vụ (40,8%).", isCorrect: true },
+      { id: "C", text: "Dịch vụ ", isCorrect: true },
       { id: "D", text: "Ba khu vực có tỷ trọng bằng nhau.", isCorrect: false },
     ],
     correctId: "C",

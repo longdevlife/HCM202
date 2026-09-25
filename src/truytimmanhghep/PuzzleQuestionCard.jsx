@@ -96,23 +96,16 @@ export default function PuzzleQuestionCard({ question, onSelect, index = 0 }) {
   const config = PUZZLE_TAB_CONFIGS[(question.qNum - 1) % PUZZLE_TAB_CONFIGS.length];
   const { d, totalW, totalH } = generatePuzzlePath(300, 160, 14, config);
 
-  const getLevelBadgeClass = (lvl) => {
-    if (lvl.includes("Nhận biết"))
-      return "bg-blue-900/90 text-blue-200 border-blue-400/50";
-    if (lvl.includes("Thông hiểu"))
-      return "bg-amber-900/90 text-amber-200 border-amber-400/50";
-    return "bg-purple-900/90 text-purple-200 border-purple-400/50";
-  };
-
   return (
     <button
       type="button"
       onClick={() => onSelect(question)}
-      className="relative w-full aspect-[332/192] min-h-[160px] max-h-[220px] text-left cursor-pointer group hover:scale-[1.03] transition-all duration-300 block focus:outline-none"
+      aria-label={`Mở câu hỏi Mảnh ghép ${question.qNum}`}
+      className="relative w-full aspect-[332/192] min-h-[150px] max-h-[220px] text-center cursor-pointer group hover:scale-[1.04] active:scale-[0.98] transition-all duration-300 block focus:outline-none select-none"
     >
       {/* Khung hình dáng Mảnh Ghép Puzzle bằng SVG */}
       <svg
-        className="absolute inset-0 w-full h-full filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.85)] group-hover:drop-shadow-[0_16px_28px_rgba(245,158,11,0.4)] transition-all pointer-events-none"
+        className="absolute inset-0 w-full h-full filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.85)] group-hover:drop-shadow-[0_16px_28px_rgba(245,158,11,0.45)] transition-all pointer-events-none"
         viewBox={`0 0 ${totalW} ${totalH}`}
         preserveAspectRatio="none"
       >
@@ -129,11 +122,10 @@ export default function PuzzleQuestionCard({ question, onSelect, index = 0 }) {
             <stop offset="100%" stopColor="#78350f" />
           </linearGradient>
 
-          <linearGradient id={`badgeGrad_${question.qNum}`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#fef08a" />
-            <stop offset="50%" stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#b45309" />
-          </linearGradient>
+          <radialGradient id={`centerGlow_${question.qNum}`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(245,158,11,0.2)" />
+            <stop offset="100%" stopColor="rgba(245,158,11,0)" />
+          </radialGradient>
         </defs>
 
         {/* Thân mảnh ghép puzzle */}
@@ -141,76 +133,36 @@ export default function PuzzleQuestionCard({ question, onSelect, index = 0 }) {
           d={d}
           fill={`url(#cardGrad_${question.qNum})`}
           stroke={`url(#goldBorder_${question.qNum})`}
-          strokeWidth="2.2"
-          className="group-hover:stroke-yellow-300 transition-colors"
+          strokeWidth="2.4"
+          className="group-hover:stroke-[#fef08a] transition-colors"
         />
 
-        {/* Viền trang trí beveled bóng chìm */}
+        {/* Vùng sáng tâm nhẹ */}
+        <path
+          d={d}
+          fill={`url(#centerGlow_${question.qNum})`}
+        />
+
+        {/* Viền vát nhẹ bên trong */}
         <path
           d={d}
           fill="none"
-          stroke="rgba(254, 240, 138, 0.1)"
+          stroke="rgba(254, 240, 138, 0.12)"
           strokeWidth="1"
           transform="scale(0.96) translate(5.5, 4.5)"
         />
       </svg>
 
-      {/* Nội dung bên trong nằm gọn gàng với padding tối ưu */}
-      <div className="absolute inset-[16px] px-4 py-3 sm:px-5 sm:py-3.5 flex flex-col justify-between select-none">
-        {/* Hàng 1: Huy hiệu số mảnh ghép + Tiêu đề + Badge độ khó */}
-        <div className="flex items-center justify-between gap-1.5 w-full">
-          <div className="flex items-center gap-2 min-w-0">
-            {/* Huy hiệu số hình dáng Mảnh Ghép Puzzle 3D */}
-            <div className="relative w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 group-hover:rotate-6 transition-transform">
-              <svg viewBox="0 0 44 44" className="w-full h-full filter drop-shadow-md">
-                <path
-                  d="M 8 4 L 18 4 C 18.5 1.5 20.5 0 22 0 C 23.5 0 25.5 1.5 26 4 L 36 4 A 4 4 0 0 1 40 8 L 40 18 C 42.5 18.5 44 20.5 44 22 C 44 23.5 42.5 25.5 40 26 L 40 36 A 4 4 0 0 1 36 40 L 26 40 C 25.5 37.5 23.5 36 22 36 C 20.5 36 18.5 37.5 18 40 L 8 40 A 4 4 0 0 1 4 36 L 4 26 C 6.5 25.5 8 23.5 8 22 C 8 20.5 6.5 18.5 4 18 L 4 8 A 4 4 0 0 1 8 4 Z"
-                  fill={`url(#badgeGrad_${question.qNum})`}
-                  stroke="#fef08a"
-                  strokeWidth="1.5"
-                />
-                <text
-                  x="22"
-                  y="23"
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fill="#1c0d05"
-                  fontSize="16"
-                  fontWeight="900"
-                >
-                  {question.qNum}
-                </text>
-              </svg>
-            </div>
-
-            <div className="min-w-0 flex flex-col justify-center">
-              <span className="text-[11.5px] sm:text-xs font-black text-[#fde68a] tracking-wide uppercase whitespace-nowrap">
-                MẢNH GHÉP {question.qNum}
-              </span>
-              
-            </div>
-          </div>
-
-          <span
-            className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[9.5px] font-black uppercase tracking-wide border flex-shrink-0 whitespace-nowrap ${getLevelBadgeClass(
-              question.level
-            )}`}
-          >
-            {question.level.split("/")[0]}
+      {/* Thiết kế thuần túy như 1 mảnh ghép ngoài đời: không hiện chủ đề, không hiện độ khó, không hiện text rườm rà */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-[#92400e] via-[#b45309] to-[#fde68a] text-[#1c0d05] border-2 border-[#fef08a] flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+          <span className="text-2xl sm:text-3xl font-black text-[#1c0d05]">
+            {question.qNum}
           </span>
         </div>
 
-        {/* Hàng 2: Chủ đề câu hỏi */}
-        <div className="my-0.5">
-          <div className="text-[11px] sm:text-xs uppercase font-bold text-[#d4af37] tracking-wider truncate">
-            Chủ đề: {question.tag}
-          </div>
-        </div>
-
-        {/* Hàng 3: Nút bấm ở chân thẻ */}
-        <div className="pt-1.5 border-t border-amber-900/40 flex items-center justify-between text-[11px] sm:text-xs font-bold text-[#d4af37] group-hover:text-[#fde68a]">
-          <span>Bấm để mở câu hỏi</span>
-          <span className="group-hover:translate-x-1.5 transition-transform text-sm">➜</span>
+        <div className="mt-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-[#fde68a] group-hover:text-white transition-colors">
+          MẢNH GHÉP {question.qNum}
         </div>
       </div>
     </button>
