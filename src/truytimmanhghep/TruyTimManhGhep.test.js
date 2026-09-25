@@ -119,8 +119,22 @@ test("GameRulesModal component file exists and contains all required game rules 
   // Vòng/Phần 1 rules
   assert.ok(content.includes("PHẦN 1") || content.includes("VÒNG 1"), "Must include PHẦN 1 or VÒNG 1");
   assert.ok(content.includes("TRUY TÌM MẢNH GHÉP"), "Must include TRUY TÌM MẢNH GHÉP");
-  assert.ok(content.includes("5 điểm/câu"), "Must specify 5 points per correct question");
-  assert.ok(content.includes("mất 5đ"), "Must specify -5đ / lock when wrong");
+  assert.ok(
+    content.includes("Mỗi mảnh ghép tương ứng với 01 câu hỏi"),
+    "Must specify each piece corresponds to 1 question"
+  );
+  assert.ok(
+    content.includes("giơ số + đáp án"),
+    "Must explain answering by raising team number + answer"
+  );
+  assert.ok(
+    content.includes("+10 điểm") && content.includes("nhận mảnh ghép tương ứng"),
+    "Must specify +10 points and receiving corresponding piece"
+  );
+  assert.ok(
+    content.includes("Điểm Vòng 1 =") && content.includes("Số câu đúng × 10 điểm"),
+    "Must specify Round 1 score formula"
+  );
 
   // Vòng/Phần 2 rules
   assert.ok(content.includes("PHẦN 2") || content.includes("VÒNG 2"), "Must include PHẦN 2 or VÒNG 2");
@@ -132,15 +146,22 @@ test("GameRulesModal component file exists and contains all required game rules 
     content.includes("Thiếu mảnh? Có thể mua thêm với giá") && content.includes("5 điểm/mảnh"),
     "Must explain buying missing pieces at 5 points per piece"
   );
-  assert.ok(content.includes("30 điểm"), "Must specify 30 points for mystery keyword");
+  assert.ok(content.includes("+50 điểm"), "Must specify +50 points for mystery keyword/question");
   assert.ok(content.includes("20 điểm") && content.includes("Nhanh nhất"), "Must specify 20 points for 1st fastest team");
   assert.ok(content.includes("15 điểm") && content.includes("Nhanh thứ hai"), "Must specify 15 points for 2nd fastest team");
   assert.ok(content.includes("10 điểm") && content.includes("Nhanh thứ ba"), "Must specify 10 points for 3rd fastest team");
-  assert.ok(content.includes("Các nhóm còn lại không được cộng điểm tốc độ"), "Must specify remaining teams get no speed bonus");
+  assert.ok(
+    content.includes("Điểm Vòng 2 =") && content.includes("50 điểm + Điểm tốc độ − Điểm mua mảnh ghép"),
+    "Must specify Round 2 formula"
+  );
 
-  // Scoring formula & victory condition
-  assert.ok(content.includes("Điểm cuối cùng mỗi nhóm =") && content.includes("Điểm trả lời đúng") && content.includes("Điểm đoán hình") && content.includes("Điểm tốc độ"), "Must state total score formula");
-  assert.ok(content.includes("giành chiến thắng"), "Victory condition present");
+  // Results & victory condition
+  assert.ok(content.includes("KẾT QUẢ"), "Must have KẾT QUẢ header");
+  assert.ok(
+    content.includes("TỔNG ĐIỂM =") && content.includes("VÒNG 1") && content.includes("VÒNG 2"),
+    "Must state total score formula TỔNG ĐIỂM = VÒNG 1 + VÒNG 2"
+  );
+  assert.ok(content.includes("chiến thắng"), "Victory condition present");
 });
 
 test("TruyTimManhGhepGame.jsx mounts GameRulesModal and provides rules button and tab listener", () => {
