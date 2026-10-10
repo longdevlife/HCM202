@@ -1917,7 +1917,7 @@ body {
                 <a href="#sbWrap" class="magazine-toc-item highlight-toc" onclick="document.getElementById('sbStage').scrollIntoView({behavior:'smooth'})">
                   <span class="toc-item-left">
                     <span class="toc-roman">📖</span>
-                    <span class="toc-text">Sách 3D Tương tác (10 trang tư liệu số hóa)</span>
+                    <span class="toc-text">Sách 3D Tương tác (8 trang tư liệu số hóa)</span>
                   </span>
                   <span class="toc-badge-tag">Trải Nghiệm 3D</span>
                 </a>
@@ -1937,17 +1937,11 @@ body {
                 <div class="card-hint-badge">Bìa Chương 5 · Cuộn xuống để lật sách 3D</div>
               </div>
 
-              <!-- 2 Thẻ polaroid phụ xếp chồng chéo đè lên chân thẻ chính -->
-              <div class="collage-sub-grid">
-                <div class="interactive-card sub-card-left" onclick="goToSlide(1)" title="Xem Mục 1.1: Khái niệm">
+              <!-- Thẻ polaroid phụ đè nhẹ lên chân thẻ chính -->
+              <div class="collage-sub-grid" style="display: flex; justify-content: center;">
+                <div class="interactive-card sub-card-left" onclick="goToSlide(1)" title="Xem Mục 1.1: Khái niệm" style="max-width: 280px; width: 100%;">
                   <img src="/textures/chapter5/muc_1.png" alt="Mục 1: Khái niệm & Vị trí">
                   <p class="interactive-caption">Mục 1: Khái niệm &amp; Vị trí</p>
-                  <span class="polaroid-tag">Giáo trình MLN131</span>
-                </div>
-
-                <div class="interactive-card sub-card-right" onclick="goToSlide(3)" title="Xem Mục 2.1: Tính quy luật biến đổi">
-                  <img src="/textures/chapter5/muc_2.png" alt="Mục 2: Tính quy luật biến đổi">
-                  <p class="interactive-caption">Mục 2: Tính quy luật</p>
                   <span class="polaroid-tag">Giáo trình MLN131</span>
                 </div>
               </div>
@@ -1986,7 +1980,7 @@ body {
         Sách 3D Lật Trang &amp; Kính Lúp Phóng Đại
       </h3>
       <p style="font-size: 13.5px; color: var(--ink-light); margin: 0;">
-        Kéo chuột để lật 10 trang tư liệu số hóa · Rê kính lúp để phóng to chi tiết trang sách
+        Kéo chuột để lật 8 trang tư liệu số hóa · Rê kính lúp để phóng to chi tiết trang sách
       </p>
     </div>
 
@@ -2785,7 +2779,6 @@ const DIR='meng-to-sketchbook/';
 const PAGES=[
   {file:'chapter5-spread-1.png', title:'Bìa & Mục 1: Khái niệm & Vị trí Cơ cấu Xã hội - Giai cấp', place:'Mở Đầu'},
   {file:'chapter5-spread-2.png', title:'Mục 1.1 & 1.2: Khái niệm & Vị trí trong Hệ thống Xã hội', place:'Phần 1'},
-  {file:'chapter5-spread-3.png', title:'Mục 2 & 2.1: Biến đổi có tính quy luật & Cơ cấu Kinh tế', place:'Phần 2'},
   {file:'chapter5-spread-4.png', title:'Mục 2.2 & 2.3: Tầng lớp mới & Mối quan hệ Liên minh', place:'Phần 2'},
   {file:'chapter5-spread-5.png', title:'Lời Cảm Ơn & Tổng Kết Chương 5', place:'Kết Thúc'}
 ];
